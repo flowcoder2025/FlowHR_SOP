@@ -35,7 +35,7 @@
 
 ## 핵심 통계 (목표)
 
-- 엔드포인트 수: 약 280개 (운영사 70 + 관리자 120 + 직원 50 + 공통 30 + 인증 10)
+- 엔드포인트 수: 약 280개 (인증 9 + 운영사 75 + 관리자 130 + 직원 55 + 공통 11 + 헬스/유틸 + Realtime 채널 6)
 - 평균 응답 시간 목표 (p95): ≤ 500ms (PRD §05 NFR)
 - Realtime 채널: notifications, approvals, approval_steps, attendances (선택)
 

@@ -167,7 +167,7 @@
 | GET | `/users` | operator_super | 운영자 목록 |
 | POST | `/users/invite` | operator_super | body: `{email, role}` |
 | DELETE | `/users/:id` | operator_super |
-| GET | `/api-keys?owner=operator` | operator_super |
+| GET | `/api-keys` | operator_super | owner_type='operator' 자동 |
 | POST | `/api-keys` | operator_super | body: `{label, scopes, expiresInDays, reason}` |
 | DELETE | `/api-keys/:id` | operator_super |
 | POST | `/api-keys/:id/rotate` | operator_super |

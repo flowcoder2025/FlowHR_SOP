@@ -184,7 +184,16 @@ VALIDATION_ERROR / VALIDATION_REQUIRED / VALIDATION_FORMAT / VALIDATION_RANGE
 RATE_LIMIT / MAINTENANCE / FORBIDDEN / NOT_FOUND / INTERNAL_ERROR
 ```
 
-## 12. 변경 이력
+## 12. API Key 컨벤션 (KI-024)
+
+- **Owner 분리**: API Key는 `owner_type` 컬럼으로 운영사/테넌트 구분 (matrix.json `api_keys.owner_type`)
+- **운영사 키**: `POST /api/v1/operator/api-keys`, `GET /api/v1/operator/api-keys`, `DELETE /api/v1/operator/api-keys/:id` — `operator_super` only. owner_type='operator' 자동 설정.
+- **테넌트 키**: `POST /api/v1/tenant/api-keys`, `GET /api/v1/tenant/api-keys`, `DELETE /api/v1/tenant/api-keys/:id` — `tenant_super` only. owner_type='tenant', tenant_id 자동 설정.
+- **`?owner=*` 쿼리는 사용하지 않음** — 도메인 라우트(operator vs tenant)로 명시 구분.
+- 발급 시 한 번만 평문 키 응답, 이후 hash만 저장 (bcrypt).
+- 인증: `X-Api-Key: <key>` 헤더 + JWT 우회 (Edge Function 또는 외부 도구용).
+
+## 13. 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|

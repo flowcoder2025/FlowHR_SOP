@@ -33,10 +33,10 @@
 - [x] WI-009-docs RLS 정책 설계 (37 테이블 × 6 역할 + Approval polymorphic routing)
 - [x] WI-010-docs 인덱스 / 마이그레이션 순서 (23 파일) + enums + seed
 
-## Phase 4 — API 명세
+## Phase 4 — API 명세 [✓ PASS 8.78/10]
 
-- [ ] WI-011-docs OpenAPI 스켈레톤
-- [ ] WI-012-docs 도메인별 엔드포인트 명세
+- [x] WI-011-docs OpenAPI 스켈레톤 (conventions + schemas + zod)
+- [x] WI-012-docs 도메인별 엔드포인트 명세 (인증/운영사/관리자/직원/공통/cron 약 280)
 
 ## Phase 5 — 와이어프레임 (Codex 이미지 → 분석)
 
@@ -76,6 +76,7 @@
 ## Known Issue Batch WI
 
 - [x] **WI-KI-batch-001 (PRD 정합 정리, 5건 해소)**: KI-008/009/010/011/012 일괄 처리 완료 (2026-05-15)
-  - 즉시 처리 가능 항목만 (PRD 문서 정합 정정)
   - 아카이브: `.flowset/known-issues/archive/2026-05-15-batch-001.md`
-  - KI-001/002/003/004/005/006/007은 Phase 3/4/7/8 결합 처리 (scheduled)
+- [x] **WI-KI-batch-002 (Phase 4 정합 정리, 4건 해소)**: KI-021/022/024/026 (2026-05-15)
+  - KI-023(v1.2)/KI-025(Phase 10) deferred 등록
+  - 아카이브: `.flowset/known-issues/archive/2026-05-15-batch-002.md`

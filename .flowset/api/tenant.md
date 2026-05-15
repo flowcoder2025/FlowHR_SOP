@@ -192,7 +192,7 @@
 | POST | `/integrations/:type/disconnect` | super |
 | POST | `/integrations/:type/test` | super | 테스트 발송 |
 | GET | `/integrations/:type/logs?from&to&page` | super |
-| GET | `/api-keys?owner=tenant` | super (credentials masked) |
+| GET | `/api-keys` | super (credentials masked) | owner_type='tenant', tenant_id 자동 |
 | POST | `/api-keys` | super | body: `{label, scopes[], expiresInDays, reason}` 응답: 한 번만 평문 |
 | DELETE | `/api-keys/:id` | super |
 | POST | `/api-keys/:id/rotate` | super |

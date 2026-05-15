@@ -85,7 +85,7 @@ spec_ref: docs/FlowHR_screen_spec_v_1.md#8-2
 ```
 GET  /api/v1/me/attendances?from&to&page
 GET  /api/v1/me/attendances/today
-POST /api/v1/me/attendance/clock-in           # body: { latitude, longitude, deviceId }
+POST /api/v1/me/attendance/clock-in           # body: { location: { lat, lng, accuracy? }, deviceId }  (KI-018: jsonb LocationSchema)
 POST /api/v1/me/attendance/clock-out
 POST /api/v1/me/attendance/break/start
 POST /api/v1/me/attendance/break/end

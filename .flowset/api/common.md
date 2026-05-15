@@ -104,10 +104,14 @@
 서버 내부 — 모든 핵심 액션이 자동 INSERT. 클라이언트 직접 노출 없음.
 
 ### 기록 대상 (DB trigger + 애플리케이션 레벨 이중)
-- 핵심 테이블 11개: employees, leaves, approvals, attendances, documents, users, tenants, subscriptions, invoices, feature_flags, tenant_settings
-- 모든 APPROVE/REJECT/CANCEL 액션
-- 로그인 / 로그아웃 / 비밀번호 변경 / 2FA 변경
-- 권한 변경, 테넌트 비활성화, 점검 모드 토글
+
+**핵심 마스터 테이블 (11개 — DB after-trigger)**: employees, leaves, approvals, attendances, documents, users, tenants, subscriptions, invoices, feature_flags, tenant_settings
+
+**결재 폴리모픽 자식 테이블 (KI-026 정책)**: attendance_modifications, certificate_requests, employee_change_requests는 **개별 audit_logs 트리거 미적용**. 대신 연결된 `approvals` 테이블의 audit_logs 항목에 자식 state를 `before`/`after` jsonb로 포함. 이유: (1) 결재 단위가 비즈니스 추적 단위, (2) 자식 INSERT는 approvals INSERT와 동일 트랜잭션, (3) 자식 UPDATE는 approval 단계 진행 시 자동 — 중복 로그 회피.
+
+**APPROVE/REJECT/CANCEL 액션**: approvals + approval_steps 양쪽에 기록 (애플리케이션 레벨).
+
+**인증/시스템 액션**: 로그인 / 로그아웃 / 비밀번호 변경 / 2FA 변경 / 권한 변경 / 테넌트 비활성화 / 점검 모드 토글.
 
 ### 조회
 - 운영사: `/api/v1/operator/audit-logs` (cross-tenant)

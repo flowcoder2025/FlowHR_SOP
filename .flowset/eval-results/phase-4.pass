@@ -1,0 +1,9 @@
+Phase 4 API PASS
+WI: WI-011~012-docs
+Attempt: 1
+Weighted Total: 8.78/10
+Threshold: 8.0 (AND 각 축 ≥ 7.5) — 통과
+Date: 2026-05-15
+KI Resolved: KI-001, KI-003, KI-018, KI-019
+KI Added: KI-021~026 (batch-002 처리 예정)
+Detail: .flowset/eval-results/phase-4.eval.md
