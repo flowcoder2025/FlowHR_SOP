@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-07 기능 플래그</title>
+<link rel="stylesheet" href="_design-tokens.css">
+<link rel="stylesheet" href="_icons.css">
+<style>
+  .toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
+  .toggle input { display: none; }
+  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--color-border); border-radius: 20px; transition: .2s; }
+  .toggle-slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 2px; top: 2px; background: white; border-radius: 50%; transition: .2s; }
+  .toggle input:checked + .toggle-slider { background: var(--color-success); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+  .footer { padding: 16px 24px; background: var(--color-bg); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-muted); }
+  .footer-links { display: flex; gap: 16px; } .footer-links a { color: var(--color-text-muted); text-decoration: none; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/></symbol>
+  <symbol id="i-credit-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+</svg>
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo">FlowHR</div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item active"><svg class="ico"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-settings"/></svg> 시스템 설정</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">기능 플래그 / 모듈 권한</h1>
+      <div style="flex:1;"></div>
+      <div class="header-actions">
+        <div style="padding:8px;cursor:pointer;color:var(--color-text-muted);"><svg class="ico"><use href="#i-help"/></svg></div>
+        <div class="bell"><svg class="ico"><use href="#i-bell"/></svg><span class="bell-badge">3</span></div>
+        <div class="avatar">김</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="filter-bar" style="margin-bottom:16px;">
+        <div class="filter-chip active">전체 모듈</div>
+        <div class="filter-chip">근태</div>
+        <div class="filter-chip">휴가</div>
+        <div class="filter-chip">결재</div>
+        <div class="filter-chip">급여</div>
+        <div class="filter-chip">문서</div>
+        <div class="filter-chip">외부연동</div>
+        <div class="filter-chip">시스템</div>
+        <div style="width:1px;background:var(--color-border);margin:0 4px;"></div>
+        <div class="filter-chip">베타만</div>
+      </section>
+
+      <section style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:13px;color:var(--color-text-muted);"><strong style="color:var(--color-text);">24</strong>개 기능 · 활성 18 · 베타 4 · 비활성 2</div>
+        <button class="btn btn-primary"><svg class="ico"><use href="#i-plus"/></svg>기능 추가</button>
+      </section>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="table">
+          <thead><tr><th>기능명</th><th>모듈</th><th>글로벌</th><th>제공 플랜</th><th>예외 테넌트</th><th>베타</th><th>적용일</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>출퇴근 기록</strong><div style="font-size:11px;color:var(--color-text-muted);font-family:monospace;">attendance</div></td>
+              <td><span class="badge muted">근태</span></td>
+              <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+              <td style="font-size:12px;">전체</td>
+              <td>0개</td>
+              <td>—</td>
+              <td style="color:var(--color-text-muted);font-size:12px;">2025-08-01</td>
+              <td><svg class="ico" style="cursor:pointer;color:var(--color-text-muted);"><use href="#i-more"/></svg></td>
+            </tr>
+            <tr>
+              <td><strong>휴가 신청</strong><div style="font-size:11px;color:var(--color-text-muted);font-family:monospace;">leave_request</div></td>
+              <td><span class="badge muted">휴가</span></td>
+              <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+              <td style="font-size:12px;">전체</td>
+              <td>0개</td>
+              <td>—</td>
+              <td style="color:var(--color-text-muted);font-size:12px;">2025-08-01</td>
+              <td><svg class="ico" style="cursor:pointer;color:var(--color-text-muted);"><use href="#i-more"/></svg></td>
+            </tr>
+            <tr>
+              <td><strong>전자계약 (서명)</strong><div style="font-size:11px;color:var(--color-text-muted);font-family:monospace;">e_contract</div></td>
+              <td><span class="badge muted">문서</span></td>
+              <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+              <td style="font-size:12px;">— (v1.2)</td>
+              <td>0개</td>
+              <td><span class="badge info">베타</span></td>
+              <td style="color:var(--color-text-muted);font-size:12px;">2026-04-15</td>
+              <td><svg class="ico" style="cursor:pointer;color:var(--color-text-muted);"><use href="#i-more"/></svg></td>
+            </tr>
+            <tr>
+              <td><strong>SSO (SAML/OIDC)</strong><div style="font-size:11px;color:var(--color-text-muted);font-family:monospace;">sso</div></td>
+              <td><span class="badge muted">외부연동</span></td>
+              <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+              <td style="font-size:12px;">엔터프라이즈</td>
+              <td>1개</td>
+              <td><span class="badge info">베타</span></td>
+              <td style="color:var(--color-text-muted);font-size:12px;">2026-05-10</td>
+              <td><svg class="ico" style="cursor:pointer;color:var(--color-text-muted);"><use href="#i-more"/></svg></td>
+            </tr>
+            <tr>
+              <td><strong>다크 모드</strong><div style="font-size:11px;color:var(--color-text-muted);font-family:monospace;">dark_mode</div></td>
+              <td><span class="badge muted">시스템</span></td>
+              <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+              <td style="font-size:12px;">전체</td>
+              <td>3개</td>
+              <td><span class="badge info">베타</span></td>
+              <td style="color:var(--color-text-muted);font-size:12px;">2026-04-20</td>
+              <td><svg class="ico" style="cursor:pointer;color:var(--color-text-muted);"><use href="#i-more"/></svg></td>
+            </tr>
+            <tr>
+              <td><strong>커스텀 리포트</strong><div style="font-size:11px;color:var(--color-text-muted);font-family:monospace;">custom_reports</div></td>
+              <td><span class="badge muted">시스템</span></td>
+              <td><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></td>
+              <td style="font-size:12px;">— (v1.3)</td>
+              <td>0개</td>
+              <td>—</td>
+              <td style="color:var(--color-text-muted);font-size:12px;">2026-05-01</td>
+              <td><svg class="ico" style="cursor:pointer;color:var(--color-text-muted);"><use href="#i-more"/></svg></td>
+            </tr>
+            <tr>
+              <td><strong>카카오 알림톡</strong><div style="font-size:11px;color:var(--color-text-muted);font-family:monospace;">kakao_alimtalk</div></td>
+              <td><span class="badge muted">외부연동</span></td>
+              <td><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></td>
+              <td style="font-size:12px;">기본+</td>
+              <td>0개</td>
+              <td>—</td>
+              <td style="color:var(--color-text-muted);font-size:12px;">2025-08-01</td>
+              <td><svg class="ico" style="cursor:pointer;color:var(--color-text-muted);"><use href="#i-more"/></svg></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:24px;">
+        <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:8px;">[와이어프레임 주석] 행 액션 메뉴:</div>
+        <div style="display:inline-block;background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:8px;width:200px;">
+          <div style="padding:8px 12px;font-size:13px;cursor:pointer;">예외 테넌트 설정</div>
+          <div style="padding:8px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;"><svg class="ico"><use href="#i-history"/></svg>변경 이력 보기</div>
+          <div style="padding:8px 12px;font-size:13px;cursor:pointer;">제공 플랜 변경</div>
+          <div style="height:1px;background:var(--color-border-light);margin:4px 0;"></div>
+          <div style="padding:8px 12px;font-size:13px;color:var(--color-danger);cursor:pointer;">삭제 (super only)</div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a></div>
+      <div style="font-family:monospace;">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+</body>
+</html>
