@@ -20,10 +20,11 @@ jobs:
 
           # wi-global.md §1 규칙:
           #   WI-NNN-[type] 한글 작업명
-          #   NNN: [A-Za-z0-9][A-Za-z0-9+\-_]* (영숫자 + +/- 허용, batch-003+005 같은 묶음 포함)
+          #   NNN: [A-Za-z0-9][A-Za-z0-9+_-]* (영숫자 + + / _ / - 허용, batch-003+005 같은 묶음 포함)
           #   type: feat|fix|docs|style|refactor|test|chore|perf|ci|revert
           #   예외: WI-chore / WI-docs / WI-Handoff (번호 없는 시스템 커밋)
-          pattern='^WI-([A-Za-z0-9][A-Za-z0-9+\-_]*(-(feat|fix|docs|style|refactor|test|chore|perf|ci|revert))?|chore|docs|Handoff)[[:space:]]+[^[:space:]]'
+          # bracket 안 '-'은 마지막 위치(literal) — 백슬래시 이스케이프 사용 시 range 오인됨
+          pattern='^WI-([A-Za-z0-9][A-Za-z0-9+_-]*(-(feat|fix|docs|style|refactor|test|chore|perf|ci|revert))?|chore|docs|Handoff)[[:space:]]+[^[:space:]]'
 
           fail=0
           while IFS= read -r sha; do
