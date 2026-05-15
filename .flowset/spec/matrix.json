@@ -1,5 +1,5 @@
 {
-  "_comment": "FlowHR 매트릭스 SSOT — Phase 1(PRD) Step 4에서 entities를 채웁니다. 36개 화면 × CRUD × Role × Permission.",
+  "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1에서 채움. 26 엔티티 × CRUD × Role × Permission. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md.",
   "schema_version": "v2",
   "class": "code",
   "project": "FlowHR",
@@ -7,7 +7,8 @@
   "auth_patterns": [
     "supabase\\.auth\\.getSession",
     "createServerClient",
-    "createBrowserClient"
+    "createBrowserClient",
+    "auth\\.jwt\\(\\)"
   ],
   "roles": [
     "operator_super",
@@ -17,8 +18,529 @@
     "tenant_manager",
     "employee"
   ],
-  "screens": {
-    "_comment": "36개 화면 메타. Phase 2 백로그 작성 시 각 화면을 어떤 entity의 CRUD에 매핑할지 entity_refs로 연결."
+  "screens_total": 36,
+  "screens_mvp": 27,
+  "entities": {
+    "Tenant": {
+      "table": "tenants",
+      "tenant_scoped": false,
+      "_comment": "tenants 자체는 운영사 도메인, tenant_id 컬럼 없음 (자기 자신)",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": true},
+        "operator_staff":   {"C": true, "R": true, "U": true, "D": false},
+        "tenant_super":     {"C": false, "R": "own", "U": "own", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/operator/tenants",
+        "R": "GET /api/v1/operator/tenants",
+        "U": "PATCH /api/v1/operator/tenants/:id",
+        "D": "DELETE /api/v1/operator/tenants/:id"
+      },
+      "type_ssot": "supabase/migrations/*.sql + packages/types/database.ts#Tenant",
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Subscription": {
+      "table": "subscriptions",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": "all", "U": true, "D": false},
+        "tenant_super":     {"C": false, "R": "own", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/operator/tenants/:id (subscriptions 포함)",
+        "U": "PATCH /api/v1/operator/tenants/:id/subscription"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Invoice": {
+      "table": "invoices",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": true, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": true, "D": false},
+        "tenant_super":     {"C": false, "R": "own", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/operator/invoices/batch-issue",
+        "R": "GET /api/v1/operator/invoices",
+        "U": "POST /api/v1/operator/invoices/:id/mark-paid|refund"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Plan": {
+      "table": "plans",
+      "tenant_scoped": false,
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": true, "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": true, "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/operator/plans",
+        "C": "POST /api/v1/operator/plans",
+        "U": "PATCH /api/v1/operator/plans/:id",
+        "D": "DELETE /api/v1/operator/plans/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "FeatureFlag": {
+      "table": "feature_flags",
+      "tenant_scoped": false,
+      "_comment": "테넌트 예외는 feature_flag_overrides 별도 테이블",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": true, "U": true, "D": false},
+        "tenant_super":     {"C": false, "R": "own", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": "own", "U": false, "D": false},
+        "employee":         {"C": false, "R": "own", "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/feature-flags?context=tenant_id",
+        "C": "POST /api/v1/operator/feature-flags",
+        "U": "PATCH /api/v1/operator/feature-flags/:key"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Ticket": {
+      "table": "tickets",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": true, "D": false},
+        "operator_staff":   {"C": true, "R": "all", "U": true, "D": false},
+        "tenant_super":     {"C": true, "R": "own", "U": "own", "D": false},
+        "tenant_hr_admin":  {"C": true, "R": "own", "U": "own", "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": true, "R": "own_authored", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tickets",
+        "R": "GET /api/v1/tickets",
+        "U": "PATCH /api/v1/tickets/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Department": {
+      "table": "departments",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own", "U": "own", "D": "own"},
+        "tenant_hr_admin":  {"C": true, "R": "own", "U": "own", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_subtree", "U": false, "D": false},
+        "employee":         {"C": false, "R": "own", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/departments",
+        "R": "GET /api/v1/tenant/departments",
+        "U": "PATCH /api/v1/tenant/departments/:id",
+        "D": "DELETE /api/v1/tenant/departments/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Employee": {
+      "table": "employees",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team", "U": false, "D": false},
+        "employee":         {"C": false, "R": "self", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/employees",
+        "R": "GET /api/v1/tenant/employees",
+        "U": "PATCH /api/v1/tenant/employees/:id",
+        "D": "POST /api/v1/tenant/employees/:id/resign"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "User": {
+      "table": "users (extends auth.users)",
+      "tenant_scoped": true,
+      "_comment": "Supabase auth.users 확장 — employee_id 외래키",
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": true, "D": false},
+        "operator_staff":   {"C": true, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": "own_tenant_role", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": "self", "U": "self_security", "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/employees (initiate invite)",
+        "R": "GET /api/v1/me/profile",
+        "U": "PATCH /api/v1/me/profile, /api/v1/me/security/*"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Role": {
+      "table": "roles + role_permissions",
+      "tenant_scoped": true,
+      "_comment": "기본 6 역할은 글로벌 시드. 테넌트 커스텀 권한은 후순위.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": true, "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/tenant/settings/roles"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Attendance": {
+      "table": "attendances",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team", "U": "own_team", "D": false},
+        "employee":         {"C": "self", "R": "self", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/me/attendance/clock-in, POST /api/v1/tenant/attendances",
+        "R": "GET /api/v1/tenant/attendances, GET /api/v1/me/attendances",
+        "U": "PATCH /api/v1/tenant/attendances/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "AttendanceModification": {
+      "table": "attendance_modifications",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team", "U": "own_team_approve", "D": false},
+        "employee":         {"C": "self", "R": "self", "U": "self_cancel", "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/me/attendance-modifications",
+        "R": "GET /api/v1/tenant/attendance-modifications",
+        "U": "POST /api/v1/tenant/attendance-modifications/:id/approve|reject"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Leave": {
+      "table": "leaves",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team", "U": "own_team_approve", "D": false},
+        "employee":         {"C": "self", "R": "self", "U": "self_cancel", "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/me/leaves",
+        "R": "GET /api/v1/tenant/leaves, GET /api/v1/me/leaves",
+        "U": "POST /api/v1/tenant/leaves/:id/approve|reject"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "LeaveBalance": {
+      "table": "leave_balances",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team", "U": false, "D": false},
+        "employee":         {"C": false, "R": "self", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/leaves/balances/grant",
+        "R": "GET /api/v1/tenant/leaves/balances, GET /api/v1/me/leave-balances",
+        "U": "PATCH /api/v1/tenant/leaves/balances/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "LeaveType": {
+      "table": "leave_types",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "employee":         {"C": false, "R": "own_tenant", "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/tenant/leave-types",
+        "C": "POST /api/v1/tenant/leave-types"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Approval": {
+      "table": "approvals",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_manager":   {"C": false, "R": "assigned", "U": "assigned_approve", "D": false},
+        "employee":         {"C": "self", "R": "self", "U": "self_cancel", "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/tenant/approvals/inbox|sent",
+        "U": "POST /api/v1/tenant/approvals/:id/approve|reject"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "ApprovalStep": {
+      "table": "approval_steps",
+      "tenant_scoped": true,
+      "_comment": "approvals의 단계별 결재자/상태. CR은 시스템 자동, U는 결재자가 승인/반려.",
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": "own_tenant_step", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": "own_tenant_step", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team_step", "U": "own_team_step", "D": false},
+        "employee":         {"C": false, "R": "self_via_approval", "U": false, "D": false}
+      },
+      "endpoints": {},
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "ApprovalLine": {
+      "table": "approval_lines",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "employee":         {"C": false, "R": "own_tenant", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/approval-lines",
+        "R": "GET /api/v1/tenant/approval-lines"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Document": {
+      "table": "documents",
+      "tenant_scoped": true,
+      "_comment": "sub_type: payslip / contract / certificate / personal_doc / company_doc",
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team_partial", "U": false, "D": false},
+        "employee":         {"C": false, "R": "self_assigned", "U": "self_acknowledge", "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/documents",
+        "R": "GET /api/v1/me/documents, GET /api/v1/tenant/documents",
+        "U": "POST /api/v1/me/payslips/:id/acknowledge"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "CertificateRequest": {
+      "table": "certificate_requests",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": "own_tenant_issue", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": "own_tenant_issue", "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": "self", "R": "self", "U": "self_cancel", "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/me/certificate-requests",
+        "R": "GET /api/v1/me/certificate-requests",
+        "U": "POST /api/v1/tenant/certificate-requests/:id/issue|reject"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "DocumentTemplate": {
+      "table": "document_templates",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/document-templates",
+        "R": "GET /api/v1/tenant/document-templates"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Notification": {
+      "table": "notifications",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "self_read", "D": false},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "self_read", "D": false},
+        "tenant_manager":   {"C": false, "R": "self", "U": "self_read", "D": false},
+        "employee":         {"C": false, "R": "self", "U": "self_read", "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/me/notifications",
+        "U": "POST /api/v1/me/notifications/:id/read"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "AuditLog": {
+      "table": "audit_logs",
+      "tenant_scoped": true,
+      "_comment": "운영사는 cross-tenant 조회 가능. 모든 INSERT/UPDATE/DELETE/APPROVE 자동 기록.",
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant_partial", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": "self_partial", "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/operator/audit-logs, GET /api/v1/tenant/audit-logs"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "TenantSetting": {
+      "table": "tenant_settings",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": true, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": "own_tenant_partial", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_tenant_partial", "U": false, "D": false},
+        "employee":         {"C": false, "R": "own_tenant_public", "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/tenant/settings",
+        "U": "PATCH /api/v1/tenant/settings/{tab}"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "WorkPolicy": {
+      "table": "work_policies",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": "own_tenant", "D": false},
+        "tenant_manager":   {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "employee":         {"C": false, "R": "own_tenant", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/work-policies",
+        "R": "GET /api/v1/tenant/work-policies"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Integration": {
+      "table": "integrations",
+      "tenant_scoped": true,
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant_partial", "U": "own_tenant_partial", "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/tenant/integrations",
+        "C": "POST /api/v1/tenant/integrations/:type/connect"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "EmployeeChangeRequest": {
+      "table": "employee_change_requests",
+      "tenant_scoped": true,
+      "_comment": "직원이 본인 정보 변경 요청 → HR 승인",
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant", "U": "own_tenant_approve", "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": "self", "R": "self", "U": "self_cancel", "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/me/profile/change-requests",
+        "R": "GET /api/v1/me/profile/change-requests, GET /api/v1/tenant/employees/:id/change-requests",
+        "U": "POST /api/v1/tenant/change-requests/:id/approve|reject"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    }
   },
-  "entities": {}
+  "screens_to_entities_map": {
+    "_comment": "각 화면이 어떤 엔티티의 어떤 CRUD를 호출하는지 매핑. Phase 2 백로그가 사용.",
+    "OP-01": ["Tenant:R", "Subscription:R", "Invoice:R", "Ticket:R", "AuditLog:R", "Plan:R"],
+    "OP-02": ["Tenant:CRUD", "Subscription:RU", "Plan:R"],
+    "OP-03": ["Tenant:RU", "Subscription:RU", "Invoice:R", "Employee:R", "FeatureFlag:RU", "AuditLog:R", "Ticket:R"],
+    "OP-04": ["Tenant:C", "Subscription:C", "Plan:R", "User:C", "FeatureFlag:C", "TenantSetting:C", "Department:C", "WorkPolicy:C", "LeaveType:C", "ApprovalLine:C", "DocumentTemplate:C"],
+    "OP-05": ["Plan:CRUD", "Subscription:R", "FeatureFlag:R"],
+    "OP-06": ["Invoice:CRUD", "Tenant:R", "Subscription:R"],
+    "OP-07": ["FeatureFlag:CRUD", "Tenant:R", "Plan:R"],
+    "OP-08": ["Ticket:CRUD", "User:R", "Tenant:R"],
+    "OP-09": ["AuditLog:R", "Tenant:R", "User:R"],
+    "OP-10": ["Tenant:R", "Subscription:R", "Invoice:R", "Employee:R", "AuditLog:R"],
+    "OP-11": ["TenantSetting:CRUDS", "User:CRUD", "ApiKey:CRUD"],
+    "TA-01": ["Employee:R", "Attendance:R", "Leave:R", "Approval:R", "Notification:R"],
+    "TA-02": ["Employee:CRUD", "User:CR", "Department:R", "Role:RU"],
+    "TA-03": ["Employee:RUD", "User:RU", "Department:R", "Attendance:R", "Leave:R", "LeaveBalance:R", "Document:RC", "Approval:R", "AuditLog:R"],
+    "TA-04": ["Department:CRUD", "Employee:RU"],
+    "TA-05": ["Attendance:CRUD", "Employee:R", "WorkPolicy:R", "AttendanceModification:CR"],
+    "TA-06": ["AttendanceModification:CRUDA", "Attendance:RU", "Approval:C", "Notification:C"],
+    "TA-07": ["Leave:CRUDA", "LeaveBalance:CRU", "LeaveType:R", "Employee:R"],
+    "TA-08": ["Leave:RUA", "LeaveBalance:RU", "Approval:RUA", "ApprovalStep:RU", "Employee:R"],
+    "TA-09": ["Approval:CRUA", "ApprovalStep:RU", "Leave:RU", "AttendanceModification:RU", "CertificateRequest:RU", "Notification:C"],
+    "TA-10": ["Document:CRUD", "DocumentTemplate:R", "Employee:R", "Notification:C"],
+    "TA-11": ["Document:CRUD", "DocumentTemplate:R", "Employee:R"],
+    "TA-12": ["Employee:R", "Attendance:R", "Leave:R", "Department:R"],
+    "TA-13": ["TenantSetting:CRUDS", "WorkPolicy:CRUD", "LeaveType:CRUD", "ApprovalLine:CRUD", "DocumentTemplate:CRUD", "Role:RU", "AuditLog:R"],
+    "TA-14": ["Integration:CRUD", "ApiKey:CRUD"],
+    "EM-01": ["Attendance:CR", "Leave:R", "LeaveBalance:R", "Approval:R", "Notification:R"],
+    "EM-02": ["Attendance:CR", "AttendanceModification:C", "WorkPolicy:R"],
+    "EM-03": ["Leave:C", "LeaveBalance:R", "LeaveType:R", "ApprovalLine:R"],
+    "EM-04": ["Leave:R", "LeaveBalance:R", "LeaveType:R"],
+    "EM-05": ["Approval:R", "ApprovalStep:R", "Leave:R", "AttendanceModification:R", "CertificateRequest:R"],
+    "EM-06": ["Document:R"],
+    "EM-07": ["Document:R"],
+    "EM-08": ["CertificateRequest:CRUD", "Approval:C", "Document:R"],
+    "EM-09": ["Employee:RU", "User:RU", "EmployeeChangeRequest:CRU"],
+    "EM-10": ["Notification:RU"],
+    "EM-11": ["Approval:R", "Leave:R", "AttendanceModification:R", "CertificateRequest:R", "EmployeeChangeRequest:R"]
+  }
 }
