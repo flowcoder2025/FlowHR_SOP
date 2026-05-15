@@ -27,11 +27,11 @@
 - [x] WI-006-docs User Story 작성 (72 Story, 화면×역할 매트릭스)
 - [x] WI-007-docs Task 분해 (EP-01/02/06/07/08 완전 + 7 Epic 패턴 추정, 195 Task / 739 MD)
 
-## Phase 3 — DB ERD
+## Phase 3 — DB ERD [✓ PASS 8.68/10]
 
-- [ ] WI-008-docs ERD 다이어그램 (Mermaid)
-- [ ] WI-009-docs RLS 정책 설계
-- [ ] WI-010-docs 인덱스 / 마이그레이션 순서
+- [x] WI-008-docs ERD 다이어그램 (Mermaid, 37 엔티티 통합 + 도메인별 4분할)
+- [x] WI-009-docs RLS 정책 설계 (37 테이블 × 6 역할 + Approval polymorphic routing)
+- [x] WI-010-docs 인덱스 / 마이그레이션 순서 (23 파일) + enums + seed
 
 ## Phase 4 — API 명세
 

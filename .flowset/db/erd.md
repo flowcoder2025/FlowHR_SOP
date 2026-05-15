@@ -20,6 +20,7 @@ erDiagram
     tenants ||--o{ api_keys : has
     tenants ||--o{ feature_flag_overrides : has
 
+    plans ||--o{ tenants : "subscribed by"
     plans ||--o{ subscriptions : "served by"
     feature_flags ||--o{ feature_flag_overrides : overridden
 
@@ -331,7 +332,7 @@ erDiagram
         timestamptz clock_out_at
         int break_minutes "default 0"
         enum work_type "office|remote|outside|business_trip"
-        enum status "normal|late|early_leave|absent|leave|missing|modification_pending|modification_done"
+        enum status "normal|late|early_leave|absent|leave|remote|outside|business_trip|missing|modification_pending|modification_done"
         point clock_in_location "PostGIS or jsonb {lat,lng}"
         point clock_out_location
         text device_id

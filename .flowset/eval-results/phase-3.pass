@@ -1,0 +1,9 @@
+Phase 3 DB ERD PASS
+WI: WI-008-docs ~ WI-010-docs
+Attempt: 1 (즉시 잔존 5건 정리)
+Weighted Total: 8.68/10
+Threshold: 8.0 (AND 각 축 ≥ 7.5) — 통과
+Date: 2026-05-15
+KI Resolved: KI-002, KI-004, KI-014
+KI Added: KI-017, KI-018, KI-019, KI-020
+Detail: .flowset/eval-results/phase-3.eval.md

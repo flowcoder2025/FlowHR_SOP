@@ -24,9 +24,10 @@
 - RLS 정책: `tenant_id = (auth.jwt() ->> 'tenant_id')::uuid` + 운영사 우회
 
 ### 2. PK / FK 규칙
-- 모든 PK는 `id uuid PRIMARY KEY DEFAULT gen_random_uuid()`
-- FK는 `ON DELETE CASCADE` (테넌트 삭제 시 자식 모두 삭제) 또는 `ON DELETE RESTRICT` (직원 삭제 차단)
-- 복합 PK는 `(parent_id, child_id)` 패턴 (예: `feature_flag_overrides (flag_key, tenant_id)`)
+- **기본 PK**: `id uuid PRIMARY KEY DEFAULT gen_random_uuid()` — 대부분 도메인 엔티티 적용
+- **자연키 PK (예외)**: 글로벌 시드 테이블은 의미 있는 텍스트 키 사용 — `feature_flags.key text PK`, `roles.key text PK`. `INSERT ... ON CONFLICT (key) DO ...` 멱등 시드 패턴 적용
+- **복합 PK**: `(parent_id, child_id)` 패턴 — `feature_flag_overrides (flag_key, tenant_id)`, `operator_users (user_id)` 단일 FK PK
+- **FK**: `ON DELETE CASCADE` (테넌트 삭제 시 자식 모두 삭제) 또는 `ON DELETE RESTRICT` (직원 삭제 차단)
 
 ### 3. 타임스탬프
 - 모든 테이블: `created_at timestamptz DEFAULT now()`, `updated_at timestamptz DEFAULT now()`

@@ -57,8 +57,8 @@ CREATE INDEX idx_attendances_employee_date ON attendances (employee_id, work_dat
 -- 회사 모니터링: GET /api/v1/tenant/attendances?from&to
 CREATE INDEX idx_attendances_tenant_date ON attendances (tenant_id, work_date DESC);
 
--- 부서 필터: 추가 인덱스 (TA-05 부서 필터 빈번)
-CREATE INDEX idx_attendances_tenant_dept_date ON attendances (tenant_id, work_date DESC) INCLUDE (employee_id);
+-- 회사 모니터링 부서 필터 가속 (TA-05 빈번 — employee join 후 dept 필터): work_date 정렬에 employee_id INCLUDE로 인덱스 only scan
+CREATE INDEX idx_attendances_tenant_workdate_inc_emp ON attendances (tenant_id, work_date DESC) INCLUDE (employee_id);
 
 -- 누락 자동 처리 cron (23:59): 오늘 출근 있고 퇴근 없는 행
 CREATE INDEX idx_attendances_missing_check ON attendances (work_date, clock_out_at) WHERE clock_out_at IS NULL;

@@ -69,7 +69,7 @@
 erDiagram
     tenants ||--o{ employees : has
     tenants ||--o{ departments : has
-    tenants ||--|| subscriptions : has
+    tenants ||--o{ subscriptions : "has (current + history)"
     tenants ||--o{ invoices : has
     tenants ||--o{ tickets : has
     tenants ||--o{ tenant_settings : has
