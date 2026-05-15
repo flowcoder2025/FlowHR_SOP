@@ -1,5 +1,6 @@
 {
-  "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1에서 채움. 26 엔티티 × CRUD × Role × Permission. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md.",
+  "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1에서 채움. 36 엔티티 × 6 역할 × CRUD. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md.",
+  "_count_policy": "screens_mvp 카운트는 ✓ (완전 포함) + △ (단순화 포함) 합산. 본 PRD 기준 ✓ 27 + △ 9 = 36 (전 화면 MVP 진입 가능, 단 △ 9개는 v1.1까지 단순화 버전).",
   "schema_version": "v2",
   "class": "code",
   "project": "FlowHR",
@@ -19,7 +20,10 @@
     "employee"
   ],
   "screens_total": 36,
-  "screens_mvp": 27,
+  "screens_mvp_full": 27,
+  "screens_mvp_partial": 9,
+  "screens_mvp_total": 36,
+  "entities_total": 36,
   "entities": {
     "Tenant": {
       "table": "tenants",
@@ -502,6 +506,172 @@
         "U": "POST /api/v1/tenant/change-requests/:id/approve|reject"
       },
       "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "TicketMessage": {
+      "table": "ticket_messages",
+      "tenant_scoped": true,
+      "_comment": "지원 티켓의 응답/내부메모 스레드 (OP-08)",
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": false, "D": false},
+        "operator_staff":   {"C": true, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant_public", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant_public", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": true, "R": "own_ticket_public", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tickets/:id/messages",
+        "R": "GET /api/v1/tickets/:id (messages 포함)"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "SystemSetting": {
+      "table": "system_settings",
+      "tenant_scoped": false,
+      "_comment": "운영사 플랫폼 전역 설정 (OP-11). 테넌트별 설정인 TenantSetting과 분리.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": false},
+        "operator_staff":   {"C": false, "R": "partial", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": false, "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/operator/system-settings",
+        "U": "PATCH /api/v1/operator/system-settings"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "OperatorUser": {
+      "table": "users (where role IN operator_*)",
+      "tenant_scoped": false,
+      "_comment": "운영사 측 사용자. users 테이블의 role 필터. OP-11에서 별도 관리.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": true, "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": false, "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/operator/users/invite",
+        "R": "GET /api/v1/operator/users",
+        "D": "DELETE /api/v1/operator/users/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "MaintenanceWindow": {
+      "table": "maintenance_windows",
+      "tenant_scoped": false,
+      "_comment": "운영사 점검 모드 (OP-11). 예약 점검 + 즉시 점검.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": true, "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "public_view", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "public_view", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": "public_view", "U": false, "D": false},
+        "employee":         {"C": false, "R": "public_view", "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/operator/maintenance",
+        "C": "POST /api/v1/operator/maintenance/toggle, POST /api/v1/operator/maintenance/schedule"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "BackupJob": {
+      "table": "backup_jobs",
+      "tenant_scoped": false,
+      "_comment": "운영사 백업 작업 이력 (OP-11). 자동 일 1회 + 수동 트리거.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": true, "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": false, "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/operator/system-settings/backup",
+        "R": "GET /api/v1/operator/backup-jobs"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "ApiKey": {
+      "table": "api_keys",
+      "tenant_scoped": true,
+      "_comment": "테넌트 외부 도구용 API 키 (TA-14) + 운영사 API 키 (OP-11). owner_type 컬럼으로 구분.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": "all", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": "own_tenant", "D": "own_tenant"},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant_partial", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/api-keys (테넌트), POST /api/v1/operator/api-keys (운영사)",
+        "R": "GET /api/v1/tenant/api-keys",
+        "D": "DELETE /api/v1/tenant/api-keys/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "Signature": {
+      "table": "signatures",
+      "tenant_scoped": true,
+      "_comment": "전자서명 (TA-11). MVP 후순위 (v1.2). 외부 인증사업자 연동 결과 보관.",
+      "mvp": false,
+      "available_from": "v1.2",
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": true, "R": "own_tenant", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": true, "R": "own_tenant", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": "own_team_partial", "U": false, "D": false},
+        "employee":         {"C": "self_sign", "R": "self", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/tenant/contracts/:id/request-sign (v1.2), POST /api/v1/tenant/contracts/:id/sign (v1.2)",
+        "R": "GET /api/v1/tenant/contracts/:id (signatures 포함)"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "IntegrationLog": {
+      "table": "integration_logs",
+      "tenant_scoped": true,
+      "_comment": "외부 연동 호출 이력 (TA-14 로그 보기). 카카오/SMS/Webhook 요청·응답 기록.",
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "own_tenant_partial", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "R": "GET /api/v1/tenant/integrations/:type/logs"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "TenantDraft": {
+      "table": "tenant_drafts",
+      "tenant_scoped": false,
+      "_comment": "신규 테넌트 등록 마법사 임시저장 (OP-04). 운영사만 접근. 등록 완료 시 삭제.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": "own_authored", "U": "own_authored", "D": "own_authored"},
+        "operator_staff":   {"C": true, "R": "own_authored", "U": "own_authored", "D": "own_authored"},
+        "tenant_super":     {"C": false, "R": false, "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/operator/tenants/drafts",
+        "R": "GET /api/v1/operator/tenants/drafts/:draftId",
+        "D": "DELETE /api/v1/operator/tenants/drafts/:draftId"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
     }
   },
   "screens_to_entities_map": {
@@ -509,17 +679,17 @@
     "OP-01": ["Tenant:R", "Subscription:R", "Invoice:R", "Ticket:R", "AuditLog:R", "Plan:R"],
     "OP-02": ["Tenant:CRUD", "Subscription:RU", "Plan:R"],
     "OP-03": ["Tenant:RU", "Subscription:RU", "Invoice:R", "Employee:R", "FeatureFlag:RU", "AuditLog:R", "Ticket:R"],
-    "OP-04": ["Tenant:C", "Subscription:C", "Plan:R", "User:C", "FeatureFlag:C", "TenantSetting:C", "Department:C", "WorkPolicy:C", "LeaveType:C", "ApprovalLine:C", "DocumentTemplate:C"],
+    "OP-04": ["Tenant:C", "Subscription:C", "Plan:R", "User:C", "FeatureFlag:C", "TenantSetting:C", "Department:C", "WorkPolicy:C", "LeaveType:C", "ApprovalLine:C", "DocumentTemplate:C", "TenantDraft:CRUD"],
     "OP-05": ["Plan:CRUD", "Subscription:R", "FeatureFlag:R"],
     "OP-06": ["Invoice:CRUD", "Tenant:R", "Subscription:R"],
     "OP-07": ["FeatureFlag:CRUD", "Tenant:R", "Plan:R"],
-    "OP-08": ["Ticket:CRUD", "User:R", "Tenant:R"],
+    "OP-08": ["Ticket:CRUD", "TicketMessage:CR", "User:R", "Tenant:R"],
     "OP-09": ["AuditLog:R", "Tenant:R", "User:R"],
     "OP-10": ["Tenant:R", "Subscription:R", "Invoice:R", "Employee:R", "AuditLog:R"],
-    "OP-11": ["TenantSetting:CRUDS", "User:CRUD", "ApiKey:CRUD"],
+    "OP-11": ["SystemSetting:CRUDS", "OperatorUser:CRUD", "MaintenanceWindow:CRUD", "BackupJob:CR", "ApiKey:CRUD"],
     "TA-01": ["Employee:R", "Attendance:R", "Leave:R", "Approval:R", "Notification:R"],
     "TA-02": ["Employee:CRUD", "User:CR", "Department:R", "Role:RU"],
-    "TA-03": ["Employee:RUD", "User:RU", "Department:R", "Attendance:R", "Leave:R", "LeaveBalance:R", "Document:RC", "Approval:R", "AuditLog:R"],
+    "TA-03": ["Employee:RUD", "User:RU", "Department:R", "Attendance:R", "Leave:R", "LeaveBalance:R", "Document:RC", "Approval:R", "AuditLog:R", "EmployeeChangeRequest:R"],
     "TA-04": ["Department:CRUD", "Employee:RU"],
     "TA-05": ["Attendance:CRUD", "Employee:R", "WorkPolicy:R", "AttendanceModification:CR"],
     "TA-06": ["AttendanceModification:CRUDA", "Attendance:RU", "Approval:C", "Notification:C"],
@@ -527,11 +697,11 @@
     "TA-08": ["Leave:RUA", "LeaveBalance:RU", "Approval:RUA", "ApprovalStep:RU", "Employee:R"],
     "TA-09": ["Approval:CRUA", "ApprovalStep:RU", "Leave:RU", "AttendanceModification:RU", "CertificateRequest:RU", "Notification:C"],
     "TA-10": ["Document:CRUD", "DocumentTemplate:R", "Employee:R", "Notification:C"],
-    "TA-11": ["Document:CRUD", "DocumentTemplate:R", "Employee:R"],
+    "TA-11": ["Document:CRUD", "DocumentTemplate:R", "Employee:R", "Signature:CR"],
     "TA-12": ["Employee:R", "Attendance:R", "Leave:R", "Department:R"],
     "TA-13": ["TenantSetting:CRUDS", "WorkPolicy:CRUD", "LeaveType:CRUD", "ApprovalLine:CRUD", "DocumentTemplate:CRUD", "Role:RU", "AuditLog:R"],
-    "TA-14": ["Integration:CRUD", "ApiKey:CRUD"],
-    "EM-01": ["Attendance:CR", "Leave:R", "LeaveBalance:R", "Approval:R", "Notification:R"],
+    "TA-14": ["Integration:CRUD", "IntegrationLog:R", "ApiKey:CRUD"],
+    "EM-01": ["Attendance:CR", "Leave:R", "LeaveBalance:R", "Approval:R", "Notification:R", "Document:R"],
     "EM-02": ["Attendance:CR", "AttendanceModification:C", "WorkPolicy:R"],
     "EM-03": ["Leave:C", "LeaveBalance:R", "LeaveType:R", "ApprovalLine:R"],
     "EM-04": ["Leave:R", "LeaveBalance:R", "LeaveType:R"],

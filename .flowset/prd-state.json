@@ -32,8 +32,8 @@
   "current_phase": "0-setup",
   "phases": {
     "0-setup": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15"},
-    "1-prd": {"status": "in_progress", "owner": "claude", "started_at": "2026-05-15"},
-    "2-backlog": {"status": "pending"},
+    "1-prd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.15, "eval_verdict": "PASS", "eval_attempts": 2},
+    "2-backlog": {"status": "in_progress", "owner": "claude", "started_at": "2026-05-15"},
     "3-erd": {"status": "pending"},
     "4-api": {"status": "pending"},
     "5-wireframes": {"status": "pending"},

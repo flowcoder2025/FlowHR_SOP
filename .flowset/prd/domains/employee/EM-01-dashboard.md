@@ -2,7 +2,7 @@
 screen_id: EM-01
 screen_name: 내 대시보드
 role: [employee]
-entities: [Attendance, Leave, LeaveBalance, Approval, Notification]
+entities: [Attendance, Leave, LeaveBalance, Approval, Notification, Document]
 platforms: [web, pwa, desktop_tauri]
 mvp: true
 spec_ref: docs/FlowHR_screen_spec_v_1.md#8-1

@@ -14,12 +14,12 @@
 - [x] WI-chore evaluator 라이트 셋업 (agent + rubric + eval-results/ + 게이트 룰)
 - [x] WI-chore Known Issue Registry 셋업 + eval 임계 8.0 상향 + P0~P3 트리거
 
-## Phase 1 — 개발용 PRD 작성
+## Phase 1 — 개발용 PRD 작성 [✓ PASS 8.15/10]
 
-- [ ] WI-001-docs 개발용 PRD 초안 작성
-- [ ] WI-002-docs 디바이스 매트릭스 정의 (웹/PWA/네이티브)
-- [ ] WI-003-docs 비기능 요구사항 (성능/보안/접근성/i18n)
-- [ ] WI-004-docs 데이터 모델 매트릭스 SSOT 생성 (matrix.json)
+- [x] WI-001-docs 개발용 PRD 초안 작성 (50 파일, ~7000줄)
+- [x] WI-002-docs 디바이스 매트릭스 정의 (Web/PWA/Tauri)
+- [x] WI-003-docs 비기능 요구사항 (성능/보안/접근성/i18n/감사/백업/확장/모니터링)
+- [x] WI-004-docs 데이터 모델 매트릭스 SSOT 생성 (matrix.json, 36 엔티티)
 
 ## Phase 2 — 백로그
 
@@ -73,6 +73,8 @@
 - [ ] WI-028-docs 백업/복구 절차
 - [ ] WI-029-docs 모니터링 / 알림
 
-## Known Issue Batch WI (트리거 도달 시 자동 추가)
+## Known Issue Batch WI
 
-- (트리거 도달 시 `WI-KI-batch-NNN` 형식으로 본 섹션에 추가됨. 현재 활성 0건)
+- [ ] **WI-KI-batch-001 (P2 트리거 도달, 5건)**: KI-001/KI-002/KI-003/KI-008/KI-009 일괄 처리
+  - Phase 2 진입 직후 또는 Phase 2 마무리 시점에 일괄 해소
+  - 사용자 승인 후 진행 (P0 아니므로 자동 승인 X)

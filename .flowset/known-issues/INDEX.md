@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ |
-| P2 Medium | 0 | 5 | ❌ |
-| P3 Low | 0 | 10 | ❌ |
+| P2 Medium | 5 | 5 | ✅ **트리거 도달 — Phase 2 진입 시 batch 진행** |
+| P3 Low | 6 | 10 | ❌ |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -17,7 +17,18 @@
 
 | KI-ID | 심각도 | 발견 Phase | 영역 | 제목 | 출처 | 등록일 | 상태 |
 |-------|--------|-----------|------|------|------|--------|------|
-| (없음) | — | — | — | — | — | — | — |
+| KI-001 | P2 | 1 | API | OP-08 Ticket priority SLA(30분/2h/24h/72h) 알림 트리거 로직 미명세 | evaluator | 2026-05-15 | open |
+| KI-002 | P2 | 1 | ERD | OP-04 본문에 등장하는 `tenant_drafts`는 1차 정정 후 정식 엔티티화 (matrix.json 추가됨) — Phase 3 ERD에서 스키마 확정 | evaluator | 2026-05-15 | scheduled (Phase 3) |
+| KI-003 | P2 | 1 | API | TA-08 결재 단계별 SLA 위반 알림 트리거 (TA-09와 동일 정책 vs 차별화) — Phase 4 API 결정 | evaluator | 2026-05-15 | scheduled (Phase 4) |
+| KI-004 | P3 | 1 | ERD | Attendance.status enum 한글/영문 혼재 — Phase 3 ERD에서 영문 통일 확정 | evaluator | 2026-05-15 | scheduled (Phase 3) |
+| KI-005 | P3 | 1 | Cross-cutting | EmployeeChangeRequest TA-03 변경이력 탭 매핑 보강 검토 (screens_to_entities_map TA-03에 추가됨) — Phase 2 백로그 작성 시 의존성 그래프 확인 | evaluator | 2026-05-15 | scheduled (Phase 2) |
+| KI-006 | P3 | 1 | Tech | 로깅 도구 미확정 (Axiom vs Supabase Logs) — Phase 7 진입 전 결정 | 07-risks D-01 | 2026-05-15 | scheduled (Phase 7) |
+| KI-007 | P3 | 1 | Tech | 부하 테스트 도구 미확정 (k6 vs Artillery) — Phase 8 진입 전 결정 | 07-risks D-02 | 2026-05-15 | scheduled (Phase 8) |
+| KI-008 | P2 | 1 | PRD | 06-mvp-scope.md TA 섹션 헤더(✓10+△4) vs 표(✓11+△3) 분류 미세 차이 (합계 36 정합) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
+| KI-009 | P2 | 1 | PRD | OP-11 frontmatter entities에 BackupJob/ApiKey 누락 (matrix.json screens_to_entities_map은 포함) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
+| KI-010 | P3 | 1 | API | matrix.json TenantDraft.endpoints에 U(PATCH) 메서드 누락 (permissions.U는 정의됨) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
+| KI-011 | P3 | 1 | PRD | 04-data-model.md:200 변경 이력에 "26 엔티티" 잔존 (본문은 36 정정) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
+| KI-012 | P3 | 1 | PRD | 03-tech-architecture.md:23 i18n "en 추후" → v2.0 도입 시점 명시 권장 | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
 
 ## 등록 형식
 

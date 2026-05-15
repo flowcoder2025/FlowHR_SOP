@@ -170,7 +170,7 @@ supabase/migrations/*.sql 변경 → PR → CI에서 dry-run
 
 | 항목 | 추정 비용 |
 |------|---------|
-| Vercel Pro (필요시) | 20$ |
+| Vercel Pro (월 트래픽 100GB 또는 동시 빌드 1+ 초과 시 전환) | 20$ |
 | Supabase Pro | 25$ |
 | Sentry (개발자) | 26$ |
 | GitHub Actions (사용량) | 0$ (무료 한도) |

@@ -3,20 +3,27 @@
 > 본 문서는 PRD 차원의 **엔티티 개요 + 관계도**. 상세 ERD/RLS/마이그레이션은 Phase 3 산출물(`.flowset/db/`).
 > 데이터 모델 SSOT는 `.flowset/spec/matrix.json` (entities 블록).
 
-## 1. 엔티티 카탈로그 (16종)
+## 1. 엔티티 카탈로그 (총 36종)
 
-### 운영사 도메인 (4종)
+> 카운트 정책: `matrix.json.entities` 블록 기준. v1.2+ 도입 예정 엔티티(Signature 등)도 v1.2 슬롯 명시하여 포함.
+
+### 운영사 도메인 (12종)
 | 엔티티 | 한글명 | 용도 |
 |--------|-------|------|
 | `tenants` | 테넌트 | 고객사 마스터 |
-| `tenant_admins` | 테넌트 관리자 매핑 | 운영사 ↔ 고객사 관리자 |
+| `tenant_drafts` | 테넌트 임시저장 | OP-04 마법사 7단계 임시저장 |
 | `subscriptions` | 구독/요금제 | 테넌트별 구독 상태 |
 | `invoices` | 청구서 | 월별 청구 / 세금계산서 / 수납 |
 | `plans` | 요금제 | 플랜 마스터 (기본/프리미엄/커스텀) |
 | `feature_flags` | 기능 플래그 | 글로벌/플랜/테넌트별 기능 ON/OFF |
 | `tickets` | 지원 티켓 | 고객 문의 / 장애 / 요청 |
+| `ticket_messages` | 티켓 응답 스레드 | OP-08 응답/내부메모 |
+| `system_settings` | 운영사 시스템 설정 | OP-11 플랫폼 전역 설정 |
+| `maintenance_windows` | 점검 모드 | OP-11 즉시/예약 점검 |
+| `backup_jobs` | 백업 작업 이력 | OP-11 자동/수동 백업 |
+| `operator_users` | 운영사 사용자 | OP-11 — users 테이블의 role IN (operator_*) 필터 (개념적 분리) |
 
-### 핵심 HR 도메인 (8종)
+### 핵심 HR 도메인 (17종)
 | 엔티티 | 한글명 | 용도 |
 |--------|-------|------|
 | `departments` | 부서 | 조직 트리 (self-ref) |
@@ -35,18 +42,24 @@
 | `certificate_requests` | 증명서 요청 | 재직/경력 증명서 발급 요청 |
 | `notifications` | 알림 | 인앱 알림 (Realtime broadcast) |
 | `audit_logs` | 감사 로그 | 모든 C/U/D/A 이벤트 기록 |
+| `employee_change_requests` | 직원 정보 변경 요청 | EM-09 — HR 승인 필요한 변경 (이름·계좌·가족정보) |
 
-### 회사 설정 도메인 (3종)
+### 회사 설정 / 외부 연동 도메인 (5종)
 | 엔티티 | 한글명 | 용도 |
 |--------|-------|------|
 | `tenant_settings` | 회사 설정 | 근무정책/휴가정책/문서양식 마스터 |
 | `work_policies` | 근무 정책 | 근무시간/근무제/지각기준 |
 | `document_templates` | 문서 양식 | 계약서/증명서 템플릿 |
+| `integrations` | 외부 연동 | 카카오 알림톡 / SMS / Slack / SSO 등 연결 정보 |
+| `integration_logs` | 외부 연동 호출 이력 | TA-14 — 카카오/SMS/Webhook 요청·응답 |
 
-### 외부 연동 도메인 (1종)
+### v1.2 후순위 도메인 (2종)
 | 엔티티 | 한글명 | 용도 |
 |--------|-------|------|
-| `integrations` | 외부 연동 | 카카오 알림톡 / SMS / Slack / SSO 등 연결 정보 |
+| `signatures` | 전자서명 | TA-11 v1.2 — 외부 인증사업자 연동 결과 |
+| `api_keys` | API 키 | TA-14 (테넌트) + OP-11 (운영사) — 외부 도구 인증 |
+
+> **카운트 검증**: 운영사 12 + HR 17 + 회사설정/연동 5 + v1.2 2 = **36종** (matrix.json `entities_total: 36`과 일치).
 
 ## 2. 핵심 관계 (Mermaid)
 
@@ -166,18 +179,17 @@ draft → pending → approved → completed (휴가 사용 후)
 
 ## 7. matrix.json 채움 계획
 
-Phase 1.5에서 다음 entities를 `matrix.json.entities`에 채움:
+`matrix.json.entities` 블록에 채워진 엔티티 (총 36종):
 
-```
-Tenant, Subscription, Invoice, Plan, FeatureFlag, Ticket,
-Department, Employee, User, Role,
-Attendance, AttendanceModification,
-Leave, LeaveBalance, LeaveType,
-Approval, ApprovalStep, ApprovalLine,
-Document, CertificateRequest, DocumentTemplate,
-Notification, AuditLog,
-TenantSetting, WorkPolicy, Integration
-```
+**운영사 도메인 (12)**: Tenant, TenantDraft, Subscription, Invoice, Plan, FeatureFlag, Ticket, TicketMessage, SystemSetting, MaintenanceWindow, BackupJob, OperatorUser
+
+**HR 도메인 (17)**: Department, Employee, User, Role, Attendance, AttendanceModification, Leave, LeaveBalance, LeaveType, Approval, ApprovalStep, ApprovalLine, Document, CertificateRequest, Notification, AuditLog, EmployeeChangeRequest
+
+**회사 설정 / 연동 (5)**: TenantSetting, WorkPolicy, DocumentTemplate, Integration, IntegrationLog
+
+**v1.2 후순위 (2)**: Signature, ApiKey
+
+> 합계: 12+17+5+2 = **36종**. matrix.json `entities_total: 36`과 일치.
 
 각 엔티티의 필드는 본 PRD 요약 + Phase 3 ERD에서 상세화.
 
