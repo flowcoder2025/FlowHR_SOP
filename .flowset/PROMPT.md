@@ -72,12 +72,16 @@ evaluator 결과를 받으면:
 
 batch WI 처리 후 영향 영역 evaluator 재호출 → PASS 확인 → archive 이동.
 
-## 와이어프레임 단계 처리 방식 (5단계)
+## 와이어프레임 단계 처리 방식 (5단계) — 2026-05-15 정책 변경
 
-1. Claude가 36개 화면별 이미지 프롬프트를 `.flowset/wireframes/prompts/{화면ID}.md`로 작성
-2. `mcp__codex__codex` 호출하여 이미지 생성 → `.flowset/wireframes/images/{화면ID}.png`
-3. Claude가 생성 이미지를 읽고 `.flowset/wireframes/analysis/{화면ID}.md`에 컴포넌트/필드/액션/검증 규칙을 정리
-4. 정리된 와이어프레임은 7단계(개발)에서 컴포넌트 구현 시 직접 참조
+> **이전 정책 (폐기)**: Codex 이미지 생성 → Claude 분석. 한글 가독성·픽셀 정확도·비용 문제로 폐기.
+> **현행 정책**: Claude가 직접 HTML 와이어프레임 작성. 자세한 정책은 `.flowset/wireframes/README.md`.
+
+1. Claude가 PRD `domains/.../{화면ID}-*.md` §3/§4/§5/§6을 SSOT로 1:1 매핑 체크리스트로 검증
+2. `.flowset/wireframes/html/{화면ID}.html` 작성 (Tailwind + shadcn 패턴, Lucide outline 아이콘)
+3. 공통 자산은 `_design-tokens.css` / `_icons.svg` 공유
+4. `.flowset/wireframes/analysis/{화면ID}.md`에 컴포넌트 분해 / 인터랙션 / 반응형 / 접근성 정리
+5. 정리된 와이어프레임은 7단계(개발)에서 React 컴포넌트 변환 시 그대로 활용
 
 ## 사용자 확정 필요 사항 (Phase 1 진입 전)
 

@@ -38,11 +38,15 @@
 - [x] WI-011-docs OpenAPI 스켈레톤 (conventions + schemas + zod)
 - [x] WI-012-docs 도메인별 엔드포인트 명세 (인증/운영사/관리자/직원/공통/cron 약 280)
 
-## Phase 5 — 와이어프레임 (Codex 이미지 → 분석)
+## Phase 5 — 와이어프레임 [🛑 중단, 정책 변경 2026-05-15]
 
-- [ ] WI-013-docs 36개 화면 이미지 프롬프트 작성
-- [ ] WI-014-docs Codex 이미지 생성 (배치)
-- [ ] WI-015-docs 와이어프레임 분석 정리 (컴포넌트/필드/액션)
+> **정책 변경**: Codex 이미지 생성 폐기 → HTML 직접 작성 단일 채택. 자세한 사유는 HANDOFF.md.
+
+- [~] ~~WI-013-docs 36개 화면 이미지 프롬프트 작성~~ (폐기, archive 이동)
+- [~] ~~WI-014-docs Codex 이미지 생성 (배치)~~ (폐기)
+- [ ] WI-013-docs HTML 와이어프레임 36~42 작성 (Tailwind + shadcn 패턴) — WI-KI-batch-003 완료 후
+- [ ] WI-014-docs analysis/*.md 컴포넌트 분해 / 인터랙션 / 반응형 / 접근성 정리
+- [ ] WI-015-docs Phase 5 evaluator (doc 모드) — 보강 검증 축으로 재호출
 
 ## Phase 6 — MVP 스프린트 계획
 
@@ -80,3 +84,7 @@
 - [x] **WI-KI-batch-002 (Phase 4 정합 정리, 4건 해소)**: KI-021/022/024/026 (2026-05-15)
   - KI-023(v1.2)/KI-025(Phase 10) deferred 등록
   - 아카이브: `.flowset/known-issues/archive/2026-05-15-batch-002.md`
+- [ ] **WI-KI-batch-003 (PRD 누락 결함 P1 5건 보강, HANDOFF 작업 4~7)**: KI-027/028/029/030/031
+  - 신규 세션에서 진행. HANDOFF.md 작업 체크리스트 따름.
+  - 작업: 09-routing.md 신규 / CM-16~19 추가 / OP-12 추가 / 약관·PWA설치 정적 페이지 추가 / evaluator.md 보강
+  - 완료 후: Phase 1~4 retroactive 재평가 (8.0+ 유지) + Phase 5 HTML 와이어프레임 재시작

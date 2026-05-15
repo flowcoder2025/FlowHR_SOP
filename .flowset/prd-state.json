@@ -36,7 +36,7 @@
     "2-backlog": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.29, "eval_verdict": "PASS", "eval_attempts": 2},
     "3-erd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.68, "eval_verdict": "PASS", "eval_attempts": 1},
     "4-api": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.78, "eval_verdict": "PASS", "eval_attempts": 1},
-    "5-wireframes": {"status": "in_progress", "owner": "claude", "started_at": "2026-05-15"},
+    "5-wireframes": {"status": "blocked", "owner": "next-session", "started_at": "2026-05-15", "blocked_by": "PRD 누락 결함 (KI-027~031). HANDOFF.md 작업 6~10 완료 후 재시작.", "policy_change": "Codex 이미지 폐기, HTML 직접 작성 단일 채택"},
     "6-sprint-plan": {"status": "pending"},
     "7-dev-kickoff": {"status": "pending"},
     "8-qa": {"status": "pending"},

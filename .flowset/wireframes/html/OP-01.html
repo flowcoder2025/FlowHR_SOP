@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-01 운영사 대시보드</title>
+<link rel="stylesheet" href="_design-tokens.css">
+<link rel="stylesheet" href="_icons.css">
+<style>
+  .kpi-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 20px; }
+  .chart-row { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .activity-row { display: grid; grid-template-columns: 1.2fr 1.2fr 1fr; gap: 16px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-header h3 { font-size: 14px; font-weight: 600; }
+  .section-header .link { font-size: 12px; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-success); display: inline-block; margin-right: 6px; }
+  .kpi-label .ico { width: 16px; height: 16px; opacity: 0.65; }
+  .sidebar-item .ico { width: 18px; height: 18px; }
+</style>
+</head>
+<body>
+
+<!-- 아이콘 sprite (인라인) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></symbol>
+  <symbol id="i-credit-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M15 8h-5"/><path d="M15 12h-5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+  <symbol id="i-trending-up" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+</svg>
+
+<div class="app-shell">
+
+  <!-- 사이드바 -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">FlowHR</div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item active"><svg class="ico"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div style="padding: 16px 24px; font-size: 11px; color: rgba(255,255,255,0.4);">v1.0.0 · 운영사 환경</div>
+  </nav>
+
+  <!-- 메인 -->
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">운영사 대시보드</h1>
+      <div class="header-search">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <input placeholder="회사명 / 사업자번호 / 도메인 검색" />
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary"><svg class="ico"><use href="#i-calendar"/></svg>이번달<svg class="ico ico-sm"><use href="#i-chevron-down"/></svg></button>
+        <button class="btn btn-secondary"><svg class="ico"><use href="#i-credit-card"/></svg>전체 요금제<svg class="ico ico-sm"><use href="#i-chevron-down"/></svg></button>
+        <button class="btn btn-secondary"><svg class="ico"><use href="#i-building"/></svg>전체 상태<svg class="ico ico-sm"><use href="#i-chevron-down"/></svg></button>
+        <div class="bell"><svg class="ico"><use href="#i-bell"/></svg><span class="bell-badge">3</span></div>
+        <div class="avatar">김</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- 액션 영역 (PRD §4) -->
+      <section style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <div style="font-size: 13px; color: var(--color-text-muted);">2026-05-15 · 마지막 갱신 1분 전</div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary"><svg class="ico"><use href="#i-ticket"/></svg>티켓 보기</button>
+          <button class="btn btn-secondary"><svg class="ico"><use href="#i-receipt"/></svg>청구 보기</button>
+          <button class="btn btn-secondary"><svg class="ico"><use href="#i-download"/></svg>리포트 다운로드</button>
+          <button class="btn btn-primary"><svg class="ico"><use href="#i-plus"/></svg>신규 테넌트 등록</button>
+        </div>
+      </section>
+
+      <section class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico"><use href="#i-building"/></svg>전체 테넌트</div>
+          <div class="kpi-value">47</div>
+          <div class="kpi-sub">활성 42 / 비활성 5</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico"><use href="#i-check-circle"/></svg>활성 테넌트</div>
+          <div class="kpi-value">42</div>
+          <div class="kpi-delta up"><svg class="ico ico-sm"><use href="#i-arrow-up"/></svg>+3 (이번달)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico"><use href="#i-users"/></svg>총 사용자</div>
+          <div class="kpi-value">1,247<span style="font-size: 14px; color: var(--color-text-muted);">명</span></div>
+          <div class="kpi-delta up"><svg class="ico ico-sm"><use href="#i-arrow-up"/></svg>+82 (전월 대비)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico"><use href="#i-trending-up"/></svg>MRR</div>
+          <div class="kpi-value">₩3,117,500</div>
+          <div class="kpi-delta up"><svg class="ico ico-sm"><use href="#i-arrow-up"/></svg>+₩205,000</div>
+        </div>
+        <div class="kpi-card" style="border-color: var(--color-warning-bg);">
+          <div class="kpi-label"><svg class="ico"><use href="#i-alert"/></svg>미수금</div>
+          <div class="kpi-value" style="color: var(--color-warning);">₩412,500</div>
+          <div class="kpi-sub"><span class="badge danger">2건</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico"><use href="#i-ticket"/></svg>오픈 티켓</div>
+          <div class="kpi-value">8<span style="font-size: 14px; color: var(--color-text-muted);">건</span></div>
+          <div class="kpi-sub"><span class="badge warning">SLA 임박 2건</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico"><use href="#i-activity"/></svg>시스템 상태</div>
+          <div class="kpi-value" style="font-size: 18px; padding-top: 6px;"><span class="status-dot"></span>정상</div>
+          <div class="kpi-sub">Supabase · Vercel</div>
+        </div>
+      </section>
+
+      <section class="chart-row">
+        <div class="card">
+          <div class="section-header"><h3>월별 MRR 추이</h3><span class="link">상세 보기<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <svg viewBox="0 0 400 180" style="width: 100%; height: 200px;" preserveAspectRatio="none">
+            <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/></linearGradient></defs>
+            <polyline fill="none" stroke="#3B82F6" stroke-width="2.5" points="20,140 60,128 100,118 140,108 180,98 220,84 260,72 300,58 340,46 380,32"/>
+            <polygon fill="url(#g1)" points="20,140 60,128 100,118 140,108 180,98 220,84 260,72 300,58 340,46 380,32 380,180 20,180"/>
+            <g font-size="9" fill="#9CA3AF"><text x="20" y="170">'25-06</text><text x="100" y="170">'25-09</text><text x="180" y="170">'25-12</text><text x="260" y="170">'26-03</text><text x="340" y="170">'26-05</text></g>
+          </svg>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>신규 / 해지 테넌트</h3><span class="link">상세<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <svg viewBox="0 0 400 180" style="width: 100%; height: 200px;">
+            <rect x="30" y="55" width="40" height="40" fill="#10B981" rx="2"/><rect x="90" y="50" width="40" height="45" fill="#10B981" rx="2"/><rect x="150" y="40" width="40" height="55" fill="#10B981" rx="2"/><rect x="210" y="45" width="40" height="50" fill="#10B981" rx="2"/><rect x="270" y="35" width="40" height="60" fill="#10B981" rx="2"/><rect x="330" y="30" width="40" height="65" fill="#10B981" rx="2"/>
+            <line x1="20" y1="95" x2="385" y2="95" stroke="#E5E7EB"/>
+            <rect x="30" y="95" width="40" height="20" fill="#EF4444" rx="2"/><rect x="90" y="95" width="40" height="15" fill="#EF4444" rx="2"/><rect x="150" y="95" width="40" height="25" fill="#EF4444" rx="2"/><rect x="210" y="95" width="40" height="18" fill="#EF4444" rx="2"/><rect x="270" y="95" width="40" height="22" fill="#EF4444" rx="2"/><rect x="330" y="95" width="40" height="20" fill="#EF4444" rx="2"/>
+            <g font-size="9" fill="#9CA3AF" text-anchor="middle"><text x="50" y="135">12월</text><text x="110" y="135">1월</text><text x="170" y="135">2월</text><text x="230" y="135">3월</text><text x="290" y="135">4월</text><text x="350" y="135">5월</text></g>
+            <g font-size="10"><rect x="20" y="155" width="10" height="10" fill="#10B981"/><text x="35" y="164" fill="#6B7280">신규</text><rect x="80" y="155" width="10" height="10" fill="#EF4444"/><text x="95" y="164" fill="#6B7280">해지</text></g>
+          </svg>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>요금제 분포</h3></div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <svg viewBox="0 0 100 100" style="width: 130px; height: 130px;">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="16"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" stroke-width="16" stroke-dasharray="150.8 251.3" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#10B981" stroke-width="16" stroke-dasharray="87.9 251.3" stroke-dashoffset="-150.8" transform="rotate(-90 50 50)"/>
+              <text x="50" y="48" text-anchor="middle" font-size="9" fill="#6B7280">합계</text>
+              <text x="50" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#111827">42</text>
+            </svg>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 8px; line-height: 1.6;">
+              <div><span style="display:inline-block;width:8px;height:8px;background:#3B82F6;border-radius:2px;"></span> 기본 60%</div>
+              <div><span style="display:inline-block;width:8px;height:8px;background:#10B981;border-radius:2px;"></span> 프리미엄 35%</div>
+              <div><span style="display:inline-block;width:8px;height:8px;background:#F59E0B;border-radius:2px;"></span> 커스텀 5%</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>티켓 유형 (30일)</h3></div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <svg viewBox="0 0 100 100" style="width: 130px; height: 130px;">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="16"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" stroke-width="16" stroke-dasharray="125.6 251.3" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#EF4444" stroke-width="16" stroke-dasharray="50.3 251.3" stroke-dashoffset="-125.6" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#F59E0B" stroke-width="16" stroke-dasharray="62.8 251.3" stroke-dashoffset="-175.9" transform="rotate(-90 50 50)"/>
+              <text x="50" y="48" text-anchor="middle" font-size="9" fill="#6B7280">총</text>
+              <text x="50" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#111827">32</text>
+            </svg>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 8px; line-height: 1.6;">
+              <div><span style="display:inline-block;width:8px;height:8px;background:#3B82F6;border-radius:2px;"></span> 문의 50%</div>
+              <div><span style="display:inline-block;width:8px;height:8px;background:#EF4444;border-radius:2px;"></span> 장애 20%</div>
+              <div><span style="display:inline-block;width:8px;height:8px;background:#F59E0B;border-radius:2px;"></span> 요청 25%</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="activity-row">
+        <div class="card">
+          <div class="section-header"><h3>최근 가입 테넌트</h3><span class="link">전체<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <table class="table">
+            <thead><tr><th>회사명</th><th>플랜</th><th>가입일</th><th>직원</th><th>상태</th></tr></thead>
+            <tbody>
+              <tr><td>(주)치킨매니아</td><td>기본</td><td>05-14</td><td>32명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td>(주)테크스타트</td><td>프리미엄</td><td>05-12</td><td>78명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td>(주)디자인스튜디오</td><td>기본</td><td>05-10</td><td>15명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td>(주)카페오너스</td><td>기본</td><td>05-08</td><td>22명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td>(주)이커머스랩</td><td>커스텀</td><td>05-05</td><td>112명</td><td><span class="badge info">수습</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>최근 티켓</h3><span class="link">전체<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <table class="table">
+            <thead><tr><th>티켓번호</th><th>회사</th><th>제목</th><th>우선순위</th><th>SLA</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0042</td><td>(주)테크스타트</td><td>출퇴근 기록 오류</td><td><span class="badge danger">P1</span></td><td style="color: var(--color-warning);">1h 24m</td></tr>
+              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0041</td><td>(주)치킨매니아</td><td>휴가 잔여 문의</td><td><span class="badge info">P3</span></td><td>48h</td></tr>
+              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0040</td><td>(주)디자인스튜디오</td><td>급여명세서 미수신</td><td><span class="badge warning">P2</span></td><td>12h</td></tr>
+              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0039</td><td>(주)이커머스랩</td><td>SSO 연동 요청</td><td><span class="badge info">P3</span></td><td>56h</td></tr>
+              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0038</td><td>(주)카페오너스</td><td>대시보드 차트 오류</td><td><span class="badge warning">P2</span></td><td>18h</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>최근 시스템 이벤트</h3><span class="link">감사 로그<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <table class="table">
+            <thead><tr><th>시각</th><th>이벤트</th><th>결과</th></tr></thead>
+            <tbody>
+              <tr><td>10:45</td><td>테넌트 생성: (주)치킨매니아</td><td><span class="badge success">성공</span></td></tr>
+              <tr><td>10:32</td><td>로그인 시도: kim@startup.com</td><td><span class="badge success">성공</span></td></tr>
+              <tr><td>10:18</td><td>플랜 변경: (주)테크스타트</td><td><span class="badge success">성공</span></td></tr>
+              <tr><td>09:55</td><td>로그인 5회 실패: lee@cafe.com</td><td><span class="badge danger">차단</span></td></tr>
+              <tr><td>09:42</td><td>인보이스 발행 배치</td><td><span class="badge success">42건</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -45,3 +45,4 @@ coverage/
 # FlowSet 라이트 — 로컬 임시
 .flowset/wireframes/images/*.tmp.png
 .flowset/.local/
+.claude/settings.local.json

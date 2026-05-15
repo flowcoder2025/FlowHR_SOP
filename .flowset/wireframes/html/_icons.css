@@ -1,0 +1,6 @@
+/* FlowHR — Lucide 스타일 outline 아이콘 공통 클래스 */
+.ico { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; fill: none; vertical-align: -3px; }
+.ico-sm { width: 14px; height: 14px; }
+.ico-md { width: 18px; height: 18px; }
+.ico-lg { width: 22px; height: 22px; }
+.ico-xl { width: 28px; height: 28px; }

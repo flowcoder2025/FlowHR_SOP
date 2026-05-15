@@ -16,13 +16,15 @@
 
 ## 필수 시작 절차
 
-새 세션 / 신규 작업 시작 시 반드시 다음 파일을 읽고 진입:
+새 세션 / 신규 작업 시작 시 반드시 다음 파일을 **순서대로** 읽고 진입:
 
-1. `.flowset/PROMPT.md` — 진행 지시서
-2. `.flowset/requirements.md` — 사용자 원본 요구사항 SSOT
-3. `.flowset/guardrails.md` — 누적 가드레일
-4. `.flowset/prd-state.json` — 현재 Phase 상태
-5. `.flowset/fix_plan.md` — WI 트래킹
+1. **`.flowset/HANDOFF.md`** — Phase 5 진입 전 게이트 (2026-05-15 작성, PRD 결함 발견 후) — **신규 세션 첫 작업**
+2. `.flowset/PROMPT.md` — 진행 지시서
+3. `.flowset/requirements.md` — 사용자 원본 요구사항 SSOT
+4. `.flowset/guardrails.md` — 누적 가드레일
+5. `.flowset/prd-state.json` — 현재 Phase 상태
+6. `.flowset/fix_plan.md` — WI 트래킹
+7. `.flowset/known-issues/INDEX.md` — KI 현황
 
 ## 핵심 디렉토리
 

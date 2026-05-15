@@ -1,0 +1,26 @@
+FlowHR HR SaaS "OP-01 운영사 대시보드" 화면을 자체 image_gen 이미지 생성 모델로 1장 생성.
+
+[디자인 시스템 학습 — 스타일만, 컨텐츠 복제 금지]
+다음 워크스페이스 내부 참고 이미지의 색상 팔레트(네이비 #1E3A8A 사이드바, 흰 배경, 블루 #3B82F6 액센트), 카드 형태, 한글 라벨 톤을 학습:
+- .flowset/wireframes/_design-refs/ref-01.png
+- .flowset/wireframes/_design-refs/ref-02.png
+- .flowset/wireframes/_design-refs/ref-03.png
+
+[컨텐츠 SSOT — 반드시 읽고 따를 것]
+- C:\dev\FlowHR_SOP\.flowset\wireframes\prompts\OP-01.md
+- C:\dev\FlowHR_SOP\.flowset\wireframes\prompts\_common-style.md
+
+[필수 화면 요소]
+- 좌측 네이비 사이드바(240px): FlowHR 로고 상단 + 메뉴(대시보드 active / 테넌트 / 구독·요금제 / 청구·정산 / 기능 권한 / 지원 티켓 / 감사 로그 / 운영 리포트 / 시스템 설정)
+- 상단 헤더(56px): "운영사 대시보드" 타이틀 + 검색창 + 알림 벨(배지 3) + 사용자 아바타
+- 메인: KPI 카드 7개(전체 테넌트 47 / 활성 42 / 총 사용자 1,247명 / MRR ₩3,117,500 / 미수금 ₩412,500 / 오픈 티켓 8건 / 시스템 상태 정상)
+- 차트 4개(월별 MRR 라인 / 신규·해지 바 / 요금제 도넛 / 티켓 유형 도넛)
+- 최근 활동 3섹션(최근 가입 테넌트 / 최근 티켓 / 최근 시스템 이벤트)
+
+[출력]
+- 1440x900 16:9 가로 PNG
+- 한글 UI 라벨 정확
+- 저장: C:\dev\FlowHR_SOP\.flowset\wireframes\images\OP-01.png
+
+[완료 보고]
+파일 절대 경로 + 사용 모델 + 토큰 수.
