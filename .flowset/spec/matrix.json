@@ -1,6 +1,6 @@
 {
   "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1에서 채움. 36 엔티티 × 6 역할 × CRUD. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md.",
-  "_count_policy": "screens_mvp 카운트는 ✓ (완전 포함) + △ (단순화 포함) 합산. 본 PRD 기준 ✓ 27 + △ 9 = 36 (전 화면 MVP 진입 가능, 단 △ 9개는 v1.1까지 단순화 버전).",
+  "_count_policy": "screens_mvp 카운트는 ✓ (완전 포함) + △ (단순화 포함) 합산. 06-mvp-scope.md 표가 SSOT — ✓ 30 + △ 6 = 36 (전 화면 MVP 진입 가능, △ 6개는 v1.1까지 단순화 버전): OP-06/OP-10/TA-11/TA-12/TA-14/EM-11.",
   "schema_version": "v2",
   "class": "code",
   "project": "FlowHR",
@@ -20,8 +20,9 @@
     "employee"
   ],
   "screens_total": 36,
-  "screens_mvp_full": 27,
-  "screens_mvp_partial": 9,
+  "screens_mvp_full": 30,
+  "screens_mvp_partial": 6,
+  "screens_mvp_partial_list": ["OP-06", "OP-10", "TA-11", "TA-12", "TA-14", "EM-11"],
   "screens_mvp_total": 36,
   "entities_total": 36,
   "entities": {
@@ -669,6 +670,7 @@
       "endpoints": {
         "C": "POST /api/v1/operator/tenants/drafts",
         "R": "GET /api/v1/operator/tenants/drafts/:draftId",
+        "U": "PATCH /api/v1/operator/tenants/drafts/:draftId",
         "D": "DELETE /api/v1/operator/tenants/drafts/:draftId"
       },
       "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}

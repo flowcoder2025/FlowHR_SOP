@@ -20,7 +20,7 @@
 | Realtime | Supabase Realtime | latest | 알림 / 결재 진행 |
 | 인증 | Supabase Auth | latest | 이메일/비밀번호 + TOTP 2FA + 매직링크 |
 | 파일 저장 | Supabase Storage | latest | 테넌트별 prefix `tenants/{tenantId}/` |
-| i18n | next-intl | 3.x | ko 기본, en 추후 |
+| i18n | next-intl | 3.x | ko 기본, en은 v2.0 글로벌 진출 시 도입 (인프라는 MVP에 미리 구축) |
 | 데스크톱 앱 | Tauri | 2.x | Rust 1.78+, WebView |
 | 모노레포 | pnpm workspaces + Turborepo | 8.x / 2.x | 캐시 + 병렬 |
 | 테스트 (단위) | Vitest | 1.x | + Testing Library |

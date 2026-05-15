@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ |
-| P2 Medium | 5 | 5 | ✅ **트리거 도달 — Phase 2 진입 시 batch 진행** |
-| P3 Low | 6 | 10 | ❌ |
+| P2 Medium | 3 | 5 | ❌ (KI-batch-001로 2건 해소, 잔존 3건은 Phase 3/4 결합) |
+| P3 Low | 3 | 10 | ❌ (KI-batch-001로 3건 해소) |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -24,11 +24,11 @@
 | KI-005 | P3 | 1 | Cross-cutting | EmployeeChangeRequest TA-03 변경이력 탭 매핑 보강 검토 (screens_to_entities_map TA-03에 추가됨) — Phase 2 백로그 작성 시 의존성 그래프 확인 | evaluator | 2026-05-15 | scheduled (Phase 2) |
 | KI-006 | P3 | 1 | Tech | 로깅 도구 미확정 (Axiom vs Supabase Logs) — Phase 7 진입 전 결정 | 07-risks D-01 | 2026-05-15 | scheduled (Phase 7) |
 | KI-007 | P3 | 1 | Tech | 부하 테스트 도구 미확정 (k6 vs Artillery) — Phase 8 진입 전 결정 | 07-risks D-02 | 2026-05-15 | scheduled (Phase 8) |
-| KI-008 | P2 | 1 | PRD | 06-mvp-scope.md TA 섹션 헤더(✓10+△4) vs 표(✓11+△3) 분류 미세 차이 (합계 36 정합) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
-| KI-009 | P2 | 1 | PRD | OP-11 frontmatter entities에 BackupJob/ApiKey 누락 (matrix.json screens_to_entities_map은 포함) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
-| KI-010 | P3 | 1 | API | matrix.json TenantDraft.endpoints에 U(PATCH) 메서드 누락 (permissions.U는 정의됨) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
-| KI-011 | P3 | 1 | PRD | 04-data-model.md:200 변경 이력에 "26 엔티티" 잔존 (본문은 36 정정) | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
-| KI-012 | P3 | 1 | PRD | 03-tech-architecture.md:23 i18n "en 추후" → v2.0 도입 시점 명시 권장 | evaluator attempt 2 | 2026-05-15 | open (Phase 2 batch) |
+| ~~KI-008~~ | P2 | 1 | PRD | ~~06-mvp-scope.md TA 섹션 분류 차이~~ | — | — | **resolved (batch-001)** |
+| ~~KI-009~~ | P2 | 1 | PRD | ~~OP-11 frontmatter entities 누락~~ | — | — | **resolved (batch-001)** |
+| ~~KI-010~~ | P3 | 1 | API | ~~matrix.json TenantDraft.endpoints U 누락~~ | — | — | **resolved (batch-001)** |
+| ~~KI-011~~ | P3 | 1 | PRD | ~~04-data-model.md 변경 이력 "26 엔티티" 잔존~~ | — | — | **resolved (batch-001)** |
+| ~~KI-012~~ | P3 | 1 | PRD | ~~03-tech-architecture.md i18n "en 추후"~~ | — | — | **resolved (batch-001)** |
 
 ## 등록 형식
 

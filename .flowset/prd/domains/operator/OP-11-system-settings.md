@@ -2,7 +2,7 @@
 screen_id: OP-11
 screen_name: 시스템 설정
 role: [operator_super, operator_staff]
-entities: [SystemSetting, OperatorUser, MaintenanceWindow]
+entities: [SystemSetting, OperatorUser, MaintenanceWindow, BackupJob, ApiKey]
 platforms: [web, desktop_tauri]
 mvp: true
 spec_ref: docs/FlowHR_screen_spec_v_1.md#6-11
