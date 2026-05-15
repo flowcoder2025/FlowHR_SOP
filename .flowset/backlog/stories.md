@@ -515,7 +515,9 @@
 | EP-10 | 5 | 34 |
 | EP-11 | 5 | 20 |
 | EP-12 | 8 | 38 |
-| **합계** | **72 Story** | **379 SP** |
+| **합계 (Phase 2)** | **72 Story** | **379 SP** |
+| EP-01·12 (KI-027~030 batch-003) | 8 (ST-073~080) | 36 |
+| **합계 (보강 후)** | **80 Story** | **415 SP** |
 
 ## MVP P0 그룹 (Sprint 1~6 대상)
 
@@ -529,8 +531,111 @@
 
 - EP-10 (ST-056/057) + ST-061/067 = 4 Story / 약 20 SP
 
+---
+
+## EP-01·12 보강 — 라우팅·전역 컴포넌트·정적 페이지 (KI-027~030 batch-003)
+
+신규 8 Story. PRD 보강(`prd/09-routing.md`, `prd/domains/common.md`, `prd/domains/operator/OP-12-profile.md`)과 1:1 매핑.
+
+### ST-073 (CM-16, all roles) 헤더 프로필 드롭다운 [P1]
+> As a 모든 인증 사용자
+> I want to 헤더 우측 아바타 클릭 시 프로필/보안/도움말/로그아웃 메뉴
+> So that 자주 쓰는 액션에 1클릭으로 접근
+
+- **Acceptance**: PRD common.md CM-16 §수용 기준 (역할별 메뉴 매트릭스 + 로그아웃 audit)
+- **API**: `GET /api/v1/me/profile`, `POST /api/v1/auth/logout`
+- **추정**: 3 SP
+
+### ST-074 (CM-17, all roles) 헤더 알림 종 미니 드롭다운 [P1]
+> As a 모든 인증 사용자
+> I want to 헤더 종 클릭 시 최근 10건 알림 + 미읽음 배지
+> So that 알림 도착 시 즉시 인지·이동
+
+- **Acceptance**:
+  - AC-1: Realtime 신규 알림 ≤ 2초 배지 갱신
+  - AC-2: 항목 클릭 → 관련 화면 + 자동 읽음
+  - AC-3: 미읽음 100건 초과 시 "99+"
+  - AC-4: "전체 보기" → CM-07
+- **API**: `GET /api/v1/me/notifications?limit=10`, `GET /unread-count`, `POST /mark-all-read`
+- **추정**: 3 SP
+
+### ST-075 (CM-18, all roles) 헤더 검색 (MVP 안내) [P3]
+> As a 모든 인증 사용자
+> I want to 헤더 검색바 클릭 시 v1.1 안내 + 화면별 필터 안내
+> So that 미래 기능 인지 + 현재 대안 사용
+
+- **Acceptance**:
+  - AC-1: 검색바 노출 (≥ 1024px), 모바일은 숨김
+  - AC-2: 클릭/포커스 시 "v1.1 출시 예정" 토스트
+- **API**: 없음 (MVP)
+- **추정**: 1 SP
+
+### ST-076 (CM-19, all roles) 헤더 도움말 패널 [P2]
+> As a 모든 인증 사용자
+> I want to ? 클릭 시 현재 화면 도움말 + FAQ + 문의 단축
+> So that 화면별 가이드와 운영팀 문의 1클릭
+
+- **Acceptance**:
+  - AC-1: screen_id 기반 매핑 (TA-09 등)
+  - AC-2: "운영팀 문의" → OP-08 신규 티켓 모달
+  - AC-3: "투어 다시 보기" → CM-22 재실행
+- **API**: `GET /api/v1/help/screen/:id`, `GET /api/v1/help/faq`, `POST /api/v1/help/contact-ticket`
+- **추정**: 3 SP
+
+### ST-077 (CM-20, mobile users) PWA 설치 가이드 [P1]
+> As a 모바일 사용자 (iOS/Android)
+> I want to 첫 진입 시 PWA 설치 가이드 + 디바이스별 안내
+> So that 푸시 알림 + 홈 아이콘으로 빠른 접근
+
+- **Acceptance**:
+  - AC-1: iOS 16.4+ 분기, 미만 시 안내 + Tauri 다운로드 CTA
+  - AC-2: 이미 standalone 모드 → 자동 dismiss
+  - AC-3: 닫기 시 30일 재표시 방지
+  - AC-4: 설치 이벤트 추적 (08-success-metrics PWA 설치율 ≥ 30%)
+- **API**: `POST /api/v1/me/pwa-install-event`
+- **추정**: 5 SP
+
+### ST-078 (CM-21, all users + operator_super) 약관/개인정보 + 동의 이력 [P0]
+> As a 사용자 (개인정보보호법 준수)
+> I want to 약관·개인정보처리방침 조회 + 신규 버전 강제 동의
+> So that PIPA §15/§29 컴플라이언스 충족
+
+- **Acceptance**:
+  - AC-1: 비로그인도 푸터 링크로 활성 버전 조회 가능
+  - AC-2: 신규 버전 게시 시 다음 로그인에서 강제 동의 가드 (`must_accept=true`)
+  - AC-3: user_consents INSERT (version + ip + ua + source)
+  - AC-4: operator_super가 신규 버전 게시 시 기존 active → false 트랜잭션
+  - AC-5: 운영사 감사 화면에서 동의 통계 + 이력 조회
+- **API**: `GET /api/v1/legal/documents`, `POST /api/v1/me/consents`, `GET /me/consents/required`, `POST /api/v1/operator/legal/documents`
+- **추정**: 8 SP
+
+### ST-079 (CM-22, all roles 첫 로그인) 첫 사용자 온보딩 투어 [P2]
+> As a 첫 로그인 사용자
+> I want to 역할별 4단계 투어 모달
+> So that 핵심 화면을 즉시 학습
+
+- **Acceptance**:
+  - AC-1: `first_login_at IS NULL` 시 자동 시작
+  - AC-2: 역할별 4단계 (operator/tenant_super/manager/employee 분기)
+  - AC-3: 종료 시 `PATCH /me/profile { firstLoginAt }`
+  - AC-4: "건너뛰기" → audit_logs (action=onboarding_skipped)
+  - AC-5: 다시 보기는 CM-19 도움말 + EM-09/OP-12에서
+- **API**: `PATCH /api/v1/me/profile`, `POST /api/v1/me/onboarding/event`
+- **추정**: 5 SP
+
+### ST-080 (OP-12, operator_*) 운영사 본인 프로필 + 보안 [P1]
+> As a 운영사 사용자
+> I want to 본인 프로필·2FA·세션·알림·활동 관리
+> So that 직원 EM-09 동등 + 운영사 보안 강화
+
+- **Acceptance**: PRD operator/OP-12-profile.md §8 Gherkin 4 시나리오 인용 (강제 2FA + super가 staff 강제 종료 + 마지막 super 보호 + 활동 다운로드)
+- **API**: OP-12 §7의 13 엔드포인트 (`PATCH /me/profile`, `POST /me/security/*`, `POST /operator/users/:id/force-logout`, `GET /me/audit-logs?days=30`, `GET /me/consents`)
+- **추정**: 8 SP
+
 ## 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 69 Story / 366 SP | Phase 2 진입 |
+| 2026-05-15 | 72 Story / 379 SP (Phase 2 attempt 2 후 정정) | evaluator |
+| 2026-05-15 | ST-073~080 추가 (8 Story / 36 SP) — 합계 80 Story / 415 SP | KI-027~030 batch-003 |
