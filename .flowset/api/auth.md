@@ -1,6 +1,20 @@
-# Auth API (CM-01~05)
+# Auth API (CM-01~05) + 세션 / 라우팅 가드
 
 > Supabase Auth wrapper. JWT custom claims + 2FA TOTP + 잠금 정책.
+> 2026-05-15 (KI-027/029 batch-003): 세션 관리(자기/타 운영사) + 라우팅 진입점 매핑 보강.
+
+## 라우팅 진입점 매핑 (09-routing.md §3 참조)
+
+`/api/v1/auth/login` 응답 `redirectTo` 결정 로직:
+
+| JWT role | redirectTo | first_login_at IS NULL 시 |
+|----------|-----------|--------------------------|
+| operator_super, operator_staff | `/operator` | + CM-22 모달 트리거 (operator 4단계) |
+| tenant_super, tenant_hr_admin | `/admin` | + CM-22 모달 트리거 (tenant 4단계) |
+| tenant_manager | `/admin` | + CM-22 모달 트리거 (manager 4단계) |
+| employee | `/me` | + CM-22 모달 트리거 (employee 4단계) |
+
+`return_url` 쿼리가 있으면 권한 검사 후 우선 (세션 만료 후 복귀 — 09-routing.md §5).
 
 ## 엔드포인트 표
 
@@ -188,8 +202,114 @@
 ### Response 200 (항상 동일)
 "메일을 발송했습니다." (계정 존재 노출 방지)
 
+## 세션 관리 (`/api/v1/me/security/sessions`, OP-12 + EM-09 보안 탭 공통)
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/api/v1/me/security/sessions` | 본인 | 활성 세션 목록 (Supabase auth.sessions + last_seen_at + ip + user_agent) |
+| DELETE | `/api/v1/me/security/sessions/:id` | 본인 | 본인 다른 세션 종료 |
+| DELETE | `/api/v1/me/security/sessions` | 본인 | 본인 모든 다른 세션 종료 (현재 세션 제외) |
+| GET | `/api/v1/me/security/login-history?limit=50` | 본인 | 최근 로그인 이력 |
+
+응답 (`GET sessions`):
+```json
+{
+  "ok": true,
+  "data": {
+    "sessions": [
+      {"id":"sid","current":true,"ipAddress":"1.2.3.4","userAgent":"Chrome 124","lastSeenAt":"2026-05-15T09:00:00Z","createdAt":"2026-05-15T08:00:00Z","location":"Seoul, KR"}
+    ]
+  }
+}
+```
+
+## 운영사 강제 종료 (OP-12 super only, KI-029)
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/api/v1/operator/users/:id/sessions` | operator_super | 다른 운영사 사용자 활성 세션 |
+| POST | `/api/v1/operator/users/:id/force-logout` | operator_super | 모든 세션 무효화 + audit_logs |
+
+요청:
+```json
+{ "reason": "string (필수, audit 기록)" }
+```
+
+응답:
+```json
+{
+  "ok": true,
+  "data": {
+    "userId": "uuid",
+    "terminatedSessions": 3,
+    "auditLogId": "uuid"
+  }
+}
+```
+
+가드: target user가 마지막 active operator_super인 경우 차단 (`409 OPERATOR_SUPER_LAST_REMAINING`).
+
+## 운영사 2FA 강제 가드 (OP-12)
+
+`/api/v1/auth/login` 응답에서 `redirectTo` 결정 시:
+
+```text
+역할 IN (operator_super, operator_staff) AND totp_enabled = false
+  → redirectTo: "/operator/me/profile?tab=security&forced=2fa"
+  → 응답에 `forced2faSetup: true` 포함 → 클라이언트가 강제 모달
+```
+
+## 약관 강제 동의 가드
+
+`/api/v1/auth/login` 응답에서:
+
+```text
+GET /api/v1/me/consents/required → 비어있지 않으면
+  → 클라이언트가 redirectTo를 무시하고 /legal/terms?must_accept=true (또는 /legal/privacy)로 이동
+  → 사용자 locale 기준 ko/en 약관 표시 (영문은 참고 번역 banner 표시)
+  → 동의 후 원래 redirectTo로 복귀
+```
+
+## i18n locale 처리 (batch-005, 2026-05-16)
+
+`/api/v1/auth/login` 및 모든 인증 응답에 `user.locale` 포함. 클라이언트가 next-intl init에 사용.
+
+### locale 결정 우선순위
+1. `users.locale` (DB 명시값) → 사용
+2. 없거나 첫 로그인 → `Accept-Language` 헤더 검사 → `ko` / `en` 매칭
+3. 매칭 실패 → `'ko'` (default)
+4. 첫 로그인 시 자동 결정값을 `users.locale`에 INSERT (이후 본인이 EM-09/OP-12에서 변경 가능)
+
+### locale 변경
+```
+PATCH /api/v1/me/profile { locale: 'ko' | 'en' }
+→ users.locale 업데이트
+→ 응답 후 클라이언트가 페이지 새로고침 + next-intl 메시지 재로드
+→ 인앱 알림/이메일 발송 시 즉시 새 locale 적용
+```
+
+### 응답 본문 예시
+```json
+{
+  "ok": true,
+  "data": {
+    "session": {...},
+    "user": {
+      "id": "uuid",
+      "email": "...",
+      "role": "employee",
+      "locale": "en",
+      "totpEnabled": false
+    },
+    "redirectTo": "/me"
+  }
+}
+```
+
 ## 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 9 엔드포인트 (로그인 + 2FA + 비밀번호 + 활성화) | Phase 4 진입 |
+| 2026-05-15 | 라우팅 진입점 매핑 + 세션 관리 + 운영사 강제 종료/2FA + 약관 가드 | KI-027/029 batch-003 |
+| 2026-05-16 | i18n: login response.user.locale + locale 결정 우선순위 + PATCH locale | 사용자 결정 batch-005 |

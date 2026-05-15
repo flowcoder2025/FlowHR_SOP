@@ -1,7 +1,8 @@
-# Operator API (OP-01~11)
+# Operator API (OP-01~12)
 
 > 도메인 프리픽스: `/api/v1/operator/`. 인증: JWT `role IN (operator_super, operator_staff)`.
 > SSOT: matrix.json `screens_to_entities_map.OP-*` + Phase 3 ERD.
+> 2026-05-15 (KI-029 batch-003): OP-12 운영사 본인 프로필 4 엔드포인트 추가.
 
 ## OP-01 운영사 대시보드
 
@@ -172,8 +173,63 @@
 | DELETE | `/api-keys/:id` | operator_super |
 | POST | `/api-keys/:id/rotate` | operator_super |
 
+## OP-12 운영사 본인 프로필 (KI-029 batch-003 후속)
+
+> 직원 EM-09와 동등한 본인 프로필이지만 운영사 도메인 라우트 분리 + 보안 강화. 자세한 정책: `prd/domains/operator/OP-12-profile.md`.
+> 보안 탭 (비밀번호/2FA/세션) 엔드포인트는 직원과 공유 — `auth.md` §세션 관리 참조.
+
+| 메서드 | 경로 | 권한 | 비고 |
+|--------|------|------|------|
+| GET | `/operator/me/profile` | operator_* | 본인 프로필 (OperatorUser 기반, Employee 없음) |
+| PATCH | `/operator/me/profile` | operator_* | 즉시 수정 (닉네임/표시이름/연락처). 운영사는 변경 요청 흐름 없이 직접 수정 |
+| POST | `/operator/me/avatar` | operator_* | 멀티파트 → CM-09 파일 업로드 → users.avatar_url 갱신 |
+| GET | `/operator/me/login-history?limit=50` | operator_* | 로그인 이력 50건 (이상 로그인 강조 — IP·UA·result + 위치 추정) |
+
+### `GET /operator/me/profile` 응답
+
+```json
+{
+  "ok": true,
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "operator@flowhr.kr",
+      "displayName": "김운영",
+      "nickname": "김운영",
+      "phone": "+82-10-...",
+      "role": "operator_super",
+      "avatarUrl": "https://...",
+      "totpEnabled": true,
+      "firstLoginAt": "2026-05-15T09:00:00Z",
+      "lastPasswordChangeAt": "2026-04-01T00:00:00Z"
+    },
+    "operatorUser": {
+      "department": "운영팀",
+      "joinedAt": "2026-01-01"
+    },
+    "consents": [
+      {"type":"terms","version":"1.0.0","consentedAt":"2026-05-15T09:00:00Z"}
+    ]
+  }
+}
+```
+
+### `PATCH /operator/me/profile` 요청
+
+```json
+{ "nickname": "string?", "displayName": "string?", "phone": "string?" }
+```
+
+`email` 변경은 별도 엔드포인트 `POST /me/security/change-email` (재인증 + 새 메일 검증). `role`/`department` 변경은 OP-11 `PATCH /operator/users/:id` (operator_super만).
+
+### 가드
+
+- `/operator/me/*` 모든 엔드포인트는 `auth.md` §운영사 강제 종료 가드와 별개로 본인 row 한정 RLS 적용
+- `PATCH /operator/me/profile`에서 `role`·`email`·`avatar_url` 외 보안 필드 수정 시도 → `400 PROFILE_FIELD_NOT_EDITABLE`
+
 ## 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 11 화면 × 약 75 엔드포인트 | Phase 4 진입 |
+| 2026-05-15 | OP-12 §운영사 본인 프로필 4 엔드포인트 추가 | KI-029 batch-003 후속 (Phase 4 P1 해소) |

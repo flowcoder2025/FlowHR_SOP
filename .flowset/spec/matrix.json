@@ -1,6 +1,6 @@
 {
-  "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1+2에서 채움. 37 엔티티 × 6 역할 × CRUD. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md. Phase 2 추가: FeatureFlagOverride.",
-  "_count_policy": "screens_mvp 카운트는 ✓ (완전 포함) + △ (단순화 포함) 합산. 06-mvp-scope.md 표가 SSOT — ✓ 30 + △ 6 = 36 (전 화면 MVP 진입 가능, △ 6개는 v1.1까지 단순화 버전): OP-06/OP-10/TA-11/TA-12/TA-14/EM-11.",
+  "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1+2에서 채움. 39 엔티티 × 6 역할 × CRUD. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md. Phase 2 추가: FeatureFlagOverride. 2026-05-15 (KI-027~030 batch-003): screens 36→44 (CM-16~22, OP-12), entities 37→39 (LegalDocument, UserConsent). 2026-05-16 (batch-005): i18n MVP — LegalDocument.language(ko|en) + User.locale 추가.",
+  "_count_policy": "screens_mvp 카운트는 ✓ (완전 포함) + △ (단순화 포함) 합산. 06-mvp-scope.md 표가 SSOT — ✓ 37 + △ 7 = 44 (전 화면 MVP 진입 가능, △ 7개는 v1.1까지 단순화 버전): OP-06/OP-10/TA-11/TA-12/TA-14/EM-11/CM-18.",
   "schema_version": "v2",
   "class": "code",
   "project": "FlowHR",
@@ -19,12 +19,12 @@
     "tenant_manager",
     "employee"
   ],
-  "screens_total": 36,
-  "screens_mvp_full": 30,
-  "screens_mvp_partial": 6,
-  "screens_mvp_partial_list": ["OP-06", "OP-10", "TA-11", "TA-12", "TA-14", "EM-11"],
-  "screens_mvp_total": 36,
-  "entities_total": 37,
+  "screens_total": 44,
+  "screens_mvp_full": 37,
+  "screens_mvp_partial": 7,
+  "screens_mvp_partial_list": ["OP-06", "OP-10", "TA-11", "TA-12", "TA-14", "EM-11", "CM-18"],
+  "screens_mvp_total": 44,
+  "entities_total": 39,
   "entities": {
     "Tenant": {
       "table": "tenants",
@@ -199,7 +199,7 @@
     "User": {
       "table": "users (extends auth.users)",
       "tenant_scoped": true,
-      "_comment": "Supabase auth.users 확장 — employee_id 외래키",
+      "_comment": "Supabase auth.users 확장 — employee_id 외래키. i18n batch-005 (2026-05-16): locale text NOT NULL DEFAULT 'ko' CHECK (ko|en) 추가",
       "permissions": {
         "operator_super":   {"C": true, "R": "all", "U": true, "D": false},
         "operator_staff":   {"C": true, "R": "all", "U": false, "D": false},
@@ -694,6 +694,43 @@
         "D": "DELETE /api/v1/operator/tenants/drafts/:draftId"
       },
       "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "LegalDocument": {
+      "table": "legal_documents",
+      "tenant_scoped": false,
+      "_comment": "이용약관·개인정보처리방침 버전 관리 (CM-21). 글로벌. (type, version, language) UNIQUE — i18n MVP ko+en 동시 게시 의무 (batch-005, 2026-05-16). 영문은 참고 번역, 법적 효력은 ko.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": true, "U": true, "D": false},
+        "operator_staff":   {"C": false, "R": true, "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "active_only", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": "active_only", "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": "active_only", "U": false, "D": false},
+        "employee":         {"C": false, "R": "active_only", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/operator/legal/documents (body: { ko: {...}, en: {...} } — ko/en 페어 동시 게시 의무)",
+        "R": "GET /api/v1/legal/documents?type=terms|privacy&language=ko|en&latest=true (default language=request user.locale), GET /api/v1/operator/legal/documents",
+        "U": "PATCH /api/v1/operator/legal/documents/:id"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "UserConsent": {
+      "table": "user_consents",
+      "tenant_scoped": true,
+      "_comment": "사용자 약관 동의 이력 (CM-03 활성화 + CM-21 강제 동의 시 INSERT). 본인 + 운영사 감사 조회.",
+      "permissions": {
+        "operator_super":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "operator_staff":   {"C": false, "R": "all_audit", "U": false, "D": false},
+        "tenant_super":     {"C": false, "R": "own_tenant_audit", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": "self", "R": "self", "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/me/consents",
+        "R": "GET /api/v1/me/consents, GET /api/v1/operator/legal/consents (감사)"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
     }
   },
   "screens_to_entities_map": {
@@ -733,6 +770,14 @@
     "EM-08": ["CertificateRequest:CRUD", "Approval:C", "Document:R"],
     "EM-09": ["Employee:RU", "User:RU", "EmployeeChangeRequest:CRU"],
     "EM-10": ["Notification:RU"],
-    "EM-11": ["Approval:R", "Leave:R", "AttendanceModification:R", "CertificateRequest:R", "EmployeeChangeRequest:R"]
+    "EM-11": ["Approval:R", "Leave:R", "AttendanceModification:R", "CertificateRequest:R", "EmployeeChangeRequest:R"],
+    "OP-12": ["User:RU", "OperatorUser:RU", "UserConsent:R", "AuditLog:R", "Notification:R"],
+    "CM-16": ["User:R", "Notification:R"],
+    "CM-17": ["Notification:RU"],
+    "CM-18": ["_v1.1_search_index_pending"],
+    "CM-19": ["_static_help_content"],
+    "CM-20": ["_static_pwa_install_guide"],
+    "CM-21": ["LegalDocument:R", "UserConsent:CR"],
+    "CM-22": ["User:U_first_login_at", "AuditLog:C_onboarding_event"]
   }
 }

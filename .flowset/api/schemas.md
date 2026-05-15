@@ -271,6 +271,78 @@ export const NotificationSchema = TenantScoped.extend({
 });
 ```
 
+### LegalDocument (KI-030 batch-003)
+```typescript
+export const LegalDocumentTypeEnum = z.enum(['terms', 'privacy']);
+export const SemverSchema = z.string().regex(/^\d+\.\d+\.\d+$/, 'must be semver (e.g. 2.0.0)');
+
+export const LegalDocumentSchema = z.object({
+  id: z.string().uuid(),
+  type: LegalDocumentTypeEnum,
+  version: SemverSchema,
+  effectiveDate: z.string().date(),
+  title: z.string().min(1).max(200),
+  contentMd: z.string().min(1),
+  summaryMd: z.string().nullable(),
+  isActive: z.boolean(),
+  publishedBy: z.string().uuid(),
+  publishedAt: z.string().datetime(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const PublishLegalDocumentInput = LegalDocumentSchema.pick({
+  type: true,
+  version: true,
+  effectiveDate: true,
+  title: true,
+  contentMd: true,
+  summaryMd: true,
+}).extend({
+  activateImmediately: z.boolean().default(true),
+});
+```
+
+### UserConsent (KI-030 batch-003)
+```typescript
+export const ConsentSourceEnum = z.enum(['activate', 'forced', 'footer']);
+
+export const UserConsentSchema = z.object({
+  id: z.string().uuid(),
+  tenantId: z.string().uuid().nullable(),  // operator user는 null
+  userId: z.string().uuid(),
+  documentId: z.string().uuid(),
+  documentType: LegalDocumentTypeEnum,
+  version: SemverSchema,
+  consentedAt: z.string().datetime(),
+  ipAddress: z.string().ip(),
+  userAgent: z.string().max(500),
+  source: ConsentSourceEnum,
+});
+
+export const RecordConsentInput = z.object({
+  documentId: z.string().uuid(),
+  version: SemverSchema,
+  source: ConsentSourceEnum.default('footer'),
+});
+
+export const RequiredConsentsResponse = z.object({
+  required: z.array(LegalDocumentSchema.pick({
+    id: true, type: true, version: true, effectiveDate: true, title: true, summaryMd: true,
+  })),
+});
+```
+
+### Notification (헤더 미니, CM-17 — 기존 NotificationSchema 재사용)
+
+`GET /api/v1/me/notifications?limit=10` 응답:
+```typescript
+export const NotificationListResponse = SuccessEnvelope(z.object({
+  items: z.array(NotificationSchema),
+  unreadCount: z.number().int().nonnegative(),
+}));
+```
+
 ## 6. Realtime 이벤트 스키마
 
 ```typescript
@@ -290,3 +362,4 @@ export const RealtimeEvent = <T extends z.ZodTypeAny>(payloadSchema: T) =>
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — Envelope + 페이지네이션 + 핵심 엔티티 8 + Approval polymorphic + ConditionRule (KI-019 해소) + Location jsonb (KI-018 해소) | Phase 4 진입 |
+| 2026-05-15 | LegalDocument / UserConsent zod + NotificationListResponse | KI-030 batch-003 |

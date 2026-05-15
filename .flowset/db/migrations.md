@@ -25,10 +25,11 @@ supabase/migrations/
 ├── 00000000000017_audit.sql                   # audit_logs + 트리거
 ├── 00000000000018_integrations.sql            # integrations, integration_logs, api_keys
 ├── 00000000000019_change_requests.sql         # employee_change_requests
-├── 00000000000020_rls_policies.sql            # 모든 RLS 정책 (db/rls.md §3)
-├── 00000000000021_indexes.sql                 # 모든 인덱스 (db/indexes.md)
-├── 00000000000022_seed.sql                    # 기본 시드 (roles, plans, leave_types defaults)
-└── 00000000000023_realtime.sql                # Realtime publication (notifications, approvals, approval_steps)
+├── 00000000000020_legal.sql                   # legal_documents, user_consents (KI-030 batch-003)
+├── 00000000000021_rls_policies.sql            # 모든 RLS 정책 (db/rls.md §3 + §6-1)
+├── 00000000000022_indexes.sql                 # 모든 인덱스 (db/indexes.md)
+├── 00000000000023_seed.sql                    # 기본 시드 (roles, plans, leave_types defaults, legal v1.0.0)
+└── 00000000000024_realtime.sql                # Realtime publication (notifications, approvals, approval_steps)
 ```
 
 ## 2. 의존 관계
@@ -37,9 +38,10 @@ supabase/migrations/
 - 5 → 7 (invoices.tenant_id, subscription_id FK)
 - 10 → 11 (work_policies, leave_types) → 12 (attendances) → 13 (leaves)
 - 14 (approvals) ← 12/13/15/19 (polymorphic FK)
-- 20 (RLS) → 마지막 (모든 테이블 존재 후)
-- 21 (인덱스) → 마지막
-- 23 (Realtime) → 마지막
+- 20 (legal_documents 글로벌, user_consents → users) → 6 이후 + 1 트랜잭션
+- 21 (RLS) → 마지막 (모든 테이블 존재 후)
+- 22 (인덱스) → 마지막
+- 24 (Realtime) → 마지막
 
 ## 3. Supabase CLI 명령
 
@@ -75,3 +77,4 @@ supabase gen types typescript --local > packages/types/database.ts
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 23개 마이그레이션 파일 순서 + Supabase CLI | Phase 3 진입 |
+| 2026-05-15 | 24개로 확장 (00000000000020_legal.sql 삽입, 이후 번호 +1) | KI-030 batch-003 |

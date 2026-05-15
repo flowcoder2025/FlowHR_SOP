@@ -1,18 +1,19 @@
 # Phase 3 — DB ERD 설계
 
-> SSOT: `.flowset/spec/matrix.json` (37 엔티티). 본 Phase는 엔티티를 PostgreSQL 스키마로 정밀화.
+> SSOT: `.flowset/spec/matrix.json` (39 엔티티). 본 Phase는 엔티티를 PostgreSQL 스키마로 정밀화.
 > 산출물 디렉토리: `.flowset/db/`. Phase 7 개발 착수 시 `supabase/migrations/*.sql`로 변환.
+> 2026-05-15 (KI-030 batch-003): 37 → 39 엔티티 (LegalDocument, UserConsent), 23 → 24 마이그레이션 파일.
 
 ## 파일 인덱스
 
 | 파일 | 내용 |
 |------|------|
-| [erd.md](erd.md) | 전체 ERD Mermaid 다이어그램 + **37 엔티티 컬럼 명세 (도메인별 4분할)** |
-| [enums.md](enums.md) | enum 타입 + 상태값 (영문 통일, KI-004 해소) |
-| [rls.md](rls.md) | Row Level Security 정책 (37 엔티티 × 6 역할, KI-014 routing) |
-| [indexes.md](indexes.md) | 인덱스 설계 (쿼리 패턴 기반) |
-| [migrations.md](migrations.md) | 마이그레이션 순서 + Supabase CLI 명령 (23 파일) |
-| [seed.md](seed.md) | 시드 데이터 (roles, plans, feature_flags, 신규 테넌트 자동 시드) |
+| [erd.md](erd.md) | 전체 ERD Mermaid 다이어그램 + **39 엔티티 컬럼 명세 (도메인별 5분할: 운영사·HR·설정/연동·v1.2·컴플라이언스)** |
+| [enums.md](enums.md) | enum 타입 + 상태값 (영문 통일, KI-004 해소 + KI-030 legal_document_type/consent_source) |
+| [rls.md](rls.md) | Row Level Security 정책 (39 엔티티 × 6 역할, KI-014 routing + KI-030 §6-1 컴플라이언스) |
+| [indexes.md](indexes.md) | 인덱스 설계 (쿼리 패턴 기반, KI-030 legal/consent 6 인덱스) |
+| [migrations.md](migrations.md) | 마이그레이션 순서 + Supabase CLI 명령 (24 파일) |
+| [seed.md](seed.md) | 시드 데이터 (roles, plans, feature_flags, legal v1.0.0, 신규 테넌트 자동 시드) |
 
 > erd.md가 컬럼 명세까지 포함하여 SSOT 역할. 별도 schema-*.md 분할 생략 (라이트 원칙).
 
