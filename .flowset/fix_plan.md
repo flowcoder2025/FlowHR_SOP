@@ -3,12 +3,15 @@
 > WI(Work Item) 형식: `WI-NNN-[type] 한글 작업명`
 > type: feat, fix, docs, style, refactor, test, chore, perf, ci, revert
 > NNN: 영숫자 ID (001, 015, A2a, C3code, E1, 001-1)
+>
+> **각 Phase 종료 시 evaluator 호출 의무** — PASS 마커(`.flowset/eval-results/phase-{n}.pass`)가 있어야 다음 Phase 진입.
 
 ## Phase 0 — 셋업
 
 - [x] WI-chore FlowSet 라이트 셋업 (디렉토리/계약/규칙)
-- [ ] WI-chore 기술 스택 확정 (사용자 결정)
-- [ ] WI-chore Git 저장소 초기화 + 원격 연결
+- [x] WI-chore 기술 스택 확정 (Next.js + Supabase + Tauri Desktop + PWA)
+- [x] WI-chore Git 저장소 초기화 + 원격 연결 + 첫 푸시
+- [x] WI-chore evaluator 라이트 셋업 (agent + rubric + eval-results/ + 게이트 룰)
 
 ## Phase 1 — 개발용 PRD 작성
 

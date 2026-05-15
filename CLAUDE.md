@@ -12,7 +12,7 @@
 
 ## FlowSet 라이트 모드
 
-이 프로젝트는 FlowSet v4.0의 라이트 버전을 사용합니다. 자동 차단 / Agent Teams / vault / loop는 미사용. Claude가 사용자 명령 단위로 단계별 진행.
+이 프로젝트는 FlowSet v4.0의 라이트 버전을 사용합니다. 자동 차단 hook / Agent Teams / vault / loop는 미사용. Claude가 사용자 명령 단위로 단계별 진행. **각 Phase 종료 시 evaluator 에이전트(`.claude/agents/evaluator.md`)를 Agent 도구로 호출하여 산출물 검증.**
 
 ## 필수 시작 절차
 
@@ -34,7 +34,8 @@
 ├── fix_plan.md            # WI 진행 트래킹
 ├── guardrails.md          # 누적 규칙
 ├── spec/matrix.json       # 데이터 모델 SSOT
-├── contracts/             # API / 데이터 / 스타일 / 스프린트 계약
+├── contracts/             # API / 데이터 / 스타일 / 스프린트 / review-rubric
+├── eval-results/          # evaluator 채점 결과 + PASS 마커
 ├── backlog/               # Phase 2 산출물
 ├── db/                    # Phase 3 ERD
 ├── api/                   # Phase 4 OpenAPI
@@ -48,7 +49,10 @@ docs/
 └── FlowHR_screen_spec_v_1.md  # 원본 화면 명세 v1.0
 
 .claude/
-└── rules/project.md       # 프로젝트별 규칙
+├── agents/
+│   └── evaluator.md       # 평가 전용 서브에이전트 (Phase 게이트)
+└── rules/
+    └── project.md         # 프로젝트별 규칙
 ```
 
 ## 10단계 워크플로우

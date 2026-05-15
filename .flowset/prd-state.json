@@ -3,6 +3,14 @@
   "project_name": "FlowHR",
   "project_class": "code",
   "platforms": ["web", "pwa", "desktop_tauri"],
+  "evaluator": {
+    "enabled": true,
+    "agent_path": ".claude/agents/evaluator.md",
+    "rubric_path": ".flowset/contracts/review-rubric.md",
+    "results_dir": ".flowset/eval-results",
+    "threshold": 7.0,
+    "max_retries": 3
+  },
   "current_phase": "0-setup",
   "phases": {
     "0-setup": {"status": "in_progress", "owner": "claude", "started_at": "2026-05-15"},
@@ -50,6 +58,7 @@
   "git": {
     "remote": "https://github.com/flowcoder2025/FlowHR_SOP.git",
     "default_branch": "main",
-    "initialized": false
+    "initialized": true,
+    "first_commit_pushed_at": "2026-05-15"
   }
 }

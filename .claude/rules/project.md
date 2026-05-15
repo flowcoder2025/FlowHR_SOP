@@ -6,19 +6,21 @@
 
 10단계 워크플로우 외 다른 순서로 진행하지 않는다. 단계 건너뛰기 금지.
 
-| Phase | 게이트 | 다음 진입 조건 |
-|-------|-------|--------------|
-| 0 셋업 | `.flowset/` 구조 + CLAUDE.md 존재 | 사용자 기술 스택 결정 |
-| 1 PRD | `.flowset/prd.md` 존재 + matrix.json entities 채워짐 | 사용자 승인 |
-| 2 백로그 | epics/stories/tasks 작성 | matrix.json 모든 entities에 endpoints/gherkin 슬롯 채워짐 |
-| 3 ERD | `supabase/migrations/*.sql` 또는 erd.md 작성 | 마이그레이션 적용 |
-| 4 API | openapi.yaml 작성 | data-flow.md / api-standard.md와 정합 |
-| 5 와이어프레임 | 36개 화면 analysis/*.md 작성 | Codex 이미지 + Claude 분석 완료 |
-| 6 스프린트 | mvp-plan.md + sprint-001~N.md | 종속성 그래프 정합 |
-| 7 개발 | Sprint 1 첫 WI 완료 | smoke test pass |
-| 8 QA | scenarios.md 작성 | 권한 매트릭스 음성/양성 케이스 포함 |
-| 9 베타 | onboarding.md 작성 | 베타 1호 고객 확정 |
-| 10 운영 | runbook.md 작성 | SLA 명문화 |
+| Phase | 산출물 게이트 | evaluator 모드 | 다음 진입 조건 |
+|-------|-------------|--------------|--------------|
+| 0 셋업 | `.flowset/` 구조 + CLAUDE.md 존재 | (생략) | 사용자 기술 스택 결정 |
+| 1 PRD | `.flowset/prd.md` + matrix.json entities | doc | evaluator PASS + 사용자 승인 |
+| 2 백로그 | epics/stories/tasks 작성 | doc | evaluator PASS + matrix.json 정합 |
+| 3 ERD | `.flowset/db/erd.md` + rls.md | doc | evaluator PASS |
+| 4 API | `.flowset/api/openapi.yaml` | doc | evaluator PASS + api-standard 정합 |
+| 5 와이어프레임 | 36개 analysis/*.md + images/*.png | doc | evaluator PASS |
+| 6 스프린트 | mvp-plan.md + sprint-001~N.md | doc | evaluator PASS |
+| 7 개발 | Sprint 1 첫 WI 완료 | code | WI별 evaluator PASS |
+| 8 QA | scenarios.md + e2e.md | doc | evaluator PASS |
+| 9 베타 | onboarding.md | doc | evaluator PASS + 1호 고객 확정 |
+| 10 운영 | runbook.md + SLA | doc | evaluator PASS |
+
+**evaluator는 `.flowset/guardrails.md §5-1, §7` 절차로 매 Phase 종료 시 의무 호출.**
 
 ## 2. 산출물 작성 규칙
 

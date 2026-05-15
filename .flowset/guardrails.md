@@ -35,12 +35,25 @@
 
 ## 5. 라이트 버전 한정 (FlowSet 풀버전과의 차이)
 
-- **Stop hook B1~B7 미적용** — 자동 차단 없음, 수동 검증
+- **Stop hook B1~B7 미적용** — 자동 차단 없음, evaluator 수동 호출로 대체
 - **Agent Teams 미사용** — Claude 단독 진행
-- **evaluator 미사용** — Claude 자체 검증
+- **evaluator 사용** — `.claude/agents/evaluator.md` (Agent 도구로 명시 호출)
 - **vault/Obsidian 미연동** — 상태는 `.flowset/` 파일로만 관리
 - **launch-loop 미사용** — 사용자 명령 단위로 진행
 - 위 항목은 프로젝트가 커지면 풀버전으로 전환 검토
+
+## 5-1. evaluator 게이트 규칙 (필수)
+
+각 Phase 종료 또는 코드 WI 완료 시 **evaluator 호출 의무**:
+
+1. 산출물 생성 직후 Claude 본체가 Agent 도구로 evaluator 호출
+   - `subagent_type: "evaluator"`
+   - 프롬프트에 `phase`, `mode` (`doc`|`code`), `artifact_paths`, `context_files`, `wi_id`(선택) 전달
+2. evaluator가 채점표(`---EVAL_RESULT---`) 반환
+3. 채점표를 `.flowset/eval-results/phase-{n}.eval.md` 또는 `WI-{ID}.eval.md`에 저장
+4. **PASS**: Claude 본체가 `.flowset/eval-results/phase-{n}.pass` 마커 생성 → 다음 Phase 진입
+5. **FAIL**: ISSUES 수정 → 재호출 (동일 단위 최대 3회, 초과 시 사용자 에스컬레이션)
+6. **사용자 보고 시 채점표 요약 포함** — Total/Verdict/ISSUES 3건 이상 요약
 
 ## 6. 산출물 디렉토리 매핑
 
@@ -59,11 +72,20 @@
 
 ## 7. Phase 진입 / 종료 기준
 
-각 Phase 종료 시:
-1. `.flowset/prd-state.json`의 해당 phase status를 `completed`로 업데이트
-2. 다음 phase status를 `in_progress`로 전환
-3. `fix_plan.md`의 해당 WI를 `[x]`로 체크
-4. 산출물이 디렉토리 매핑대로 존재하는지 ls로 확인
+각 Phase 종료 시 (반드시 이 순서):
+
+1. 산출물이 `§6 디렉토리 매핑`대로 존재하는지 ls로 확인
+2. **evaluator 호출** (Agent 도구, `subagent_type: "evaluator"`)
+3. 채점표를 `.flowset/eval-results/phase-{n}.eval.md`에 저장
+4. PASS 시:
+   - `.flowset/eval-results/phase-{n}.pass` 마커 생성
+   - `.flowset/prd-state.json`의 해당 phase status를 `completed`로 업데이트
+   - 다음 phase status를 `in_progress`로 전환
+   - `fix_plan.md`의 해당 WI를 `[x]`로 체크
+   - 사용자에게 PASS 보고 + 채점표 요약
+5. FAIL 시:
+   - ISSUES 수정 후 재호출
+   - 3회 연속 FAIL → 사용자 에스컬레이션
 
 ## 8. 발견된 실패 패턴 (날짜순 누적)
 
