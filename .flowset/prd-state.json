@@ -31,8 +31,8 @@
   },
   "current_phase": "0-setup",
   "phases": {
-    "0-setup": {"status": "in_progress", "owner": "claude", "started_at": "2026-05-15"},
-    "1-prd": {"status": "pending"},
+    "0-setup": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15"},
+    "1-prd": {"status": "in_progress", "owner": "claude", "started_at": "2026-05-15"},
     "2-backlog": {"status": "pending"},
     "3-erd": {"status": "pending"},
     "4-api": {"status": "pending"},
