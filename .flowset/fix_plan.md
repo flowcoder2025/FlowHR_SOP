@@ -21,11 +21,11 @@
 - [x] WI-003-docs 비기능 요구사항 (성능/보안/접근성/i18n/감사/백업/확장/모니터링)
 - [x] WI-004-docs 데이터 모델 매트릭스 SSOT 생성 (matrix.json, 36 엔티티)
 
-## Phase 2 — 백로그
+## Phase 2 — 백로그 [✓ PASS 8.29/10]
 
-- [ ] WI-005-docs Epic 정의 (도메인별 묶음)
-- [ ] WI-006-docs User Story 작성 (역할 × 화면)
-- [ ] WI-007-docs Task 분해 (WBS)
+- [x] WI-005-docs Epic 정의 (12 Epic, 379 SP)
+- [x] WI-006-docs User Story 작성 (72 Story, 화면×역할 매트릭스)
+- [x] WI-007-docs Task 분해 (EP-01/02/06/07/08 완전 + 7 Epic 패턴 추정, 195 Task / 739 MD)
 
 ## Phase 3 — DB ERD
 

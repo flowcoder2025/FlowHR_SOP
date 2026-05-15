@@ -1,5 +1,5 @@
 {
-  "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1에서 채움. 36 엔티티 × 6 역할 × CRUD. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md.",
+  "_comment": "FlowHR 데이터 모델 매트릭스 SSOT — Phase 1+2에서 채움. 37 엔티티 × 6 역할 × CRUD. 자세한 화면별 권한은 .flowset/prd/domains/*/README.md. Phase 2 추가: FeatureFlagOverride.",
   "_count_policy": "screens_mvp 카운트는 ✓ (완전 포함) + △ (단순화 포함) 합산. 06-mvp-scope.md 표가 SSOT — ✓ 30 + △ 6 = 36 (전 화면 MVP 진입 가능, △ 6개는 v1.1까지 단순화 버전): OP-06/OP-10/TA-11/TA-12/TA-14/EM-11.",
   "schema_version": "v2",
   "class": "code",
@@ -24,7 +24,7 @@
   "screens_mvp_partial": 6,
   "screens_mvp_partial_list": ["OP-06", "OP-10", "TA-11", "TA-12", "TA-14", "EM-11"],
   "screens_mvp_total": 36,
-  "entities_total": 36,
+  "entities_total": 37,
   "entities": {
     "Tenant": {
       "table": "tenants",
@@ -104,7 +104,7 @@
     "FeatureFlag": {
       "table": "feature_flags",
       "tenant_scoped": false,
-      "_comment": "테넌트 예외는 feature_flag_overrides 별도 테이블",
+      "_comment": "테넌트별 예외는 FeatureFlagOverride 엔티티 (별도 테이블)",
       "permissions": {
         "operator_super":   {"C": true, "R": true, "U": true, "D": true},
         "operator_staff":   {"C": false, "R": true, "U": true, "D": false},
@@ -117,6 +117,26 @@
         "R": "GET /api/v1/feature-flags?context=tenant_id",
         "C": "POST /api/v1/operator/feature-flags",
         "U": "PATCH /api/v1/operator/feature-flags/:key"
+      },
+      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+    },
+    "FeatureFlagOverride": {
+      "table": "feature_flag_overrides",
+      "tenant_scoped": true,
+      "_comment": "테넌트별 기능 플래그 예외. (flag_key, tenant_id) 복합 PK. OP-07에서 운영사가 등록.",
+      "permissions": {
+        "operator_super":   {"C": true, "R": "all", "U": true, "D": true},
+        "operator_staff":   {"C": false, "R": "all", "U": true, "D": false},
+        "tenant_super":     {"C": false, "R": "own", "U": false, "D": false},
+        "tenant_hr_admin":  {"C": false, "R": false, "U": false, "D": false},
+        "tenant_manager":   {"C": false, "R": false, "U": false, "D": false},
+        "employee":         {"C": false, "R": false, "U": false, "D": false}
+      },
+      "endpoints": {
+        "C": "POST /api/v1/operator/feature-flags/:key/overrides",
+        "R": "GET /api/v1/operator/feature-flags/:key/overrides",
+        "U": "PATCH /api/v1/operator/feature-flags/:key/overrides/:tid",
+        "D": "DELETE /api/v1/operator/feature-flags/:key/overrides/:tid"
       },
       "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
     },
@@ -684,7 +704,7 @@
     "OP-04": ["Tenant:C", "Subscription:C", "Plan:R", "User:C", "FeatureFlag:C", "TenantSetting:C", "Department:C", "WorkPolicy:C", "LeaveType:C", "ApprovalLine:C", "DocumentTemplate:C", "TenantDraft:CRUD"],
     "OP-05": ["Plan:CRUD", "Subscription:R", "FeatureFlag:R"],
     "OP-06": ["Invoice:CRUD", "Tenant:R", "Subscription:R"],
-    "OP-07": ["FeatureFlag:CRUD", "Tenant:R", "Plan:R"],
+    "OP-07": ["FeatureFlag:CRUD", "FeatureFlagOverride:CRD", "Tenant:R", "Plan:R"],
     "OP-08": ["Ticket:CRUD", "TicketMessage:CR", "User:R", "Tenant:R"],
     "OP-09": ["AuditLog:R", "Tenant:R", "User:R"],
     "OP-10": ["Tenant:R", "Subscription:R", "Invoice:R", "Employee:R", "AuditLog:R"],

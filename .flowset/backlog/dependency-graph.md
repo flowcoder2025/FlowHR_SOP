@@ -93,7 +93,7 @@ graph TD
 
 | 외부 | 영향 Story | 진입 권장 시점 |
 |------|----------|-------------|
-| NHN Cloud 알림톡 채널 인증 | ST-055, ST-066 | Sprint 1 시작 시 신청 (30~60일 소요) |
+| NHN Cloud 알림톡 채널 인증 | ST-055, ST-066 | Sprint 1 시작 시 신청 (NHN Cloud 가이드: 사업자 정보 검토 + 카카오 비즈 메시지 채널 심사 → 일반적으로 영업일 2~6주, 즉 14~42일. 보수적으로 60일 가정) |
 | Supabase 프로젝트 + Pro 플랜 | 모두 | Sprint 1 |
 | Vercel 프로젝트 | 모두 | Sprint 1 |
 | Sentry 프로젝트 | Sprint 7 이후 (운영 단계) | Sprint 6 말 |

@@ -9,7 +9,7 @@
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ |
 | P2 Medium | 3 | 5 | ❌ (KI-batch-001로 2건 해소, 잔존 3건은 Phase 3/4 결합) |
-| P3 Low | 3 | 10 | ❌ (KI-batch-001로 3건 해소) |
+| P3 Low | 4 | 10 | ❌ (KI-013/014/016 활성, KI-015 resolved, attempt 2 잔존 4건 즉시 정리) |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -29,6 +29,10 @@
 | ~~KI-010~~ | P3 | 1 | API | ~~matrix.json TenantDraft.endpoints U 누락~~ | — | — | **resolved (batch-001)** |
 | ~~KI-011~~ | P3 | 1 | PRD | ~~04-data-model.md 변경 이력 "26 엔티티" 잔존~~ | — | — | **resolved (batch-001)** |
 | ~~KI-012~~ | P3 | 1 | PRD | ~~03-tech-architecture.md i18n "en 추후"~~ | — | — | **resolved (batch-001)** |
+| KI-013 | P3 | 2 | Backlog | EP-03/04/05/09/10/11/12 7 Epic Task 분해 미완 — Phase 6 스프린트 계획 진입 전에 완전 분해 필요 | evaluator Phase 2 attempt 1 | 2026-05-15 | scheduled (Phase 6) |
+| KI-014 | P3 | 2 | Backlog | EP-08 엔티티에 AttendanceModification 누락 (EP-07/08 경계 — TA-09 결재 인박스가 routing) | evaluator Phase 2 attempt 1 | 2026-05-15 | scheduled (Phase 4) |
+| KI-015 | P3 | 2 | Backlog | estimation.md 200 MD vs tasks.md 739 MD 환산 차이는 명시되어 있으나 외부 견적 시 어느 기준 사용할지 정책 명확화 권장 | evaluator Phase 2 attempt 1 | 2026-05-15 | resolved (estimation.md L60-63에 정책 명시) |
+| KI-016 | P3 | 2 | Backlog | dependency-graph.md NHN Cloud 30~60일 출처 URL/발행일 부재 — 운영사가 실제 신청 시 NHN Cloud 공식 가이드 URL 인용 보강 | evaluator Phase 2 attempt 2 | 2026-05-15 | scheduled (Phase 9 베타 진입 전 NHN Cloud 신청 시점) |
 
 ## 등록 형식
 

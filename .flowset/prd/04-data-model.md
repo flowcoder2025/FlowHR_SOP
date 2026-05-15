@@ -3,11 +3,12 @@
 > 본 문서는 PRD 차원의 **엔티티 개요 + 관계도**. 상세 ERD/RLS/마이그레이션은 Phase 3 산출물(`.flowset/db/`).
 > 데이터 모델 SSOT는 `.flowset/spec/matrix.json` (entities 블록).
 
-## 1. 엔티티 카탈로그 (총 36종)
+## 1. 엔티티 카탈로그 (총 37종)
 
 > 카운트 정책: `matrix.json.entities` 블록 기준. v1.2+ 도입 예정 엔티티(Signature 등)도 v1.2 슬롯 명시하여 포함.
+> Phase 2 추가: FeatureFlagOverride (테넌트별 기능 플래그 예외).
 
-### 운영사 도메인 (12종)
+### 운영사 도메인 (13종)
 | 엔티티 | 한글명 | 용도 |
 |--------|-------|------|
 | `tenants` | 테넌트 | 고객사 마스터 |
@@ -15,7 +16,8 @@
 | `subscriptions` | 구독/요금제 | 테넌트별 구독 상태 |
 | `invoices` | 청구서 | 월별 청구 / 세금계산서 / 수납 |
 | `plans` | 요금제 | 플랜 마스터 (기본/프리미엄/커스텀) |
-| `feature_flags` | 기능 플래그 | 글로벌/플랜/테넌트별 기능 ON/OFF |
+| `feature_flags` | 기능 플래그 | 글로벌/플랜별 기능 ON/OFF |
+| `feature_flag_overrides` | 기능 플래그 예외 | 테넌트별 강제 ON/OFF 예외 |
 | `tickets` | 지원 티켓 | 고객 문의 / 장애 / 요청 |
 | `ticket_messages` | 티켓 응답 스레드 | OP-08 응답/내부메모 |
 | `system_settings` | 운영사 시스템 설정 | OP-11 플랫폼 전역 설정 |
@@ -59,7 +61,7 @@
 | `signatures` | 전자서명 | TA-11 v1.2 — 외부 인증사업자 연동 결과 |
 | `api_keys` | API 키 | TA-14 (테넌트) + OP-11 (운영사) — 외부 도구 인증 |
 
-> **카운트 검증**: 운영사 12 + HR 17 + 회사설정/연동 5 + v1.2 2 = **36종** (matrix.json `entities_total: 36`과 일치).
+> **카운트 검증**: 운영사 13 + HR 17 + 회사설정/연동 5 + v1.2 2 = **37종** (matrix.json `entities_total: 37`과 일치).
 
 ## 2. 핵심 관계 (Mermaid)
 
@@ -179,9 +181,9 @@ draft → pending → approved → completed (휴가 사용 후)
 
 ## 7. matrix.json 채움 계획
 
-`matrix.json.entities` 블록에 채워진 엔티티 (총 36종):
+`matrix.json.entities` 블록에 채워진 엔티티 (총 37종):
 
-**운영사 도메인 (12)**: Tenant, TenantDraft, Subscription, Invoice, Plan, FeatureFlag, Ticket, TicketMessage, SystemSetting, MaintenanceWindow, BackupJob, OperatorUser
+**운영사 도메인 (13)**: Tenant, TenantDraft, Subscription, Invoice, Plan, FeatureFlag, FeatureFlagOverride, Ticket, TicketMessage, SystemSetting, MaintenanceWindow, BackupJob, OperatorUser
 
 **HR 도메인 (17)**: Department, Employee, User, Role, Attendance, AttendanceModification, Leave, LeaveBalance, LeaveType, Approval, ApprovalStep, ApprovalLine, Document, CertificateRequest, Notification, AuditLog, EmployeeChangeRequest
 
@@ -189,7 +191,7 @@ draft → pending → approved → completed (휴가 사용 후)
 
 **v1.2 후순위 (2)**: Signature, ApiKey
 
-> 합계: 12+17+5+2 = **36종**. matrix.json `entities_total: 36`과 일치.
+> 합계: 13+17+5+2 = **37종**. matrix.json `entities_total: 37`과 일치.
 
 각 엔티티의 필드는 본 PRD 요약 + Phase 3 ERD에서 상세화.
 

@@ -3,6 +3,31 @@
 > Story = 역할 × 화면 × 골든 패스 1건. Acceptance Criteria는 PRD 화면 §8 Gherkin 시나리오 ID를 인용.
 > Story 번호: `ST-NNN` (3자리). MVP 우선순위(P0/P1/P2) 표기.
 
+## Story ↔ PRD §8 인용 표 (전체 72 Story 일괄 매핑)
+
+> README.md L69 규칙 이행. 각 Story의 Acceptance는 본 표의 PRD 경로 §8를 인용하는 것과 동일.
+
+| Story 범위 | 화면 / 인용 경로 |
+|----------|---------------|
+| ST-001~005 | CM-01~05 → `.flowset/prd/domains/common.md` 각 CM 섹션 |
+| ST-006~009 | OP-02/03/04 → `.flowset/prd/domains/operator/OP-02-tenants.md#8` / `OP-03-tenant-detail.md#8` / `OP-04-onboarding.md#8` |
+| ST-010 | CM-03 → `.flowset/prd/domains/common.md#cm-03-최초-계정-활성화` |
+| ST-011~015 | OP-05/06/10 → `.flowset/prd/domains/operator/OP-05-subscriptions.md#8` / `OP-06-billing.md#8` / `OP-10-reports.md#8` |
+| ST-016~019 | OP-07/11 → `.flowset/prd/domains/operator/OP-07-feature-flags.md#8` / `OP-11-system-settings.md#8` |
+| ST-020~023 | OP-08/09 → `.flowset/prd/domains/operator/OP-08-tickets.md#8` / `OP-09-audit-logs.md#8` |
+| ST-024~030 | TA-02/03/04 → `.flowset/prd/domains/tenant-admin/TA-02-employees.md#8` / `TA-03-employee-detail.md#8` / `TA-04-org-chart.md#8` |
+| ST-031~036 | EM-02/TA-05/06 → `.flowset/prd/domains/employee/EM-02-attendance.md#8` / `.flowset/prd/domains/tenant-admin/TA-05-attendance.md#8` / `TA-06-attendance-modifications.md#8` |
+| ST-037~046 | EM-03~05/TA-07~09 → `.flowset/prd/domains/employee/EM-03-leave-request.md#8` / `EM-04-my-leaves.md#8` / `EM-05-my-approvals.md#8` / `.flowset/prd/domains/tenant-admin/TA-07-leave-management.md#8` / `TA-08-leave-detail.md#8` / `TA-09-approvals.md#8` |
+| ST-047~052 | TA-10/11/EM-06~08 → `.flowset/prd/domains/tenant-admin/TA-10-payroll-documents.md#8` / `TA-11-contracts.md#8` / `.flowset/prd/domains/employee/EM-06-payslip.md#8` / `EM-07-documents.md#8` / `EM-08-certificate-request.md#8` |
+| ST-053~057 | TA-13/14/12 → `.flowset/prd/domains/tenant-admin/TA-13-settings.md#8` / `TA-14-integrations.md#8` / `TA-12-reports.md#8` |
+| ST-058~062 | EM-01/09/10/11 → `.flowset/prd/domains/employee/EM-01-dashboard.md#8` / `EM-09-profile.md#8` / `EM-10-notifications.md#8` / `EM-11-my-requests.md#8` |
+| ST-063~069 | CM-09~15/Realtime → `.flowset/prd/domains/common.md` 해당 CM 섹션 + `.flowset/prd/04-data-model.md#5-알림-흐름` |
+| ST-070 | OP-01 → `.flowset/prd/domains/operator/OP-01-dashboard.md#8` |
+| ST-071 | TA-01 → `.flowset/prd/domains/tenant-admin/TA-01-dashboard.md#8` |
+| ST-072 | CM-06 → `.flowset/prd/domains/common.md#cm-06-오류점검-화면` |
+
+본 표를 통해 모든 Story의 Acceptance는 해당 PRD §8 Gherkin 시나리오 전체와 1:1 매핑. 개별 Story에 시나리오 ID 인라인 기재가 필요한 경우 Phase 7 개발 착수 시 WI 변환 단계에서 보강.
+
 ---
 
 ## EP-01 인프라 / 인증 / 권한 베이스
@@ -159,9 +184,20 @@
 
 ### ST-015 (OP-10, operator_*) 운영 리포트 MVP (KPI + 4 차트) [P1]
 - AC: 6 KPI + 매출/가입해지/플랜/기능사용 4 차트, PDF/Excel 내보내기
+- AC 인용: `.flowset/prd/domains/operator/OP-10-reports.md#8-수용-기준-gherkin`
 - 추정: 3 SP
 
-**EP-03 합계**: 5 Story / 21 SP
+### ST-070 (OP-01, operator_*) 운영사 대시보드 [P0]
+> As a 운영사 (김운영/박오퍼)
+> I want to 플랫폼 전체 운영 상태 한눈에 (KPI 7 + 차트 4 + 최근 활동 3섹션)
+> So that 매일 아침 5초 안에 신규/해지/미수금/티켓/시스템 상태 파악
+- AC 인용: `.flowset/prd/domains/operator/OP-01-dashboard.md#8-수용-기준-gherkin`
+- AC-1 (KPI 2초 렌더), AC-2 (기간 필터 → 4 차트 갱신), AC-3 (operator_staff 내보내기 비활성), AC-4 (테넌트 사용자 403)
+- API: `GET /api/v1/operator/dashboard/{kpis,charts/*,recent/*}` + `POST .../export`
+- 엔티티: Tenant:R, Subscription:R, Invoice:R, Ticket:R, AuditLog:R, Plan:R (matrix.json screens_to_entities_map.OP-01)
+- 추정: 5 SP
+
+**EP-03 합계**: 6 Story / 26 SP (ST-070 P0이지만 EP-03 그룹 — 운영사 대시보드 데이터는 청구/플랜/티켓 집계)
 
 ---
 
@@ -237,9 +273,20 @@
 
 ### ST-030 (TA-03, employee) 본인 변경 요청 [P0]
 - AC: 즉시 수정 가능 필드 + HR 승인 필드 구분, 계좌 변경 시 2FA 재인증
+- AC 인용: `.flowset/prd/domains/tenant-admin/TA-03-employee-detail.md#8-수용-기준-gherkin` (manager 일부 탭 + employee 본인 일부 시나리오)
 - 추정: 3 SP
 
-**EP-06 합계**: 7 Story / 35 SP (EP 추정 34와 1 차이는 round)
+### ST-071 (TA-01, tenant_super+) 관리자 대시보드 [P0]
+> As a 테넌트 관리자 (이대표/정인사/최팀장)
+> I want to 회사 HR 운영 현황 한눈에 (KPI 6 + 차트 4 + 최근 요청·결재·이상자 3섹션)
+> So that 매일 아침 5초 안에 오늘 출근율/결재 대기/미열람 급여 파악
+- AC 인용: `.flowset/prd/domains/tenant-admin/TA-01-dashboard.md#8-수용-기준-gherkin`
+- AC-1 (6 KPI 2초 렌더), AC-2 (manager 자기 팀만 집계), AC-3 (employee → EM-01 리다이렉트), AC-4 (PWA 모바일 KPI 카드 + 결재 직행)
+- API: `GET /api/v1/tenant/dashboard/{kpis,charts/*,recent/*,pending/approvals,today/abnormal-attendance}`
+- 엔티티: Employee:R, Attendance:R, Leave:R, Approval:R, Notification:R (matrix.json screens_to_entities_map.TA-01)
+- 추정: 5 SP
+
+**EP-06 합계**: 8 Story / 40 SP (ST-071 추가)
 
 ---
 
@@ -433,39 +480,50 @@
 
 ### ST-069 (Realtime 인프라) Supabase Realtime publication [P0]
 - AC: notifications / approvals / approval_steps 등 publication, 클라이언트 구독 wrapper
+- AC 인용: `.flowset/prd/04-data-model.md#5-알림-흐름`
 - 추정: 5 SP
 
-**EP-12 합계**: 7 Story / 35 SP
+### ST-072 (CM-06, all roles) 오류·점검 화면 (404/500/maintenance) [P0]
+> As a 모든 사용자
+> I want to 명확한 오류/점검 안내 + 복구 동선
+> So that 장애 시 신뢰 유지 + 운영사 우회
+
+- AC 인용: `.flowset/prd/domains/common.md#cm-06-오류점검-화면`
+- AC-1 (404/500/503 페이지), AC-2 (운영사 OP-11 점검 토글 → 비-operator 503), AC-3 (operator는 점검 중에도 정상 접근), AC-4 (Sentry 자동 보고 — 500)
+- 엔티티: MaintenanceWindow:R (matrix.json — public_view), SystemSetting:R
+- 추정: 3 SP
+
+**EP-12 합계**: 8 Story / 38 SP (ST-072 추가)
 
 ---
 
 ## 전체 요약
 
+> **SP SSOT**: stories.md 본 표가 단일 진실. epics.md / estimation.md는 본 표를 인용.
+
 | Epic | Story 수 | SP |
 |------|--------|----|
 | EP-01 | 5 | 21 |
 | EP-02 | 5 | 31 |
-| EP-03 | 5 | 21 |
+| EP-03 | 6 | 26 |
 | EP-04 | 4 | 21 |
 | EP-05 | 4 | 21 |
-| EP-06 | 7 | 35 |
+| EP-06 | 8 | 40 |
 | EP-07 | 6 | 35 |
 | EP-08 | 10 | 58 |
 | EP-09 | 6 | 34 |
 | EP-10 | 5 | 34 |
 | EP-11 | 5 | 20 |
-| EP-12 | 7 | 35 |
-| **합계** | **69 Story** | **366 SP** |
-
-(epics.md 추정 364와 2 차이 — Story 단위 라운드 누적, 허용 범위)
+| EP-12 | 8 | 38 |
+| **합계** | **72 Story** | **379 SP** |
 
 ## MVP P0 그룹 (Sprint 1~6 대상)
 
-- EP-01 (5 Story) + EP-02 (5) + EP-06 (7) + EP-07 (6) + EP-08 (10) + EP-11 (5) + EP-12 (7) + EP-10 일부 (ST-053/054/055 = 3) = **48 Story / 약 240 SP**
+- EP-01 (5) + EP-02 (5) + EP-03 ST-070 (1, 운영사 대시보드) + EP-06 (8) + EP-07 (6) + EP-08 (10) + EP-11 (5) + EP-12 (8) + EP-10 (ST-053/054/055 = 3) = **51 Story / 약 255 SP**
 
 ## P1 그룹 (Sprint 7~9 대상)
 
-- EP-03 (5) + EP-04 (4) + EP-05 (4) + EP-09 (6) = 19 Story / 약 100 SP
+- EP-03 ST-011~015 (5) + EP-04 (4) + EP-05 (4) + EP-09 (6) = 19 Story / 약 100 SP
 
 ## P2/P3 그룹 (Sprint 10+)
 
