@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--
+  FlowHR AppShell 템플릿 — 모든 인증 화면이 본 구조를 따른다.
+  사용법:
+    1. 본 파일 전체를 화면 HTML로 복사
+    2. <title> 변경
+    3. 사이드바: 도메인별 메뉴 + active 위치만 변경 (operator/tenant/employee 메뉴는 _design-system/05-layouts.md 참조)
+    4. 페이지 타이틀 (.page-title) 변경
+    5. <main class="content"> 안만 화면별 콘텐츠로 교체
+    6. 헤더/푸터 절대 변경 금지
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — [화면 ID 화면명]</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ========================================================================
+       사이드바 (글로벌, 도메인별)
+       operator: 9 메뉴 / tenant: 8 메뉴 / employee: 8 메뉴
+       _design-system/05-layouts.md §사이드바 메뉴 참조
+       ======================================================================== -->
+  <nav class="sidebar">
+    <!-- 운영사: <Logo>, 테넌트: <TenantLogo> — 03-components.md §Logo / §TenantLogo 참조 -->
+    <div class="sidebar-logo">
+      <div class="logo">
+        <div class="logo-fallback">F</div>
+        <span class="logo-text">FlowHR</span>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
+  </nav>
+
+  <div class="main">
+
+    <!-- ========================================================================
+         글로벌 헤더 (CM-16~19 의무 — 변경 금지)
+         ======================================================================== -->
+    <header class="header">
+      <h1 class="page-title">[화면 타이틀]</h1>
+
+      <!-- CM-18 헤더 검색 (MVP △ — disabled + v1.1 배지) -->
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg>
+          <input placeholder="검색은 v1.1에서 제공됩니다 (현재 화면별 필터 사용)" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- CM-19 도움말 -->
+        <button class="icon-btn" data-tooltip="도움말 (현재 화면 가이드)">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+        </button>
+
+        <!-- CM-17 알림 종 -->
+        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg>
+          <span class="badge-dot">3</span>
+        </button>
+
+        <!-- CM-16 프로필 드롭다운 -->
+        <div style="position:relative;">
+          <button class="profile-trigger">
+            <div class="avatar">[I]</div>
+            <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg>
+          </button>
+          <!-- 드롭다운 펼친 상태 (실제 구현 시 click toggle) -->
+          <!--
+          <div class="dropdown dropdown-right-0" style="width:280px;">
+            <div class="dropdown-header">
+              <div class="dropdown-name">김운영</div>
+              <div class="dropdown-meta">operator_super · FlowHR 운영팀</div>
+            </div>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-user"/></svg>내 프로필 (OP-12)</a>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-bell"/></svg>알림 설정</a>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-help"/></svg>도움말</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-logout"/></svg>로그아웃</a>
+          </div>
+          -->
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================================
+         점검 사전 공지 배너 (조건부 — maintenance_windows 활성 시만)
+         ========================================================================
+    <div class="maintenance-banner">
+      <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-tool"/></svg>
+      <span>[점검 안내] 2026-05-20 22:00 ~ 23:00 시스템 점검이 예정되어 있습니다. 미리 작업을 저장해 주세요.</span>
+      <span class="close"><svg class="ico ico-sm" width="14" height="14"><use href="../_design-system/icons.svg#i-x"/></svg></span>
+    </div>
+    -->
+
+    <!-- ========================================================================
+         페이지 콘텐츠 (화면별 교체 영역)
+         ======================================================================== -->
+    <main class="content">
+      <!-- 화면별 콘텐츠 시작 -->
+
+      <p style="color: var(--color-text-muted);">콘텐츠 영역 — 화면별로 이 부분만 교체합니다.</p>
+
+      <!-- 화면별 콘텐츠 끝 -->
+    </main>
+
+    <!-- ========================================================================
+         글로벌 푸터 (변경 금지)
+         ======================================================================== -->
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a href="/legal/terms">이용약관</a>
+        <a href="/legal/privacy">개인정보처리방침</a>
+        <a>도움말</a>
+        <a>운영팀 문의</a>
+      </div>
+      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+    </footer>
+  </div>
+</div>
+
+</body>
+</html>
