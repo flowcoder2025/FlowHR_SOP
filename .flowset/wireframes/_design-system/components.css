@@ -543,3 +543,90 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .page-action-bar .summary { font-size: 13px; color: var(--color-text-muted); }
 .page-action-bar .summary strong { color: var(--color-text); }
 .page-action-bar .actions { display: flex; gap: 8px; }
+
+/* ============ Auth Layout (비인증 영역 — _layout-auth.html) ============
+   사용 화면: CM-01 로그인 / CM-02 비밀번호 찾기 / CM-03 활성화 / CM-04 2FA /
+            CM-05 403 / CM-06 404·500·maintenance / CM-20 PWA 설치 / CM-21 약관·개인정보.
+   AppShell(.app-shell)과 별개 — 사이드바 없음, 헤더는 로고 + 우측 i18n/도움말만. */
+.auth-shell { min-height: 100vh; display: flex; flex-direction: column; background: var(--color-surface); }
+.auth-header { height: 56px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; background: var(--color-bg); border-bottom: 1px solid var(--color-border); flex-shrink: 0; }
+.auth-header-actions { display: flex; gap: 8px; align-items: center; }
+.auth-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+.auth-card { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 24px; }
+.auth-card-wide { max-width: 720px; }
+.auth-card-narrow { max-width: 360px; }
+.auth-brand { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.auth-brand .auth-brand-title { font-size: 22px; font-weight: 700; color: var(--color-text); }
+.auth-brand .auth-brand-subtitle { font-size: 14px; color: var(--color-text-muted); }
+.auth-lang-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--r-md); font-size: 12px; color: var(--color-text-muted); background: transparent; border: 1px solid transparent; cursor: pointer; }
+.auth-lang-toggle:hover { background: var(--color-surface-2); border-color: var(--color-border-light); color: var(--color-text); }
+.auth-lang-toggle > svg.ico { width: 14px !important; height: 14px !important; }
+.auth-lang-current { font-weight: 600; color: var(--color-text); }
+.auth-lang-divider { opacity: 0.5; }
+
+/* 인증 폼 안 비밀번호 토글 — input 우측 끝 */
+.password-field { position: relative; }
+.password-field .input { padding-right: 40px; }
+.password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 0; cursor: pointer; color: var(--color-text-muted); border-radius: var(--r-sm); }
+.password-toggle:hover { background: var(--color-surface-2); color: var(--color-text); }
+.password-toggle > svg.ico { width: 16px !important; height: 16px !important; }
+
+/* 인증 영역 알림 박스 (error/warning/info) */
+.auth-alert { padding: 12px 14px; border-radius: var(--r-md); font-size: 13px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+.auth-alert > svg.ico { width: 18px !important; height: 18px !important; flex-shrink: 0; margin-top: 1px; }
+.auth-alert-error { background: var(--color-danger-bg); color: var(--color-danger); border: 1px solid var(--color-danger); }
+.auth-alert-warning { background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid var(--color-warning); }
+.auth-alert-info { background: var(--color-accent-bg); color: var(--color-accent); border: 1px solid var(--color-accent); }
+.auth-alert-success { background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success); }
+.auth-alert strong { font-weight: 700; }
+.auth-alert .auth-alert-meta { display: block; font-size: 12px; margin-top: 2px; opacity: 0.85; }
+
+/* 인증 폼 하단 보조 링크 */
+.auth-aux { display: flex; justify-content: space-between; align-items: center; font-size: 13px; flex-wrap: wrap; gap: 8px; }
+.auth-aux a { color: var(--color-accent); text-decoration: none; }
+.auth-aux a:hover { text-decoration: underline; }
+.auth-aux .muted { color: var(--color-text-muted); }
+
+/* OTP / TOTP 6자리 입력 (CM-04) */
+.otp-group { display: flex; gap: 8px; justify-content: center; }
+.otp-input { width: 48px; height: 56px; text-align: center; font-size: 22px; font-weight: 600; font-family: var(--font-mono); border: 1px solid var(--color-border); border-radius: var(--r-md); background: var(--color-bg); color: var(--color-text); }
+.otp-input:focus { outline: 2px solid var(--color-accent); outline-offset: -1px; border-color: var(--color-accent); }
+.otp-input:disabled { background: var(--color-surface-2); }
+
+/* Error/Empty/Maintenance Hero (CM-05 / CM-06) — 비인증 큰 카드 */
+.auth-hero { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 48px 32px; box-shadow: var(--shadow-sm); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.auth-hero > svg.ico-hero { width: 56px !important; height: 56px !important; color: var(--color-text-muted); }
+.auth-hero-code { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--color-text-muted); text-transform: uppercase; font-family: var(--font-mono); }
+.auth-hero-title { font-size: 24px; font-weight: 700; color: var(--color-text); }
+.auth-hero-desc { font-size: 14px; color: var(--color-text-muted); max-width: 420px; line-height: 1.6; }
+.auth-hero-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+
+/* 약관/개인정보 본문 레이아웃 (CM-21) */
+.legal-shell { display: grid; grid-template-columns: 240px 1fr; gap: 32px; max-width: 1024px; margin: 0 auto; }
+.legal-toc { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
+.legal-toc-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); margin-bottom: 12px; }
+.legal-toc a { display: block; padding: 6px 8px; color: var(--color-text-muted); text-decoration: none; border-radius: var(--r-sm); }
+.legal-toc a:hover, .legal-toc a.active { background: var(--color-surface-2); color: var(--color-text); }
+.legal-body { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 32px; box-shadow: var(--shadow-sm); line-height: 1.7; }
+.legal-body h2 { font-size: 18px; font-weight: 700; margin-top: 28px; margin-bottom: 12px; }
+.legal-body h2:first-child { margin-top: 0; }
+.legal-body p { margin-bottom: 12px; color: var(--color-text); }
+.legal-meta { font-size: 12px; color: var(--color-text-muted); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border-light); }
+
+/* PWA 설치 가이드 (CM-20) */
+.install-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.install-card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.install-card.is-active { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-bg); }
+.install-card-header { display: flex; align-items: center; gap: 10px; }
+.install-card-header > svg.ico { width: 20px !important; height: 20px !important; color: var(--color-accent); }
+.install-card-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+.install-steps { font-size: 13px; line-height: 1.6; color: var(--color-text-muted); padding-left: 18px; margin: 0; }
+.install-steps li { margin-bottom: 6px; }
+
+@media (max-width: 768px) {
+  .auth-main { padding: 24px 16px; }
+  .auth-card { gap: 16px; }
+  .legal-shell { grid-template-columns: 1fr; }
+  .legal-toc { position: static; max-height: none; }
+  .install-grid { grid-template-columns: 1fr; }
+}
