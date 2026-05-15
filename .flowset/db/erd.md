@@ -1,6 +1,7 @@
 # 전체 ERD (Mermaid)
 
-> 37 엔티티 × Postgres 스키마. 도메인별 4분할 + 통합 그래프.
+> 39 엔티티 × Postgres 스키마. 도메인별 4분할 + 통합 그래프.
+> 2026-05-15 (KI-030 batch-003): legal_documents, user_consents 추가.
 
 ## 1. 통합 ERD (핵심 관계)
 
@@ -66,6 +67,9 @@ erDiagram
     system_settings ||--o{ maintenance_windows : configured
     system_settings ||--o{ backup_jobs : triggers
     users ||--o{ operator_users : "subset (role-filter)"
+
+    legal_documents ||--o{ user_consents : "consented to"
+    users ||--o{ user_consents : "gives"
 ```
 
 > 위 그래프는 외래키 관계만 표시. 권한·RLS는 `rls.md` 참조.
@@ -203,6 +207,9 @@ erDiagram
 
     system_settings {
         uuid id PK "singleton, only 1 row"
+        text brand_name "운영사 브랜드명 (default 'FlowHR')"
+        text brand_logo_url "운영사 로고 이미지 URL (Storage)"
+        text brand_logo_url_dark "운영사 로고 — 사이드바(다크 배경)용"
         jsonb password_policy
         jsonb session_policy
         boolean require_operator_2fa
@@ -664,8 +671,63 @@ erDiagram
     integrations ||--o{ integration_logs : ""
 ```
 
-## 5. 변경 이력
+## 5. 컴플라이언스 도메인 ERD (2 엔티티 — KI-030 보강)
+
+```mermaid
+erDiagram
+    legal_documents {
+        uuid id PK
+        text type "terms|privacy"
+        text version "semver e.g. 2.0.0"
+        text language "ko|en — i18n MVP (en은 참고 번역, 법적 효력은 ko)"
+        date effective_date
+        text title
+        text content_md "약관 본문 markdown"
+        text summary_md "변경 요약 (강제 동의 화면 표시)"
+        boolean is_active "현재 게시 버전 여부"
+        uuid published_by FK "operator_super user_id"
+        timestamptz published_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    user_consents {
+        uuid id PK
+        uuid tenant_id FK "nullable for operator users"
+        uuid user_id FK
+        uuid document_id FK
+        text document_type "terms|privacy (denormalized for query)"
+        text version "denormalized"
+        timestamptz consented_at
+        inet ip_address
+        text user_agent
+        text source "activate|forced|footer"
+    }
+
+    legal_documents ||--o{ user_consents : "consented to"
+    users ||--o{ user_consents : "gives"
+```
+
+**주요 제약**:
+- `legal_documents` `(type, version, language)` UNIQUE — 동일 type/version의 동일 language 중복 방지 (ko/en은 별도 행, 동일 version 페어 의무)
+- `legal_documents` 동일 (type, language)에서 `is_active=true` 행은 최대 1개 (partial unique index `idx_legal_docs_active_per_type_lang` + 트리거 `legal_documents_ensure_single_active`)
+- `user_consents` `(user_id, document_id)` UNIQUE — 동일 사용자의 동일 문서 중복 동의 방지
+- `user_consents` 불변성: `consents_no_update` / `consents_no_delete` RLS policy + `user_consents_block_modify` BEFORE UPDATE/DELETE 트리거 (이중 차단)
+- 새 버전 게시 시 트리거 `legal_documents_ensure_single_active`가 기존 (type, language) active → false 자동 전환 (BEFORE INSERT/UPDATE, FOR EACH ROW)
+
+트리거 SQL 시그니처는 `db/rls.md §6-1` 절 참조.
+
+**users 테이블 i18n 필드 추가 (2026-05-16)**:
+```sql
+ALTER TABLE users ADD COLUMN locale text NOT NULL DEFAULT 'ko' CHECK (locale IN ('ko', 'en'));
+CREATE INDEX idx_users_locale ON users (locale);  -- 알림 발송 시 locale별 분기용
+```
+
+## 6. 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 37 엔티티 통합 + 도메인별 4분할 ERD | Phase 3 진입 |
+| 2026-05-15 | 39 엔티티 (legal_documents, user_consents 추가) — 컴플라이언스 도메인 ERD §5 | KI-030 batch-003 |
+| 2026-05-16 | i18n MVP: legal_documents.language + users.locale + 인덱스/트리거 갱신 | 사용자 결정 batch-005 |
+| 2026-05-16 | system_settings.brand_logo_url(_dark) + brand_name 추가 (운영사 로고). tenants.logo_url 기존 활용 | 사용자 지적 batch-005 |

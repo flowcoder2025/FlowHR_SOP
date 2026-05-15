@@ -29,14 +29,14 @@
       "ops_entry": "P0/P1/P2 0건 + P3는 운영 백로그 이관"
     }
   },
-  "current_phase": "0-setup",
+  "current_phase": "5-wireframes",
   "phases": {
     "0-setup": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15"},
-    "1-prd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.15, "eval_verdict": "PASS", "eval_attempts": 2},
-    "2-backlog": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.29, "eval_verdict": "PASS", "eval_attempts": 2},
-    "3-erd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.68, "eval_verdict": "PASS", "eval_attempts": 1},
-    "4-api": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.78, "eval_verdict": "PASS", "eval_attempts": 1},
-    "5-wireframes": {"status": "blocked", "owner": "next-session", "started_at": "2026-05-15", "blocked_by": "PRD 누락 결함 (KI-027~031). HANDOFF.md 작업 6~10 완료 후 재시작.", "policy_change": "Codex 이미지 폐기, HTML 직접 작성 단일 채택"},
+    "1-prd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.15, "eval_verdict": "PASS", "eval_attempts": 2, "rerun_score": 9.13, "rerun_at": "2026-05-15", "rerun_reason": "WI-KI-batch-003 보강 후 재평가"},
+    "2-backlog": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.29, "eval_verdict": "PASS", "eval_attempts": 2, "rerun_score": 8.03, "rerun_at": "2026-05-15", "rerun_reason": "ST-073~080 추가 후 재평가"},
+    "3-erd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.68, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.21, "rerun_at": "2026-05-15", "rerun_reason": "LegalDocument/UserConsent 추가 후 재평가, P2 4건 즉시 처리"},
+    "4-api": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.78, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.40, "rerun_at": "2026-05-15", "rerun_reason": "API 보강 후 재평가, P1+P2 즉시 처리 (OP-12 API 6종 + Envelope→SuccessEnvelope)"},
+    "5-wireframes": {"status": "in_progress", "owner": "claude", "restarted_at": "2026-05-15", "policy_change": "Codex 이미지 폐기, HTML 직접 작성 단일 채택", "scope": "44 화면 (CM-01~22 + OP-01~12 + TA-01~14 + EM-01~11)"},
     "6-sprint-plan": {"status": "pending"},
     "7-dev-kickoff": {"status": "pending"},
     "8-qa": {"status": "pending"},

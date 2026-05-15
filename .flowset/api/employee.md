@@ -173,8 +173,67 @@
 | GET | `/me/department` | self | 소속 부서 |
 | GET | `/me/colleagues?departmentId` | self | 같은 팀 직원 명단 (이름·직급만) |
 
+## EM-09 보안·알림·활동 (KI-029 batch-003 후속, OP-12와 공유)
+
+> 직원 본인 프로필(EM-09)은 기본 §1에 정의되어 있고 본 §은 보강. 운영사(OP-12)는 운영사 도메인 라우트(`/operator/me/profile`)와 분리되지만 보안 탭은 직원과 동일 엔드포인트 공유.
+
+### 보안 — 2FA
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| POST | `/me/security/2fa/enable` | self | TOTP secret 발급 + QR |
+| POST | `/me/security/2fa/verify` | self | 6자리 검증 → 활성화 + 복구 코드 8개 |
+| POST | `/me/security/2fa/disable` | self (직원만, 운영사는 차단) | 운영사 user는 `403 OPERATOR_2FA_REQUIRED` |
+| POST | `/me/security/2fa/regenerate` | self | TOTP secret 재발급 (기존 무효화) + 신규 QR |
+| POST | `/me/security/2fa/recovery-codes/regenerate` | self | 복구 코드 8개 재발급 (기존 모두 무효화) |
+
+### 알림 설정 (preferences)
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/me/notifications/preferences` | self | 카테고리별 채널 토글 + 강제 항목 |
+| PATCH | `/me/notifications/preferences` | self | body: `{category: {inApp, push, email, kakao, sms}}` 부분 patch |
+
+응답 (`GET /me/notifications/preferences`):
+```json
+{
+  "ok": true,
+  "data": {
+    "preferences": [
+      {"category":"approval_pending","inApp":true,"push":true,"email":false,"kakao":true,"sms":false,"forced":[]},
+      {"category":"system_maintenance","inApp":true,"push":true,"email":true,"kakao":false,"sms":false,"forced":["email"]}
+    ]
+  }
+}
+```
+
+운영사 강제 채널(OP-12 §3-3): `system_maintenance` 이메일 강제, `new_ticket` 푸시 강제. 클라이언트가 force off 시도 → `400 NOTIFICATION_CHANNEL_FORCED`.
+
+### 활동 로그 (본인)
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/me/audit-logs?days=30&action=&page=` | self | 본인 액션 로그 (audit_logs.actor_id = self) |
+| POST | `/me/audit-logs/export` | self | xlsx 생성 (CM-12) → Signed URL |
+
+`days`는 1~90 (기본 30). 90 초과 시 `400 AUDIT_LOG_RANGE_EXCEEDED`.
+
+응답:
+```json
+{
+  "ok": true,
+  "data": {
+    "items": [
+      {"id":"uuid","action":"login","targetType":"session","targetId":"sid","result":"success","ipAddress":"1.2.3.4","userAgent":"Chrome 124","createdAt":"2026-05-15T09:00:00Z"}
+    ],
+    "pagination": {...}
+  }
+}
+```
+
 ## 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 11 화면 × 약 55 엔드포인트 + Realtime 구독 | Phase 4 진입 |
+| 2026-05-15 | EM-09 보안·알림·활동 §추가 (2FA regenerate, notifications/preferences, audit-logs) — 직원 + OP-12 공유 | KI-029 batch-003 후속 (Phase 4 P1 해소) |

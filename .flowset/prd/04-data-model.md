@@ -3,10 +3,11 @@
 > 본 문서는 PRD 차원의 **엔티티 개요 + 관계도**. 상세 ERD/RLS/마이그레이션은 Phase 3 산출물(`.flowset/db/`).
 > 데이터 모델 SSOT는 `.flowset/spec/matrix.json` (entities 블록).
 
-## 1. 엔티티 카탈로그 (총 37종)
+## 1. 엔티티 카탈로그 (총 39종)
 
 > 카운트 정책: `matrix.json.entities` 블록 기준. v1.2+ 도입 예정 엔티티(Signature 등)도 v1.2 슬롯 명시하여 포함.
 > Phase 2 추가: FeatureFlagOverride (테넌트별 기능 플래그 예외).
+> 2026-05-15 추가 (KI-030 batch-003): LegalDocument, UserConsent (CM-21 약관/개인정보 처리).
 
 ### 운영사 도메인 (13종)
 | 엔티티 | 한글명 | 용도 |
@@ -55,13 +56,22 @@
 | `integrations` | 외부 연동 | 카카오 알림톡 / SMS / Slack / SSO 등 연결 정보 |
 | `integration_logs` | 외부 연동 호출 이력 | TA-14 — 카카오/SMS/Webhook 요청·응답 |
 
+### 컴플라이언스 / 정적 콘텐츠 도메인 (2종) — KI-030 보강 + i18n 확장 (2026-05-16)
+
+| 엔티티 | 한글명 | 용도 |
+|--------|-------|------|
+| `legal_documents` | 약관/정책 문서 | CM-21 — 이용약관·개인정보처리방침 버전 관리 + **language(`ko`/`en`)** 필드 — `(type, version, language)` UNIQUE. 영문은 참고 번역 (법적 효력은 한글) |
+| `user_consents` | 사용자 동의 이력 | CM-03/CM-21 — 사용자×문서버전 동의 시각·IP·UA 기록. document_id로 language 자동 추적 |
+
+**users 테이블 i18n 필드 추가**: `locale text NOT NULL DEFAULT 'ko' CHECK (locale IN ('ko', 'en'))` — 본인 프로필에서 변경 가능, 첫 로그인 시 Accept-Language로 자동 설정
+
 ### v1.2 후순위 도메인 (2종)
 | 엔티티 | 한글명 | 용도 |
 |--------|-------|------|
 | `signatures` | 전자서명 | TA-11 v1.2 — 외부 인증사업자 연동 결과 |
 | `api_keys` | API 키 | TA-14 (테넌트) + OP-11 (운영사) — 외부 도구 인증 |
 
-> **카운트 검증**: 운영사 13 + HR 17 + 회사설정/연동 5 + v1.2 2 = **37종** (matrix.json `entities_total: 37`과 일치).
+> **카운트 검증**: 운영사 13 + HR 17 + 회사설정/연동 5 + 컴플라이언스 2 + v1.2 2 = **39종** (matrix.json `entities_total: 39`과 일치).
 
 ## 2. 핵심 관계 (Mermaid)
 
@@ -181,7 +191,7 @@ draft → pending → approved → completed (휴가 사용 후)
 
 ## 7. matrix.json 채움 계획
 
-`matrix.json.entities` 블록에 채워진 엔티티 (총 37종):
+`matrix.json.entities` 블록에 채워진 엔티티 (총 39종):
 
 **운영사 도메인 (13)**: Tenant, TenantDraft, Subscription, Invoice, Plan, FeatureFlag, FeatureFlagOverride, Ticket, TicketMessage, SystemSetting, MaintenanceWindow, BackupJob, OperatorUser
 
@@ -189,9 +199,11 @@ draft → pending → approved → completed (휴가 사용 후)
 
 **회사 설정 / 연동 (5)**: TenantSetting, WorkPolicy, DocumentTemplate, Integration, IntegrationLog
 
+**컴플라이언스 / 정적 콘텐츠 (2)**: LegalDocument, UserConsent
+
 **v1.2 후순위 (2)**: Signature, ApiKey
 
-> 합계: 13+17+5+2 = **37종**. matrix.json `entities_total: 37`과 일치.
+> 합계: 13+17+5+2+2 = **39종**. matrix.json `entities_total: 39`과 일치.
 
 각 엔티티의 필드는 본 PRD 요약 + Phase 3 ERD에서 상세화.
 
@@ -200,3 +212,5 @@ draft → pending → approved → completed (휴가 사용 후)
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 36 엔티티 카탈로그 + ER 다이어그램 (Attempt 1: 26 → Attempt 2: 36 정정, KI-002/009 등 8 엔티티 추가) | Phase 1 진입 + evaluator 정합 |
+| 2026-05-15 | 37 → 39 (LegalDocument, UserConsent 추가) — CM-21 약관/개인정보 처리 | KI-030 batch-003 |
+| 2026-05-16 | i18n MVP 확장: legal_documents.language + users.locale 추가, `(type,version,language)` UNIQUE | 사용자 결정 batch-005 |

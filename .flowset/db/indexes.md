@@ -119,6 +119,26 @@ CREATE INDEX idx_api_keys_owner ON api_keys (owner_type, tenant_id) WHERE revoke
 CREATE UNIQUE INDEX idx_api_keys_hash ON api_keys (key_hash);
 ```
 
+### Compliance (Legal Documents / User Consents) — KI-030 batch-003 + i18n batch-005
+```sql
+-- 동일 type×version×language 중복 방지 (ko/en은 별도 행)
+CREATE UNIQUE INDEX idx_legal_docs_type_version_lang ON legal_documents (type, version, language);
+-- 동일 (type, language) 활성 버전 1개 보장
+CREATE UNIQUE INDEX idx_legal_docs_active_per_type_lang ON legal_documents (type, language) WHERE is_active = true;
+-- 게시 이력 정렬 (language별)
+CREATE INDEX idx_legal_docs_published_at ON legal_documents (type, language, published_at DESC);
+
+-- 사용자별 동의 이력 조회 (CM-21 강제 동의 가드)
+CREATE INDEX idx_consents_user_doctype ON user_consents (user_id, document_type, consented_at DESC);
+-- 동일 사용자×문서 중복 방지
+CREATE UNIQUE INDEX idx_consents_user_doc ON user_consents (user_id, document_id);
+-- 운영사 감사 조회 (날짜 범위)
+CREATE INDEX idx_consents_consented_at ON user_consents (consented_at DESC);
+
+-- users.locale (알림 발송 시 locale별 분기용, i18n batch-005)
+CREATE INDEX idx_users_locale ON users (locale);
+```
+
 ## 3. 인덱스 운영 전략
 
 ### 모니터링
@@ -136,3 +156,5 @@ CREATE UNIQUE INDEX idx_api_keys_hash ON api_keys (key_hash);
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 37 엔티티 핵심 인덱스 + 파티셔닝 검토 | Phase 3 진입 |
+| 2026-05-15 | legal_documents / user_consents 6 인덱스 추가 | KI-030 batch-003 |
+| 2026-05-16 | i18n MVP: legal_docs 인덱스 language 차원 추가 + idx_users_locale | 사용자 결정 batch-005 |

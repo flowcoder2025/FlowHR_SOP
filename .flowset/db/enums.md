@@ -45,6 +45,10 @@ CREATE TYPE change_request_status AS ENUM ('pending', 'approved', 'rejected', 'c
 -- 설정/연동/v1.2
 CREATE TYPE integration_status AS ENUM ('disconnected', 'connected', 'error', 'expired');
 CREATE TYPE signature_status AS ENUM ('pending', 'signed', 'rejected', 'expired');
+
+-- 컴플라이언스 (KI-030 batch-003)
+CREATE TYPE legal_document_type AS ENUM ('terms', 'privacy');
+CREATE TYPE consent_source AS ENUM ('activate', 'forced', 'footer');
 ```
 
 ## 한글 표시 매핑 (클라이언트 i18n)
@@ -109,3 +113,4 @@ export const enumLabels = {
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — KI-004 해소 (Attendance 등 모든 enum 영문 통일) | Phase 3 진입 |
+| 2026-05-15 | legal_document_type, consent_source enum 추가 | KI-030 batch-003 |

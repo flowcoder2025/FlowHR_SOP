@@ -20,7 +20,7 @@
 | Realtime | Supabase Realtime | latest | 알림 / 결재 진행 |
 | 인증 | Supabase Auth | latest | 이메일/비밀번호 + TOTP 2FA + 매직링크 |
 | 파일 저장 | Supabase Storage | latest | 테넌트별 prefix `tenants/{tenantId}/` |
-| i18n | next-intl | 3.x | ko 기본, en은 v2.0 글로벌 진출 시 도입 (인프라는 MVP에 미리 구축) |
+| i18n | next-intl | 3.x | **ko + en 동시 MVP** (외국인 근로자 사용성 — 사용자 결정 2026-05-16). 우선순위: profile.locale → Accept-Language → ko (default). 통화 KRW / 시간대 Asia/Seoul 고정 (한국 사업장), 날짜 형식만 locale-aware |
 | 데스크톱 앱 | Tauri | 2.x | Rust 1.78+, WebView |
 | 모노레포 | pnpm workspaces + Turborepo | 8.x / 2.x | 캐시 + 병렬 |
 | 테스트 (단위) | Vitest | 1.x | + Testing Library |
@@ -186,3 +186,4 @@ supabase/migrations/*.sql 변경 → PR → CI에서 dry-run
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 스택 + 모노레포 + 인증 + 배포 | Phase 1 진입 |
+| 2026-05-16 | i18n: ko + en MVP 동시 (외국인 근로자) | 사용자 결정 batch-005 |

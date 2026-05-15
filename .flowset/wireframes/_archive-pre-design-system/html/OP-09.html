@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-09 감사 로그</title>
+<link rel="stylesheet" href="_design-tokens.css">
+<link rel="stylesheet" href="_icons.css">
+<style>
+  .layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
+  .filter-panel { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow-sm); position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; }
+  .filter-group { margin-bottom: 16px; }
+  .filter-group h4 { font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .filter-checkbox { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; cursor: pointer; }
+  .footer { padding: 16px 24px; background: var(--color-bg); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-muted); }
+  .footer-links { display: flex; gap: 16px; } .footer-links a { color: var(--color-text-muted); text-decoration: none; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/></symbol>
+  <symbol id="i-credit-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+</svg>
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo">FlowHR</div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item active"><svg class="ico"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-settings"/></svg> 시스템 설정</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">감사 로그</h1>
+      <div style="flex:1;"></div>
+      <div class="header-actions">
+        <div style="padding:8px;cursor:pointer;color:var(--color-text-muted);"><svg class="ico"><use href="#i-help"/></svg></div>
+        <div class="bell"><svg class="ico"><use href="#i-bell"/></svg><span class="bell-badge">3</span></div>
+        <div class="avatar">김</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="layout">
+        <aside class="filter-panel">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">필터</h3>
+
+          <div class="filter-group">
+            <h4>기간 (필수)</h4>
+            <select style="width:100%;border:1px solid var(--color-border);border-radius:var(--r-sm);padding:6px;font-size:13px;"><option>오늘 (2026-05-16)</option><option>최근 7일</option><option>최근 30일</option><option>최근 90일</option><option>커스텀</option></select>
+          </div>
+
+          <div class="filter-group">
+            <h4>테넌트</h4>
+            <input style="width:100%;padding:6px;border:1px solid var(--color-border);border-radius:var(--r-sm);font-size:13px;" placeholder="회사명 자동완성..." />
+          </div>
+
+          <div class="filter-group">
+            <h4>이벤트 유형</h4>
+            <label class="filter-checkbox"><input type="checkbox" checked> auth.* (로그인/2FA)</label>
+            <label class="filter-checkbox"><input type="checkbox"> tenant.*</label>
+            <label class="filter-checkbox"><input type="checkbox"> employee.*</label>
+            <label class="filter-checkbox"><input type="checkbox"> attendance.*</label>
+            <label class="filter-checkbox"><input type="checkbox"> leave.*</label>
+            <label class="filter-checkbox"><input type="checkbox"> approval.*</label>
+            <label class="filter-checkbox"><input type="checkbox"> document.*</label>
+            <label class="filter-checkbox"><input type="checkbox"> setting.update</label>
+            <label class="filter-checkbox"><input type="checkbox"> feature_flag.toggle</label>
+          </div>
+
+          <div class="filter-group">
+            <h4>사용자</h4>
+            <input style="width:100%;padding:6px;border:1px solid var(--color-border);border-radius:var(--r-sm);font-size:13px;" placeholder="이름/이메일 자동완성..." />
+          </div>
+
+          <div class="filter-group">
+            <h4>결과</h4>
+            <label class="filter-checkbox"><input type="checkbox" checked> 성공</label>
+            <label class="filter-checkbox"><input type="checkbox" checked> 실패</label>
+            <label class="filter-checkbox"><input type="checkbox" checked> 차단</label>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;">적용</button>
+        </aside>
+
+        <div>
+          <section style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-size:13px;color:var(--color-text-muted);">2026-05-16 · 1,247건</div>
+            <button class="btn btn-secondary"><svg class="ico"><use href="#i-download"/></svg>CSV 내보내기 (super only)</button>
+          </section>
+
+          <div class="card" style="padding:0;overflow:hidden;">
+            <table class="table">
+              <thead><tr><th>발생일시 ↓</th><th>테넌트</th><th>사용자</th><th>역할</th><th>이벤트</th><th>대상</th><th>결과</th><th>IP</th><th></th></tr></thead>
+              <tbody>
+                <tr><td style="font-family:monospace;font-size:12px;">10:45:23</td><td>—</td><td>김운영</td><td>operator_super</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">tenant.create</code></td><td>tenant:abc-123</td><td><span class="badge success">성공</span></td><td style="font-family:monospace;font-size:12px;">211.234.5.6</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr><td style="font-family:monospace;font-size:12px;">10:32:14</td><td>(주)테크스타트</td><td>kim@startup.com</td><td>tenant_super</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">auth.login</code></td><td>session</td><td><span class="badge success">성공</span></td><td style="font-family:monospace;font-size:12px;">123.45.6.7</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr><td style="font-family:monospace;font-size:12px;">10:18:55</td><td>(주)테크스타트</td><td>김운영</td><td>operator_super</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">tenant.update</code></td><td>tenant:def-456 (plan)</td><td><span class="badge success">성공</span></td><td style="font-family:monospace;font-size:12px;">211.234.5.6</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr><td style="font-family:monospace;font-size:12px;">09:55:08</td><td>(주)카페오너스</td><td>lee@cafe.com</td><td>(시도)</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">auth.login_failed</code></td><td>session (5회)</td><td><span class="badge danger">차단</span></td><td style="font-family:monospace;font-size:12px;">192.168.1.50</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr><td style="font-family:monospace;font-size:12px;">09:42:01</td><td>—</td><td>system</td><td>cron</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">invoice.batch_issue</code></td><td>invoice:×42</td><td><span class="badge success">성공 (42건)</span></td><td style="font-family:monospace;font-size:12px;">internal</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr><td style="font-family:monospace;font-size:12px;">09:30:42</td><td>(주)치킨매니아</td><td>한직원</td><td>employee</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">leave.create</code></td><td>leave:ghi-789</td><td><span class="badge success">성공</span></td><td style="font-family:monospace;font-size:12px;">175.45.21.8</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr><td style="font-family:monospace;font-size:12px;">09:15:33</td><td>(주)디자인스튜디오</td><td>park@design.com</td><td>tenant_hr_admin</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">approval.process</code></td><td>approval:jkl-012</td><td><span class="badge success">성공</span></td><td style="font-family:monospace;font-size:12px;">211.78.4.9</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr><td style="font-family:monospace;font-size:12px;">08:45:11</td><td>(주)물류시스템</td><td>han@logi.com</td><td>tenant_super</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">document.view</code></td><td>document:mno-345</td><td><span class="badge success">성공</span></td><td style="font-family:monospace;font-size:12px;">14.34.5.10</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+                <tr style="background:var(--color-danger-bg);"><td style="font-family:monospace;font-size:12px;">08:30:55</td><td>(주)이커머스랩</td><td>(시도자 미상)</td><td>(인증실패)</td><td><code style="font-size:12px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;">tenant.access_denied</code></td><td>tenant:pqr-678 cross-access</td><td><span class="badge danger">차단</span></td><td style="font-family:monospace;font-size:12px;">202.50.1.20</td><td><svg class="ico" style="cursor:pointer;color:var(--color-accent);"><use href="#i-eye"/></svg></td></tr>
+              </tbody>
+            </table>
+            <div style="display:flex;justify-content:space-between;padding:12px 16px;font-size:13px;color:var(--color-text-muted);">
+              <div>1,247건 중 1-9 표시 (페이지당 50)</div>
+              <div style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">‹</button><span style="padding:4px 12px;">1 / 25</span><button class="btn btn-ghost btn-sm">›</button></div>
+            </div>
+          </div>
+
+          <!-- 상세 모달 시각화 -->
+          <div style="margin-top:24px;">
+            <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:8px;">[와이어프레임 주석] 행 상세 모달:</div>
+            <div class="card" style="max-width:600px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3 style="font-size:14px;font-weight:600;">tenant.update — 상세</h3>
+                <span style="cursor:pointer;color:var(--color-text-muted);">✕</span>
+              </div>
+              <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:12px;">10:18:55 · 김운영 (operator_super) · 211.234.5.6 · req_abc123def456</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">Before</div>
+                  <pre style="background:var(--color-danger-bg);padding:10px;border-radius:var(--r-sm);font-size:11px;overflow:auto;">{
+  "plan_id": "basic",
+  "monthly_fee": 50000
+}</pre>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">After</div>
+                  <pre style="background:var(--color-success-bg);padding:10px;border-radius:var(--r-sm);font-size:11px;overflow:auto;">{
+  "plan_id": "premium",
+  "monthly_fee": 500000
+}</pre>
+                </div>
+              </div>
+              <div style="margin-top:12px;font-size:12px;">
+                <div><strong>User-Agent:</strong> <span style="color:var(--color-text-muted);">Mozilla/5.0 ... Chrome/124</span></div>
+                <div><strong>Tenant:</strong> tenant:def-456 ((주)테크스타트)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a></div>
+      <div style="font-family:monospace;">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+</body>
+</html>

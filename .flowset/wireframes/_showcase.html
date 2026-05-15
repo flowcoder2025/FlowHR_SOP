@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR 디자인 시스템 — Showcase</title>
+<link rel="stylesheet" href="_design-system/tokens.css">
+<link rel="stylesheet" href="_design-system/components.css">
+<style>
+  body { padding: 24px; max-width: 1280px; margin: 0 auto; }
+  .showcase-section { margin-bottom: 40px; }
+  .showcase-section h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 2px solid var(--color-accent); }
+  .showcase-section .desc { font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px; }
+  .showcase-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding: 16px; background: var(--color-surface); border-radius: var(--r-md); margin-bottom: 12px; }
+  .showcase-row .row-label { width: 140px; font-size: 12px; color: var(--color-text-muted); font-weight: 600; }
+  .swatch { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; }
+  .swatch-color { width: 60px; height: 40px; border-radius: var(--r-sm); border: 1px solid var(--color-border); }
+  h1.page-h { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .toc { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 16px; margin-bottom: 32px; box-shadow: var(--shadow-sm); }
+  .toc a { display: inline-block; padding: 4px 10px; margin: 2px; background: var(--color-surface-2); border-radius: var(--r-sm); font-size: 12px; color: var(--color-text); text-decoration: none; }
+  .toc a:hover { background: var(--color-accent-light); color: var(--color-primary); }
+  /* showcase 매트릭스 table — td vertical 정렬 강제 (사용자 결정 2026-05-16) */
+  .showcase-section table td { vertical-align: middle; }
+  .showcase-section table th { vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<!-- ===========================================================================
+     아이콘 SVG sprite — 단일 source는 _design-system/icons.svg
+     수정은 source에서만. 화면별 인라인은 file:// 호환 위한 sync 복사본.
+     =========================================================================== -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></symbol>
+  <symbol id="i-credit-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M15 8h-5"/><path d="M15 12h-5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></symbol>
+  <symbol id="i-check-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-network" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="6"/><rect x="16" y="16" width="6" height="6"/><rect x="2" y="16" width="6" height="6"/><path d="M5 16v-4h14v4"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <symbol id="i-paperclip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+  <symbol id="i-excel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="10" y1="13" y2="13"/><line x1="8" x2="10" y1="17" y2="17"/><line x1="14" x2="16" y1="13" y2="13"/><line x1="14" x2="16" y1="17" y2="17"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+  <symbol id="i-more-h" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+  <symbol id="i-alert-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-alert-t" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+  <symbol id="i-trending-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+</svg>
+
+<h1 class="page-h">FlowHR 디자인 시스템 — Showcase</h1>
+<p style="color: var(--color-text-muted); margin-bottom: 8px;">모든 컴포넌트 시연 페이지. 디자인 검수 + 신규 화면 작성 시 참조.</p>
+<div class="banner info" style="margin-bottom:24px;">
+  <svg class="ico banner-icon" width="18" height="18"><use href="#i-info"/></svg>
+  <div class="banner-content">
+    <div class="banner-title">표기 규칙</div>
+    본 페이지의 모든 텍스트는 <code class="code">[변수명]</code> 표기로 표현됩니다. 도메인 텍스트("테넌트", "신규 등록" 등)는 화면 HTML(<code class="code">html/*.html</code>)에서만 사용. 컴포넌트 자체 식별 라벨(variant 이름·아이콘 이름·tab/filter slot 이름)은 그대로 유지.
+  </div>
+</div>
+
+<div class="toc">
+  <strong style="display:block;margin-bottom:8px;">목차</strong>
+  <a href="#colors">색상</a><a href="#typography">타이포</a><a href="#icons">아이콘</a><a href="#buttons">버튼</a><a href="#inputs">입력</a><a href="#checkbox">체크박스</a><a href="#badges">배지</a><a href="#logo">로고</a><a href="#avatars">아바타</a><a href="#cards">카드</a><a href="#tables">테이블</a><a href="#tabs">탭</a><a href="#breadcrumb">브레드크럼</a><a href="#filters">필터</a><a href="#dropdowns">드롭다운</a><a href="#modals">모달</a><a href="#toasts">토스트</a><a href="#tooltip">툴팁</a><a href="#popover">팝오버</a><a href="#banners">배너</a><a href="#stepper">스테퍼</a><a href="#charts">차트</a><a href="#empty">상태</a><a href="#form">폼</a><a href="#sidebar">사이드바</a><a href="#header">헤더</a><a href="#footer">푸터</a><a href="#maintenance-banner">점검 배너</a><a href="#session-row">세션 행</a><a href="#code">코드</a>
+</div>
+
+<!-- ============ 색상 ============ -->
+<section class="showcase-section" id="colors">
+  <h2>색상 토큰</h2>
+  <div class="desc">모든 색상은 `var(--color-*)` 변수 사용. 화면에서 hex 하드코딩 금지.</div>
+
+  <div class="showcase-row">
+    <div class="row-label">Brand</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-primary);"></div>primary</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-primary-bg);"></div>primary-bg</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-accent);"></div>accent</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-accent-light);"></div>accent-light</div>
+  </div>
+  <div class="showcase-row">
+    <div class="row-label">Surface</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-bg);"></div>bg</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-surface);"></div>surface</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-surface-2);"></div>surface-2</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-border);"></div>border</div>
+  </div>
+  <div class="showcase-row">
+    <div class="row-label">Status</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-success);"></div>success</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-warning);"></div>warning</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-danger);"></div>danger</div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--color-info);"></div>info</div>
+  </div>
+</section>
+
+<!-- ============ 타이포 ============ -->
+<section class="showcase-section" id="typography">
+  <h2>타이포그래피</h2>
+  <div class="desc">Pretendard (한글 우선) + system fallback.</div>
+  <div class="showcase-row" style="flex-direction:column;align-items:flex-start;">
+    <div style="font-size:28px;font-weight:700;">28px / 700 — 페이지 H1 (Showcase 페이지 제목)</div>
+    <div style="font-size:18px;font-weight:600;">18px / 600 — 페이지 타이틀 (헤더)</div>
+    <div style="font-size:16px;font-weight:600;">16px / 600 — 모달 헤더</div>
+    <div style="font-size:14px;font-weight:600;">14px / 600 — 카드 / 섹션 제목</div>
+    <div style="font-size:14px;">14px / 400 — 본문</div>
+    <div style="font-size:13px;color:var(--color-text-muted);">13px / 400 muted — 보조 텍스트</div>
+    <div style="font-size:12px;color:var(--color-text-muted);">12px / 500 — 메타 정보</div>
+    <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.06em;">11px / 600 UPPERCASE — 카드 라벨</div>
+    <div style="font-family:var(--font-mono);font-size:13px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;">font-mono — [code] / [identifier]</div>
+  </div>
+</section>
+
+<!-- ============ 아이콘 ============ -->
+<section class="showcase-section" id="icons">
+  <h2>아이콘 (Lucide outline)</h2>
+  <div class="desc">단일 source: `_design-system/icons.svg`. 외부 참조만.</div>
+  <div class="showcase-row" style="font-size:11px;">
+    <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:12px;flex:1;">
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-dashboard"/></svg><br>dashboard</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-building"/></svg><br>building</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-credit-card"/></svg><br>credit-card</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-receipt"/></svg><br>receipt</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-flag"/></svg><br>flag</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-ticket"/></svg><br>ticket</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-scroll"/></svg><br>scroll</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-chart"/></svg><br>chart</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-settings"/></svg><br>settings</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-clock"/></svg><br>clock</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-calendar-days"/></svg><br>calendar-days</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-check-square"/></svg><br>check-square</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-file-text"/></svg><br>file-text</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-users"/></svg><br>users</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-network"/></svg><br>network</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-link"/></svg><br>link</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-search"/></svg><br>search</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-bell"/></svg><br>bell</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-help"/></svg><br>help</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-user"/></svg><br>user</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-shield"/></svg><br>shield</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-logout"/></svg><br>logout</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-info"/></svg><br>info</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-plus"/></svg><br>plus</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-edit"/></svg><br>edit</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-copy"/></svg><br>copy</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-trash"/></svg><br>trash</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-download"/></svg><br>download</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-upload"/></svg><br>upload</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-save"/></svg><br>save</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-send"/></svg><br>send</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-paperclip"/></svg><br>paperclip</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-pdf"/></svg><br>pdf</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-excel"/></svg><br>excel</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-eye"/></svg><br>eye</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-history"/></svg><br>history</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-tool"/></svg><br>tool</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-key"/></svg><br>key</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-database"/></svg><br>database</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-mail"/></svg><br>mail</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-monitor"/></svg><br>monitor</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-smartphone"/></svg><br>smartphone</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg><br>more</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-chevron-down"/></svg><br>chevron-down</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-arrow-up"/></svg><br>arrow-up</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-arrow-down"/></svg><br>arrow-down</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-arrow-right"/></svg><br>arrow-right</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-x"/></svg><br>x</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-menu"/></svg><br>menu</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-check"/></svg><br>check</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-check-circle"/></svg><br>check-circle</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-alert-c"/></svg><br>alert-c</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-alert-t"/></svg><br>alert-t</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-loader"/></svg><br>loader</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-activity"/></svg><br>activity</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-trending-up"/></svg><br>trending-up</div>
+      <div style="text-align:center;"><svg class="ico" width="16" height="16"><use href="#i-zap"/></svg><br>zap</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 버튼 (정렬 검수 grid) ============ -->
+<section class="showcase-section" id="buttons">
+  <h2>버튼 (Button) — 정렬 검수 매트릭스</h2>
+  <div class="desc">
+    원칙: Button은 단일 컴포넌트. <code class="code">variant / size / leadingIcon / trailingIcon / disabled</code> prop으로 모든 인스턴스 표현.
+    SVG는 항상 <code class="code">width</code>/<code class="code">height</code> attribute 명시 (CSS만으로는 일부 브라우저에서 native 24px로 그려져 정렬 깨짐 — 이미지 참조).
+  </div>
+
+  <!-- Variant × Size 그리드 (icon 없음) -->
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">Variant × Size (label only)</div>
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <colgroup>
+        <col style="width:120px;">
+        <col style="width:200px;">
+        <col style="width:240px;">
+        <col style="width:auto;">
+      </colgroup>
+      <thead>
+        <tr style="font-size:11px;color:var(--color-text-muted);">
+          <th style="text-align:left;padding:8px;">variant ↓ / size →</th>
+          <th style="text-align:left;padding:8px;">sm (h:30)</th>
+          <th style="text-align:left;padding:8px;">md (h:36, default)</th>
+          <th style="text-align:left;padding:8px;">lg (h:44)</th>
+        </tr>
+      </thead>
+      <tbody style="border-top:1px solid var(--color-border);">
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">primary</td>
+          <td style="padding:10px 8px;"><button class="btn btn-primary btn-sm">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-primary">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-primary btn-lg">[label]</button></td>
+        </tr>
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">secondary</td>
+          <td style="padding:10px 8px;"><button class="btn btn-secondary btn-sm">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-secondary">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-secondary btn-lg">[label]</button></td>
+        </tr>
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">ghost</td>
+          <td style="padding:10px 8px;"><button class="btn btn-ghost btn-sm">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-ghost">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-ghost btn-lg">[label]</button></td>
+        </tr>
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">danger</td>
+          <td style="padding:10px 8px;"><button class="btn btn-danger btn-sm">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-danger">[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-danger btn-lg">[label]</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- leadingIcon -->
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">+ leadingIcon (정렬 검수 의무 — 이전 결함 위치)</div>
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <colgroup>
+        <col style="width:120px;">
+        <col style="width:200px;">
+        <col style="width:240px;">
+        <col style="width:auto;">
+      </colgroup>
+      <thead><tr style="font-size:11px;color:var(--color-text-muted);"><th style="text-align:left;padding:8px;">variant</th><th style="text-align:left;padding:8px;">sm + ico 14</th><th style="text-align:left;padding:8px;">md + ico 16</th><th style="text-align:left;padding:8px;">lg + ico 18</th></tr></thead>
+      <tbody style="border-top:1px solid var(--color-border);">
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">primary</td>
+          <td style="padding:10px 8px;"><button class="btn btn-primary btn-sm"><svg class="ico" width="14" height="14"><use href="#i-plus"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-primary"><svg class="ico" width="16" height="16"><use href="#i-plus"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-primary btn-lg"><svg class="ico" width="18" height="18"><use href="#i-plus"/></svg>[label long]</button></td>
+        </tr>
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">secondary</td>
+          <td style="padding:10px 8px;"><button class="btn btn-secondary btn-sm"><svg class="ico" width="14" height="14"><use href="#i-download"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-secondary"><svg class="ico" width="16" height="16"><use href="#i-download"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-secondary btn-lg"><svg class="ico" width="18" height="18"><use href="#i-download"/></svg>[label long]</button></td>
+        </tr>
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">ghost</td>
+          <td style="padding:10px 8px;"><button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="#i-edit"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-ghost"><svg class="ico" width="16" height="16"><use href="#i-history"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-ghost btn-lg"><svg class="ico" width="18" height="18"><use href="#i-eye"/></svg>[label long]</button></td>
+        </tr>
+        <tr><td style="padding:10px 8px;font-weight:600;font-size:12px;">danger</td>
+          <td style="padding:10px 8px;"><button class="btn btn-danger btn-sm"><svg class="ico" width="14" height="14"><use href="#i-trash"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-danger"><svg class="ico" width="16" height="16"><use href="#i-shield"/></svg>[label]</button></td>
+          <td style="padding:10px 8px;"><button class="btn btn-danger btn-lg"><svg class="ico" width="18" height="18"><use href="#i-trash"/></svg>[label long]</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- trailingIcon (chevron-down 등) -->
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">+ trailingIcon (chevron, arrow)</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-secondary">[label]<svg class="ico" width="16" height="16"><use href="#i-chevron-down"/></svg></button>
+      <button class="btn btn-secondary">[label]<svg class="ico" width="16" height="16"><use href="#i-chevron-down"/></svg></button>
+      <button class="btn btn-primary">[next]<svg class="ico" width="16" height="16"><use href="#i-arrow-right"/></svg></button>
+      <button class="btn btn-secondary"><svg class="ico" width="16" height="16"><use href="#i-arrow-left"/></svg>[prev]</button>
+    </div>
+  </div>
+
+  <!-- icon-only (정사각) -->
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">IconButton (정사각, ariaLabel 의무) — 인접 컴포넌트 사이 gap 16px (배지 외부 확장 흡수)</div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <button class="icon-btn" aria-label="[aria]"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg></button>
+      <button class="icon-btn" aria-label="[aria]"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+      <button class="icon-btn" aria-label="[aria]"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">99+</span></button>
+      <button class="icon-btn" aria-label="[aria]"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+      <button class="icon-btn" aria-label="[aria]"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg></button>
+      <button class="btn btn-ghost btn-icon-only" aria-label="[aria]"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button>
+    </div>
+  </div>
+
+  <!-- State (disabled, focus) -->
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">State (default / disabled)</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary"><svg class="ico" width="16" height="16"><use href="#i-plus"/></svg>default</button>
+      <button class="btn btn-primary" disabled><svg class="ico" width="16" height="16"><use href="#i-plus"/></svg>disabled</button>
+      <button class="btn btn-secondary" disabled><svg class="ico" width="16" height="16"><use href="#i-download"/></svg>disabled</button>
+      <button class="btn btn-danger" disabled>disabled</button>
+    </div>
+  </div>
+
+  <!-- 정렬 검증 ruler -->
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">정렬 검증 (높이 ruler — 모든 버튼이 동일 라인 baseline)</div>
+    <div style="position:relative;height:36px;display:flex;align-items:center;gap:16px;">
+      <!-- ruler 라인 (top + bottom 36px 영역 표시) -->
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,0,0,0.4);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:rgba(255,0,0,0.4);pointer-events:none;"></div>
+      <button class="btn btn-primary"><svg class="ico" width="16" height="16"><use href="#i-plus"/></svg>[label]</button>
+      <button class="btn btn-secondary"><svg class="ico" width="16" height="16"><use href="#i-download"/></svg>[label]</button>
+      <button class="btn btn-ghost">[label]</button>
+      <button class="icon-btn" aria-label="[aria]"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg></button>
+      <span class="badge success">[badge]</span>
+      <span class="badge warning">[badge]</span>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-muted);margin-top:6px;">↑ 빨간 가로선 두 줄이 0px / 36px 라인. 모든 버튼·아이콘 버튼·배지가 두 라인 사이에 정렬되어야 함. (gap 16px — IconButton 배지 외부 확장 흡수)</div>
+  </div>
+</section>
+
+<!-- ============ 입력 ============ -->
+<section class="showcase-section" id="inputs">
+  <h2>입력 (Input / Select / Textarea / Toggle)</h2>
+  <div class="showcase-row" style="flex-direction:column;align-items:stretch;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <label class="label label-required">[label *]</label>
+        <input class="input" placeholder="[placeholder]" />
+        <div class="input-help">[help text]</div>
+      </div>
+      <div>
+        <label class="label">[label] (error state)</label>
+        <input class="input" value="[value]" />
+        <div class="input-error"><svg class="ico ico-sm" width="14" height="14"><use href="#i-alert-c"/></svg>[error message]</div>
+      </div>
+      <div>
+        <label class="label">[label] (success state)</label>
+        <input class="input" value="[value]" />
+        <div class="input-success"><svg class="ico ico-sm" width="14" height="14"><use href="#i-check"/></svg>[success message]</div>
+      </div>
+      <div>
+        <label class="label">[label]</label>
+        <select class="select"><option>[option 1]</option><option>[option 2]</option><option>[option 3]</option></select>
+      </div>
+      <div style="grid-column:1 / -1;">
+        <label class="label">[label]</label>
+        <textarea class="textarea" placeholder="[placeholder]"></textarea>
+      </div>
+      <div>
+        <label class="label">[label] (with prefix/suffix)</label>
+        <div class="domain-prefix">
+          <input class="input" value="[value]" />
+          <div class="domain-suffix">[suffix]</div>
+        </div>
+      </div>
+      <div>
+        <label class="label">[label] (toggle)</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          <span style="font-size:13px;color:var(--color-text-muted);">[on/off label]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 배지 ============ -->
+<section class="showcase-section" id="badges">
+  <h2>배지 (Badge)</h2>
+  <div class="showcase-row">
+    <div class="row-label">variant=</div>
+    <span class="badge success">[label]</span>
+    <span class="badge warning">[label]</span>
+    <span class="badge danger">[label]</span>
+    <span class="badge info">[label]</span>
+    <span class="badge muted">[label]</span>
+  </div>
+  <div class="showcase-row">
+    <div class="row-label">+ icon</div>
+    <span class="badge success"><svg class="ico" width="12" height="12"><use href="#i-check"/></svg>[label]</span>
+    <span class="badge warning"><svg class="ico" width="12" height="12"><use href="#i-alert-c"/></svg>[label]</span>
+    <span class="badge danger"><svg class="ico" width="12" height="12"><use href="#i-x"/></svg>[label]</span>
+  </div>
+  <div class="showcase-row">
+    <div class="row-label">ModuleBadge</div>
+    <span class="module-badge">[module]</span>
+    <span class="module-badge">[module]</span>
+    <span class="module-badge">[module]</span>
+    <span class="module-badge">[module]</span>
+  </div>
+  <div class="showcase-row">
+    <div class="row-label">StatusDot</div>
+    <span><span class="status-dot"></span>[status]</span>
+    <span><span class="status-dot" style="background:var(--color-warning);"></span>[status]</span>
+    <span><span class="status-dot" style="background:var(--color-danger);"></span>[status]</span>
+  </div>
+</section>
+
+<!-- ============ 아바타 ============ -->
+<!-- ============ Logo (운영사 + 테넌트) ============ -->
+<section class="showcase-section" id="logo">
+  <h2>로고 (Logo / TenantLogo)</h2>
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">Logo (운영사) — fallback (이미지 없음, brand_name 첫 글자)</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div class="logo logo-sm"><div class="logo-fallback">[B]</div><span class="logo-text">[brand]</span></div>
+      <div class="logo"><div class="logo-fallback">[B]</div><span class="logo-text">[brand]</span></div>
+      <div class="logo logo-lg"><div class="logo-fallback">[B]</div><span class="logo-text">[brand]</span></div>
+    </div>
+  </div>
+
+  <div class="showcase-row" style="display:block;background:var(--color-primary-bg);border:1px solid var(--color-border);color:#fff;">
+    <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:12px;">Logo (사이드바 / 다크 배경 컨텍스트) — brand_logo_url_dark</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div class="logo"><div class="logo-fallback">[B]</div><span class="logo-text">[brand]</span></div>
+    </div>
+  </div>
+
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">TenantLogo (고객사) — sm / md / lg</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div class="tenant-logo tenant-logo-sm"><div class="logo-fallback">[T]</div><span class="tenant-logo-text">[tenant name]</span></div>
+      <div class="tenant-logo"><div class="logo-fallback">[T]</div><span class="tenant-logo-text">[tenant name]</span></div>
+      <div class="tenant-logo tenant-logo-lg"><div class="logo-fallback">[T]</div><span class="tenant-logo-text">[tenant name]</span></div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-muted);margin-top:8px;">→ 실제 사용 시 <code class="code">tenants.logo_url</code> 이미지 표시. 본 시연은 fallback (이미지 없을 때 첫 글자).</div>
+  </div>
+</section>
+
+<section class="showcase-section" id="avatars">
+  <h2>아바타</h2>
+  <div class="showcase-row">
+    <div class="avatar-sm">[I]</div>
+    <div class="avatar">[I]</div>
+    <div class="avatar-lg">[I]</div>
+  </div>
+</section>
+
+<!-- ============ 카드 ============ -->
+<section class="showcase-section" id="cards">
+  <h2>카드 (Card / KPI Card)</h2>
+  <div class="showcase-row" style="display:grid;grid-template-columns:repeat(4,1fr);">
+    <div class="kpi-card">
+      <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-building"/></svg>[label]</div>
+      <div class="kpi-value">[value]</div>
+      <div class="kpi-sub">[sub]</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-trending-up"/></svg>[label]</div>
+      <div class="kpi-value">[value]</div>
+      <div class="kpi-delta up"><svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-up"/></svg>[delta]</div>
+    </div>
+    <div class="kpi-card" style="border-color:var(--color-warning-bg);">
+      <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-alert-c"/></svg>[label] (variant=warning)</div>
+      <div class="kpi-value" style="color:var(--color-warning);">[value]</div>
+      <div class="kpi-sub"><span class="badge warning">[badge]</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">[card title]</div>
+      <div class="card-subtitle">[card subtitle]</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 테이블 ============ -->
+<section class="showcase-section" id="tables">
+  <h2>테이블 + Pagination</h2>
+  <div class="card card-flat">
+    <table class="table">
+      <thead><tr><th>[col 1] ↑</th><th>[col 2]</th><th>[col 3]</th><th>[col 4]</th><th>[col 5]</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><a class="row-link">[row link]</a></td><td><span class="code">[code]</span></td><td><span class="badge success">[badge]</span></td><td>[text]</td><td>[number]</td><td><button class="btn btn-ghost btn-sm"><svg class="ico ico-sm" width="14" height="14"><use href="#i-more"/></svg></button></td></tr>
+        <tr class="row-highlight-warning"><td><a class="row-link">[row link]</a></td><td><span class="code">[code]</span></td><td><span class="badge warning">[badge]</span></td><td>[text]</td><td>[number]</td><td><button class="btn btn-ghost btn-sm"><svg class="ico ico-sm" width="14" height="14"><use href="#i-more"/></svg></button></td></tr>
+        <tr class="row-highlight-danger"><td><a class="row-link">[row link]</a></td><td><span class="code">[code]</span></td><td><span class="badge danger">[badge]</span></td><td>[text]</td><td>—</td><td><button class="btn btn-ghost btn-sm"><svg class="ico ico-sm" width="14" height="14"><use href="#i-more"/></svg></button></td></tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <div>전체 [N]개 중 [start]-[end] 표시</div>
+      <div class="pagination-pages">
+        <button class="page-btn"><svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-left"/></svg></button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn"><svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-right"/></svg></button>
+      </div>
+      <div>페이지당 <select class="select input-sm" style="width:80px;display:inline-block;"><option>20</option></select></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 탭 ============ -->
+<section class="showcase-section" id="tabs">
+  <h2>탭 (수평 / 수직)</h2>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active">[tab 1]</div>
+      <div class="tab">[tab 2]</div>
+      <div class="tab">[tab 3]</div>
+      <div class="tab">[tab 4]</div>
+      <div class="tab">[tab 5]</div>
+    </div>
+    <div style="color:var(--color-text-muted);font-size:13px;">[active tab content]</div>
+  </div>
+  <div style="margin-top:16px;width:200px;">
+    <div class="vert-tabs">
+      <div class="vert-tab"><svg class="ico" width="16" height="16"><use href="#i-info"/></svg>[tab 1]</div>
+      <div class="vert-tab active"><svg class="ico" width="16" height="16"><use href="#i-shield"/></svg>[tab 2 active]</div>
+      <div class="vert-tab"><svg class="ico" width="16" height="16"><use href="#i-bell"/></svg>[tab 3]</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 필터 ============ -->
+<section class="showcase-section" id="filters">
+  <h2>필터 (Bar / Panel)</h2>
+  <div class="filter-bar" style="margin-bottom:12px;">
+    <div class="filter-chip active">[chip active]</div>
+    <div class="filter-chip">[chip]</div>
+    <div class="filter-chip">[chip]</div>
+    <div class="filter-divider"></div>
+    <div class="filter-chip">[chip]</div>
+    <div class="filter-chip">[chip]</div>
+  </div>
+  <div style="width:280px;">
+    <div class="filter-panel">
+      <h3>필터<span class="filter-clear">초기화</span></h3>
+      <div class="filter-group">
+        <h4>[group title]</h4>
+        <label class="filter-checkbox"><input type="checkbox" checked> [option]<span class="count">[N]</span></label>
+        <label class="filter-checkbox"><input type="checkbox"> [option]<span class="count">[N]</span></label>
+        <label class="filter-checkbox"><input type="checkbox"> [option]<span class="count">[N]</span></label>
+      </div>
+      <button class="btn btn-primary" style="width:100%;">적용</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 드롭다운 ============ -->
+<section class="showcase-section" id="dropdowns">
+  <h2>드롭다운 (CM-16 프로필)</h2>
+  <div class="showcase-row" style="position:relative;min-height:340px;align-items:flex-start;">
+    <div style="position:relative;">
+      <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
+      <div class="dropdown" style="left:0;top:calc(100% + 8px);width:280px;">
+        <div class="dropdown-header">
+          <div class="dropdown-name">[user name]</div>
+          <div class="dropdown-meta">[role] · [organization]</div>
+        </div>
+        <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-user"/></svg>[item]</a>
+        <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-shield"/></svg>[item]</a>
+        <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-bell"/></svg>[item]</a>
+        <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-help"/></svg>[item]</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="#i-logout"/></svg>[danger item]</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 모달 ============ -->
+<section class="showcase-section" id="modals">
+  <h2>모달 (Modal)</h2>
+  <div class="showcase-row" style="display:block;background:transparent;padding:0;">
+    <div class="modal" style="position:static;margin:0;">
+      <div class="modal-header">
+        <h3>[modal title]</h3>
+        <span class="close"><svg class="ico" width="16" height="16"><use href="#i-x"/></svg></span>
+      </div>
+      <div class="modal-body">
+        <div class="banner info">
+          <svg class="ico banner-icon" width="18" height="18"><use href="#i-info"/></svg>
+          <div class="banner-content">[banner description in modal]</div>
+        </div>
+        <label class="label">[label]</label>
+        <select class="select"><option>[option]</option></select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary">[secondary]</button>
+        <button class="btn btn-primary">[primary]</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 토스트 ============ -->
+<section class="showcase-section" id="toasts">
+  <h2>토스트 (Toast)</h2>
+  <div class="showcase-row" style="flex-direction:column;align-items:flex-start;background:transparent;padding:0;">
+    <div class="toast success" style="position:static;"><svg class="ico" width="16" height="16"><use href="#i-check-circle"/></svg>[success message]<span class="close"><svg class="ico ico-sm" width="14" height="14"><use href="#i-x"/></svg></span></div>
+    <div class="toast warning" style="position:static;"><svg class="ico" width="16" height="16"><use href="#i-alert-c"/></svg>[warning message]</div>
+    <div class="toast danger" style="position:static;"><svg class="ico" width="16" height="16"><use href="#i-alert-t"/></svg>[danger message]</div>
+    <div class="toast info" style="position:static;"><svg class="ico" width="16" height="16"><use href="#i-info"/></svg>[info message]</div>
+  </div>
+</section>
+
+<!-- ============ 배너 ============ -->
+<section class="showcase-section" id="banners">
+  <h2>배너 (Banner / Alert)</h2>
+  <div class="banner info">
+    <svg class="ico banner-icon" width="18" height="18"><use href="#i-info"/></svg>
+    <div class="banner-content"><div class="banner-title">[banner title]</div>[banner description text]</div>
+  </div>
+  <div class="banner warning">
+    <svg class="ico banner-icon" width="18" height="18"><use href="#i-alert-c"/></svg>
+    <div class="banner-content"><div class="banner-title">[banner title]</div>[banner description text]</div>
+  </div>
+  <div class="banner danger">
+    <svg class="ico banner-icon" width="18" height="18"><use href="#i-alert-t"/></svg>
+    <div class="banner-content"><div class="banner-title">[banner title]</div>[banner description text]</div>
+  </div>
+  <div class="banner success">
+    <svg class="ico banner-icon" width="18" height="18"><use href="#i-check-circle"/></svg>
+    <div class="banner-content"><div class="banner-title">[banner title]</div>[banner description text]</div>
+  </div>
+</section>
+
+<!-- ============ 스테퍼 ============ -->
+<section class="showcase-section" id="stepper">
+  <h2>스테퍼 (Stepper)</h2>
+  <div style="width:260px;">
+    <div class="stepper">
+      <h3>[wizard title]</h3>
+      <p class="meta">[step N] / [total]</p>
+      <div class="step done"><div class="step-num"><svg class="ico ico-sm" width="14" height="14"><use href="#i-check"/></svg></div><div class="step-content"><h5>[step title]</h5><p>[summary]</p></div></div>
+      <div class="step active"><div class="step-num">2</div><div class="step-content"><h5>[step title]</h5><p>[summary]</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><h5>[step title]</h5><p>[hint]</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><h5>[step title]</h5></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 차트 ============ -->
+<section class="showcase-section" id="charts">
+  <h2>차트 placeholder</h2>
+  <div class="showcase-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;background:transparent;padding:0;">
+    <div class="card">
+      <div class="section-header"><h3>[chart title] (Line)</h3></div>
+      <svg viewBox="0 0 400 180" style="width:100%;height:200px;" preserveAspectRatio="none">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/></linearGradient></defs>
+        <polyline fill="none" stroke="#3B82F6" stroke-width="2.5" points="20,140 60,128 100,118 140,108 180,98 220,84 260,72 300,58 340,46 380,32"/>
+        <polygon fill="url(#g1)" points="20,140 60,128 100,118 140,108 180,98 220,84 260,72 300,58 340,46 380,32 380,180 20,180"/>
+      </svg>
+    </div>
+    <div class="card">
+      <div class="section-header"><h3>[chart title] (Donut)</h3></div>
+      <div style="display:flex;align-items:center;justify-content:center;padding:20px;">
+        <svg viewBox="0 0 100 100" style="width:160px;height:160px;">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="16"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" stroke-width="16" stroke-dasharray="125 251" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#10B981" stroke-width="16" stroke-dasharray="78 251" stroke-dashoffset="-125" transform="rotate(-90 50 50)"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card" style="grid-column:1 / -1;">
+      <div class="section-header"><h3>[chart title] (Horizontal Bar)</h3></div>
+      <div class="h-bar-row"><div class="h-bar-label">[label]</div><div class="h-bar-track"><div class="h-bar-fill" style="width:95%;"></div></div><div class="h-bar-value">[value]</div></div>
+      <div class="h-bar-row"><div class="h-bar-label">[label]</div><div class="h-bar-track"><div class="h-bar-fill" style="width:78%;"></div></div><div class="h-bar-value">[value]</div></div>
+      <div class="h-bar-row"><div class="h-bar-label">[label]</div><div class="h-bar-track"><div class="h-bar-fill" style="width:62%;"></div></div><div class="h-bar-value">[value]</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 상태 ============ -->
+<section class="showcase-section" id="empty">
+  <h2>상태 패턴 (Empty / Loading / Error)</h2>
+  <div class="showcase-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;background:transparent;padding:0;">
+    <div class="card">
+      <div class="empty-state">
+        <svg class="ico ico-empty"><use href="#i-building"/></svg>
+        <div class="title">[empty title]</div>
+        <div class="desc">[empty description]</div>
+        <button class="btn btn-primary" style="margin-top:16px;"><svg class="ico" width="16" height="16"><use href="#i-plus"/></svg>[CTA label]</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="kpi-label">Loading skeleton</div>
+      <div class="skeleton" style="height:13px;width:80px;margin-bottom:8px;"></div>
+      <div class="skeleton" style="height:28px;width:120px;"></div>
+      <div class="skeleton" style="height:12px;width:100px;margin-top:8px;"></div>
+    </div>
+    <div class="card">
+      <div class="empty-state">
+        <svg class="ico ico-empty" style="color:var(--color-danger);"><use href="#i-alert-t"/></svg>
+        <div class="title">[error title]</div>
+        <div class="desc">[error description]</div>
+        <button class="btn btn-secondary" style="margin-top:16px;">[retry label]</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Checkbox (단독) ============ -->
+<section class="showcase-section" id="checkbox">
+  <h2>체크박스 (Checkbox)</h2>
+  <div class="showcase-row" style="display:block;">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">단독 / 라벨 포함 / 체크 상태</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" class="checkbox"> [unchecked label]</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" class="checkbox" checked> [checked label]</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:not-allowed;opacity:0.5;"><input type="checkbox" class="checkbox" disabled> [disabled]</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:not-allowed;opacity:0.5;"><input type="checkbox" class="checkbox" checked disabled> [disabled checked]</label>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Breadcrumb ============ -->
+<section class="showcase-section" id="breadcrumb">
+  <h2>브레드크럼 (Breadcrumb)</h2>
+  <div class="showcase-row">
+    <div class="breadcrumb">
+      <a>[level 1]</a>
+      <span class="breadcrumb-sep">/</span>
+      <a>[level 2]</a>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">[current page]</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Tooltip ============ -->
+<section class="showcase-section" id="tooltip">
+  <h2>툴팁 (Tooltip)</h2>
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">hover 시 표시 — `[data-tooltip="..."]` attribute</div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" data-tooltip="[tooltip text]">[hover me]</button>
+      <button class="icon-btn" aria-label="[aria]" data-tooltip="[tooltip on icon]"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+      <span style="display:inline-flex;align-items:center;gap:4px;">[label]<span data-tooltip="[tooltip on info icon]" style="display:inline-flex;align-items:center;cursor:help;color:var(--color-text-muted);"><svg class="ico" width="14" height="14"><use href="#i-info"/></svg></span></span>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-muted);margin-top:8px;">→ 위 요소들을 hover 하면 검은 툴팁 표시. 텍스트 옆 도움말은 <code class="code">i-info</code> 아이콘으로 명시. SVG는 pseudo-element 미지원이라 <code class="code">data-tooltip</code>은 wrapper span에 적용 의무.</div>
+  </div>
+</section>
+
+<!-- ============ Popover ============ -->
+<section class="showcase-section" id="popover">
+  <h2>팝오버 (Popover)</h2>
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);position:relative;min-height:180px;">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">트리거 + Popover (펼친 상태 시각화)</div>
+    <div style="position:relative;display:inline-block;">
+      <button class="btn btn-secondary"><svg class="ico" width="16" height="16"><use href="#i-info"/></svg>[trigger]<svg class="ico" width="16" height="16"><use href="#i-chevron-down"/></svg></button>
+      <div class="popover" style="left:0;top:calc(100% + 8px);width:280px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;">[popover title]</div>
+        <div style="font-size:13px;color:var(--color-text-muted);">[popover description text — 자유 콘텐츠 영역]</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Form Row / Form Section ============ -->
+<section class="showcase-section" id="form">
+  <h2>폼 패턴 (Form Row / Form Section)</h2>
+
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">FormSection (단독)</div>
+    <div class="form-section">
+      <div class="form-section-header">
+        <h2>[section title]</h2>
+        <p>[section description]</p>
+      </div>
+      <div class="form-row">
+        <label class="label label-required">[label *]</label>
+        <input class="input" placeholder="[placeholder]" />
+      </div>
+      <div class="form-row">
+        <label class="label">[label]</label>
+        <select class="select"><option>[option]</option></select>
+      </div>
+      <div class="form-row">
+        <label class="label">[label]</label>
+        <div>
+          <input class="input" value="[value]" />
+          <div class="input-help">[help text]</div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary">[secondary]</button>
+        <button class="btn btn-primary">[primary]</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">InfoRow (label-value 행)</div>
+    <div style="max-width:500px;">
+      <div class="info-row"><span class="label">[label]</span><span>[value]</span></div>
+      <div class="info-row"><span class="label">[label]</span><span style="font-family:var(--font-mono);">[code value]</span></div>
+      <div class="info-row"><span class="label">[label]</span><span class="badge success">[badge value]</span></div>
+      <div class="info-row"><span class="label">[label]</span><span style="font-weight:600;">[bold value]</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Sidebar (미니어처, 역할별) ============ -->
+<section class="showcase-section" id="sidebar">
+  <h2>사이드바 (역할별 메뉴 매트릭스)</h2>
+  <div class="showcase-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;background:transparent;padding:0;">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;">operator (9 메뉴)</div>
+      <nav class="sidebar" style="height:auto;min-height:auto;padding:12px 0;">
+        <div class="sidebar-menu">
+          <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> [dashboard]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> [tenants]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> [plans]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> [billing]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> [features]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> [tickets]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> [audit]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> [reports]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> [settings]</a>
+        </div>
+      </nav>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;">tenant (8 메뉴)</div>
+      <nav class="sidebar" style="height:auto;min-height:auto;padding:12px 0;">
+        <div class="sidebar-menu">
+          <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> [dashboard]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-users"/></svg> [employees]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-clock"/></svg> [attendance]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-calendar-days"/></svg> [leaves]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-check-square"/></svg> [approvals]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-file-text"/></svg> [payroll]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> [reports]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> [settings]</a>
+        </div>
+      </nav>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;">employee (8 메뉴)</div>
+      <nav class="sidebar" style="height:auto;min-height:auto;padding:12px 0;">
+        <div class="sidebar-menu">
+          <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> [dashboard]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-clock"/></svg> [attendance]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-calendar-days"/></svg> [leaves]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-check-square"/></svg> [approvals]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-file-text"/></svg> [payslips]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-file-text"/></svg> [documents]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg> [notifications]</a>
+          <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="#i-user"/></svg> [profile]</a>
+        </div>
+      </nav>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Header (AppShell 미니어처) ============ -->
+<section class="showcase-section" id="header">
+  <h2>헤더 (글로벌, CM-16~19 의무)</h2>
+  <div class="showcase-row" style="display:block;padding:0;background:transparent;">
+    <header class="header" style="position:static;border-radius:var(--r-md);">
+      <h1 class="page-title">[page title]</h1>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
+          <input placeholder="[search placeholder v1.1]" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="[help]" data-tooltip="[help tooltip]"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" aria-label="[notifications]" data-tooltip="[notifications tooltip]"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+  </div>
+</section>
+
+<!-- ============ Footer ============ -->
+<section class="showcase-section" id="footer">
+  <h2>푸터 (글로벌)</h2>
+  <div class="showcase-row" style="display:block;padding:0;background:transparent;">
+    <footer class="footer" style="border-top:1px solid var(--color-border);border-radius:var(--r-md);">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a>[link 1]</a>
+        <a>[link 2]</a>
+        <a>[link 3]</a>
+        <a>[link 4]</a>
+      </div>
+      <div class="footer-version">[version]</div>
+    </footer>
+  </div>
+</section>
+
+<!-- ============ Maintenance Banner ============ -->
+<section class="showcase-section" id="maintenance-banner">
+  <h2>점검 사전 공지 배너 (Maintenance Banner)</h2>
+  <div class="showcase-row" style="display:block;padding:0;background:transparent;">
+    <div class="maintenance-banner" style="border-radius:var(--r-md);">
+      <svg class="ico" width="16" height="16"><use href="#i-tool"/></svg>
+      <span>[maintenance message — datetime + duration + action prompt]</span>
+      <span class="close" role="button" aria-label="[dismiss]"><svg class="ico ico-sm" width="14" height="14"><use href="#i-x"/></svg></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Session Row (OP-12/EM-09 보안 탭) ============ -->
+<section class="showcase-section" id="session-row">
+  <h2>세션 행 (Session Row)</h2>
+  <div class="showcase-row" style="display:block;background:var(--color-bg);border:1px solid var(--color-border);">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;margin-bottom:12px;">활성 세션 표시 (OP-12 / EM-09 보안 탭)</div>
+    <div style="max-width:600px;">
+      <div class="session-row">
+        <div class="session-icon"><svg class="ico" width="16" height="16"><use href="#i-monitor"/></svg></div>
+        <div class="session-info">
+          <div class="title">[device + browser + location]</div>
+          <div class="meta">[ip] · [last activity]</div>
+        </div>
+        <div class="session-action"><span class="badge success">[current session]</span></div>
+      </div>
+      <div class="session-row">
+        <div class="session-icon"><svg class="ico" width="16" height="16"><use href="#i-smartphone"/></svg></div>
+        <div class="session-info">
+          <div class="title">[device + browser + location]</div>
+          <div class="meta">[ip] · [last activity]</div>
+        </div>
+        <div class="session-action"><button class="btn btn-ghost btn-sm" style="color:var(--color-danger);">[terminate]</button></div>
+      </div>
+      <div class="session-row">
+        <div class="session-icon"><svg class="ico" width="16" height="16"><use href="#i-monitor"/></svg></div>
+        <div class="session-info">
+          <div class="title">[device + browser + location]</div>
+          <div class="meta">[ip] · [last activity]</div>
+        </div>
+        <div class="session-action"><button class="btn btn-ghost btn-sm" style="color:var(--color-danger);">[terminate]</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Code (인라인) ============ -->
+<section class="showcase-section" id="code">
+  <h2>코드 (Inline Code)</h2>
+  <div class="showcase-row">
+    <div style="font-size:13px;line-height:1.8;">
+      티켓 번호 <span class="code">[code]</span>를 참조하세요.<br>
+      도메인은 <span class="code">[code]</span> 형식입니다.<br>
+      enum 값 <span class="code">[code]</span>는 ko 라벨로 표시됩니다.
+    </div>
+  </div>
+</section>
+
+<div style="text-align:center;color:var(--color-text-muted);font-size:12px;padding:24px;">
+  FlowHR 디자인 시스템 v1.0 — KI-037 batch-004 + KI-039 batch-005 (2026-05-16)
+</div>
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-04 신규 테넌트 등록</title>
+<link rel="stylesheet" href="_design-tokens.css">
+<link rel="stylesheet" href="_icons.css">
+<style>
+  .wizard { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+  .stepper { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow-sm); position: sticky; top: 80px; }
+  .step { display: flex; gap: 12px; padding: 12px 0; position: relative; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--color-surface-2); color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .step.done .step-num { background: var(--color-success); color: #fff; }
+  .step.active .step-num { background: var(--color-accent); color: #fff; }
+  .step-content h5 { font-size: 13px; font-weight: 600; }
+  .step-content p { font-size: 11px; color: var(--color-text-muted); }
+  .step.active .step-content h5 { color: var(--color-accent); }
+  .step:not(:last-child)::before { content: ''; position: absolute; left: 14px; top: 40px; width: 2px; height: calc(100% - 28px); background: var(--color-border); }
+  .step.done::before { background: var(--color-success); }
+  .form-section { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow-sm); }
+  .form-section-header { margin-bottom: 24px; }
+  .form-section-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .form-section-header p { font-size: 13px; color: var(--color-text-muted); }
+  .form-row { margin-bottom: 16px; }
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .input-help { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; }
+  .input-error { font-size: 12px; color: var(--color-danger); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+  .input-success { font-size: 12px; color: var(--color-success); margin-top: 4px; }
+  .form-actions { display: flex; justify-content: space-between; padding: 16px 0; margin-top: 24px; border-top: 1px solid var(--color-border); }
+  .footer { padding: 16px 24px; background: var(--color-bg); border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--color-text-muted); }
+  .footer-links { display: flex; gap: 16px; } .footer-links a { color: var(--color-text-muted); text-decoration: none; }
+  .domain-prefix { display: flex; align-items: stretch; }
+  .domain-prefix .input { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none; }
+  .domain-suffix { background: var(--color-surface-2); border: 1px solid var(--color-border); border-left: none; border-top-right-radius: var(--r-md); border-bottom-right-radius: var(--r-md); padding: 0 16px; display: flex; align-items: center; font-size: 14px; color: var(--color-text-muted); font-family: monospace; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/></symbol>
+  <symbol id="i-credit-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-alert-c" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+</svg>
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo">FlowHR</div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item active"><svg class="ico"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-settings"/></svg> 시스템 설정</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">신규 테넌트 등록</h1>
+      <div style="flex:1;"></div>
+      <div class="header-actions">
+        <span style="font-size:12px;color:var(--color-text-muted);">임시저장 중 · 1분 전</span>
+        <button class="btn btn-secondary"><svg class="ico"><use href="#i-save"/></svg>임시저장</button>
+        <div style="padding:8px;cursor:pointer;color:var(--color-text-muted);"><svg class="ico"><use href="#i-help"/></svg></div>
+        <div class="bell"><svg class="ico"><use href="#i-bell"/></svg><span class="bell-badge">3</span></div>
+        <div class="avatar">김</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="wizard">
+        <!-- Stepper -->
+        <aside class="stepper">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:8px;">테넌트 등록 마법사</h3>
+          <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:12px;">2단계 / 7단계</p>
+
+          <div class="step done"><div class="step-num"><svg class="ico ico-sm" style="width:14px;height:14px;"><use href="#i-check"/></svg></div><div class="step-content"><h5>회사정보</h5><p>(주)치킨매니아</p></div></div>
+          <div class="step active"><div class="step-num">2</div><div class="step-content"><h5>도메인</h5><p>chicken.flowhr.kr</p></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-content"><h5>요금제</h5><p>플랜 + 인원</p></div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-content"><h5>관리자 계정</h5><p>대표 + 추가 (최대 3)</p></div></div>
+          <div class="step"><div class="step-num">5</div><div class="step-content"><h5>모듈 선택</h5><p>근태/휴가/결재 등</p></div></div>
+          <div class="step"><div class="step-num">6</div><div class="step-content"><h5>초기 데이터</h5><p>부서/근무제/휴가/결재선</p></div></div>
+          <div class="step"><div class="step-num">7</div><div class="step-content"><h5>완료 / 검토</h5><p>요약 + 등록</p></div></div>
+        </aside>
+
+        <!-- 폼 -->
+        <div class="form-section">
+          <div class="form-section-header">
+            <h2>2. 도메인 슬러그</h2>
+            <p>고객사가 사용할 서브도메인을 정합니다. 한 번 정하면 변경이 어려우니 신중히 선택하세요.</p>
+          </div>
+
+          <div class="form-row">
+            <label class="label">도메인 슬러그 <span style="color:var(--color-danger);">*</span></label>
+            <div class="domain-prefix">
+              <input class="input" value="chicken" placeholder="영문 소문자 / 숫자 / 하이픈" />
+              <div class="domain-suffix">.flowhr.kr</div>
+            </div>
+            <div class="input-success"><svg class="ico ico-sm" style="width:14px;height:14px;"><use href="#i-check"/></svg>사용 가능한 도메인입니다</div>
+          </div>
+
+          <div class="form-row">
+            <label class="label">표시 이름 (옵션)</label>
+            <input class="input" placeholder="(주)치킨매니아 (자동 입력됨, 수정 가능)" value="(주)치킨매니아" />
+            <div class="input-help">로그인 화면 / 이메일 발신자 등에 표시됩니다</div>
+          </div>
+
+          <div style="background:var(--color-info-bg);border:1px solid var(--color-accent);border-radius:var(--r-md);padding:14px;margin:20px 0;">
+            <div style="font-size:13px;font-weight:600;color:var(--color-primary);margin-bottom:6px;">🛈 도메인 규칙</div>
+            <ul style="font-size:12px;color:var(--color-text);padding-left:20px;line-height:1.7;">
+              <li>3~30자, 영문 소문자/숫자/하이픈만 가능</li>
+              <li>예약어(admin, api, www, app, staging 등) 사용 불가</li>
+              <li>한 번 정하면 변경이 어려움 (운영팀 별도 요청)</li>
+            </ul>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-secondary"><svg class="ico ico-sm"><use href="#i-arrow-left"/></svg>이전</button>
+            <button class="btn btn-primary">다음<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a></div>
+      <div style="font-family:monospace;">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+</body>
+</html>

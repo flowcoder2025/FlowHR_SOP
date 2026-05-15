@@ -14,26 +14,26 @@
 - [x] WI-chore evaluator 라이트 셋업 (agent + rubric + eval-results/ + 게이트 룰)
 - [x] WI-chore Known Issue Registry 셋업 + eval 임계 8.0 상향 + P0~P3 트리거
 
-## Phase 1 — 개발용 PRD 작성 [✓ PASS 8.15/10]
+## Phase 1 — 개발용 PRD 작성 [✓ PASS 8.15 → 재평가 9.13/10 (KI-027~031 보강 후)]
 
 - [x] WI-001-docs 개발용 PRD 초안 작성 (50 파일, ~7000줄)
 - [x] WI-002-docs 디바이스 매트릭스 정의 (Web/PWA/Tauri)
 - [x] WI-003-docs 비기능 요구사항 (성능/보안/접근성/i18n/감사/백업/확장/모니터링)
 - [x] WI-004-docs 데이터 모델 매트릭스 SSOT 생성 (matrix.json, 36 엔티티)
 
-## Phase 2 — 백로그 [✓ PASS 8.29/10]
+## Phase 2 — 백로그 [✓ PASS 8.29 → 재평가 8.03/10 (ST-073~080 추가)]
 
 - [x] WI-005-docs Epic 정의 (12 Epic, 379 SP)
 - [x] WI-006-docs User Story 작성 (72 Story, 화면×역할 매트릭스)
 - [x] WI-007-docs Task 분해 (EP-01/02/06/07/08 완전 + 7 Epic 패턴 추정, 195 Task / 739 MD)
 
-## Phase 3 — DB ERD [✓ PASS 8.68/10]
+## Phase 3 — DB ERD [✓ PASS 8.68 → 재평가 8.21/10, P2 4건 즉시 처리 후 클린]
 
 - [x] WI-008-docs ERD 다이어그램 (Mermaid, 37 엔티티 통합 + 도메인별 4분할)
 - [x] WI-009-docs RLS 정책 설계 (37 테이블 × 6 역할 + Approval polymorphic routing)
 - [x] WI-010-docs 인덱스 / 마이그레이션 순서 (23 파일) + enums + seed
 
-## Phase 4 — API 명세 [✓ PASS 8.78/10]
+## Phase 4 — API 명세 [✓ PASS 8.78 → 재평가 8.40/10, P1+P2 즉시 처리 후 클린]
 
 - [x] WI-011-docs OpenAPI 스켈레톤 (conventions + schemas + zod)
 - [x] WI-012-docs 도메인별 엔드포인트 명세 (인증/운영사/관리자/직원/공통/cron 약 280)
@@ -84,7 +84,26 @@
 - [x] **WI-KI-batch-002 (Phase 4 정합 정리, 4건 해소)**: KI-021/022/024/026 (2026-05-15)
   - KI-023(v1.2)/KI-025(Phase 10) deferred 등록
   - 아카이브: `.flowset/known-issues/archive/2026-05-15-batch-002.md`
-- [ ] **WI-KI-batch-003 (PRD 누락 결함 P1 5건 보강, HANDOFF 작업 4~7)**: KI-027/028/029/030/031
-  - 신규 세션에서 진행. HANDOFF.md 작업 체크리스트 따름.
-  - 작업: 09-routing.md 신규 / CM-16~19 추가 / OP-12 추가 / 약관·PWA설치 정적 페이지 추가 / evaluator.md 보강
-  - 완료 후: Phase 1~4 retroactive 재평가 (8.0+ 유지) + Phase 5 HTML 와이어프레임 재시작
+- [x] **WI-KI-batch-005 (i18n MVP — ko + en 동시)**: 사용자 결정 (2026-05-16, 외국인 근로자 사용성)
+  - PRD: 06-mvp-scope (영어 v2.0 → MVP) + 03-tech (next-intl 정책) + 01-personas (P8 외국인 근로자) + 04-data-model (legal_documents.language + users.locale)
+  - common.md: CM-15 알림 채널 locale 분기 (en은 카카오 skip → SMS+이메일) + CM-16 "언어/Language" 메뉴 + CM-21 ko/en 페어 게시 + 영문 참고 번역 정책 + 이메일 템플릿 ko/en 10종
+  - DB: erd legal_documents.language(ko|en) + users.locale + 인덱스 + 트리거 language 차원 갱신 + ko/en 동시 게시 의무
+  - API: auth.md login response.user.locale + locale 결정 우선순위 + PATCH locale + common.md /legal/documents?language= + ko/en 페어 POST 의무 + i18n messages API
+  - matrix.json: LegalDocument endpoints + comment 갱신
+  - 디자인 시스템: 08-i18n.md 신규 (정책 + 키 catalog + 컴포넌트 매핑 + 차트 포맷 + 검증) + 03-components.md §2-2 i18n 정책 + 07-react-mapping.md §8 next-intl 매핑 + README 인덱스 갱신
+- [x] **WI-KI-batch-004 (디자인 시스템 SSOT 구축, P1 1건 해소)**: KI-037 (2026-05-16, evaluator PASS 8.61/10)
+  - `_design-system/` 12 파일 신설 (README + 7 spec + tokens.css + components.css + icons.svg + _layout-shell.html)
+  - `_showcase.html` 컴포넌트 시연 + 변수 표기 정책 + 정렬 검수 ruler
+  - OP-01.html 디자인 시스템 적용 재작성 (sprite 인라인 + 모든 svg width/height attribute + 글로벌 컴포넌트 _layout-shell 표준)
+  - 03-components.md Anatomy + Props + Variant matrix 16+ 컴포넌트 + Variable Notation §1-1 + 텍스트 가변성 §2-1
+  - components.css 자손 셀렉터 + display:block !important + descendant 누설 차단(empty-state) + icon-btn 배지 위치 -2/-2 + EmptyState `.ico-empty` 명시
+  - 평가 후 P2 2건 즉시 처리 (정책 표기 통일 + _layout-shell svg attribute 추가) + P3 4건 KI-038~041 등록
+  - 아카이브 예정: `.flowset/known-issues/archive/2026-05-16-batch-004.md`
+- [x] **WI-KI-batch-003 (PRD 누락 결함 P1 5건 보강)**: KI-027/028/029/030/031 일괄 처리 완료 (2026-05-15)
+  - 09-routing.md 신규 + common.md CM-16~22 + OP-12 신규 + 04-data-model 39 엔티티 + matrix.json 44 화면
+  - db/erd §5 컴플라이언스 + db/rls §6-1 + db/indexes 6개 + db/enums 2 + db/migrations 24개
+  - api/common 헤더·약관·온보딩 + api/auth 세션·강제종료·약관가드 + api/schemas zod
+  - backlog/stories ST-073~080 (8 Story / 36 SP) + epics 표 갱신
+  - evaluator.md L38/L61-64 + review-rubric.md L91 보강 (사전 완료, KI-031)
+  - 아카이브: `.flowset/known-issues/archive/2026-05-15-batch-003.md`
+  - 후속: Phase 1~4 retroactive 재평가 + Phase 5 HTML 와이어프레임 재시작

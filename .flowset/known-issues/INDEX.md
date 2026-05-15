@@ -7,9 +7,9 @@
 | 심각도 | 활성 건수 | 트리거 임계 | 트리거 도달 |
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
-| P1 High | **5** | 3 | ✅ **트리거 도달 — HANDOFF 신규 세션에서 WI-KI-batch-003 진행 (KI-027~031)** |
-| P2 Medium | 0 | 5 | ✅ 모두 해소 (KI-001/002/003 resolved Phase 3/4) |
-| P3 Low | 6 | 10 | ❌ (KI-013/016/017/020/023/025 활성 — Phase 6/7/9/10/v1.2 scheduled) |
+| P1 High | 0 | 3 | ✅ 모두 해소 (KI-037 → batch-004 evaluator PASS 8.61, archive 예정) |
+| P2 Medium | 0 | 5 | ✅ 모두 해소 (batch-004 evaluator P2 2건 즉시 처리: 정책 표기 통일 + _layout-shell svg attribute) |
+| P3 Low | **14** | 10 | ✅ 트리거 도달 — 14건 활성 (기존 11 + KI-038/040/041 3건, KI-039 resolved batch-005) |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -43,11 +43,21 @@
 | ~~KI-024~~ | P3 | 4 | API | ~~/api-keys owner 파라미터 컨벤션~~ | — | — | **resolved (batch-002)** |
 | KI-025 | P3 | 4 | API | Rate Limiting 엔드포인트별 차등 — 운영 시점 실측 후 결정 | evaluator Phase 4 | 2026-05-15 | scheduled (Phase 10) |
 | ~~KI-026~~ | P3 | 4 | API | ~~결재 폴리모픽 자식 audit_logs 정책~~ | — | — | **resolved (batch-002)** |
-| KI-027 | **P1** | 5 | PRD | 진입점·라우팅 매트릭스 누락 — `prd/09-routing.md` 신규 필요 (역할별 라우팅, 서브도메인 전략, 권한 미일치 처리, 세션 만료) | user@Phase5 | 2026-05-15 | **open** (HANDOFF 작업 6) |
-| KI-028 | **P1** | 5 | PRD | 글로벌 헤더 컴포넌트 명세 누락 — CM-16 프로필 드롭다운, CM-17 알림 종 드롭다운, CM-18 헤더 검색, CM-19 헤더 도움말 (모든 도메인 공통) | user@Phase5 | 2026-05-15 | **open** (HANDOFF 작업 6) |
-| KI-029 | **P1** | 5 | PRD | OP-12 운영사 본인 프로필 화면 누락 — 운영사 사용자의 자기 프로필/보안/2FA/세션 관리 (직원 EM-09 동등) | user@Phase5 | 2026-05-15 | **open** (HANDOFF 작업 6) |
-| KI-030 | **P1** | 5 | PRD | 시스템/정적 페이지 명세 누락 — 약관·개인정보처리방침, PWA 설치 가이드(CM-20), 첫 사용자 온보딩 투어, 사전 점검 공지 배너, 이메일 템플릿 | user@Phase5 | 2026-05-15 | **open** (HANDOFF 작업 6) |
-| KI-031 | **P1** | 5 | Process | evaluator 검증 축 부족 — 전역 컴포넌트·라우팅·전이 동선·정적 페이지 미검증으로 P1 결함이 Phase 1~4 PASS를 통과. evaluator.md 보강 필요 | user@Phase5 | 2026-05-15 | **open** (HANDOFF 작업 4) |
+| ~~KI-027~~ | P1 | 5 | PRD | ~~진입점·라우팅 매트릭스 누락~~ | user@Phase5 | 2026-05-15 | **resolved (prd/09-routing.md 신규, batch-003)** |
+| ~~KI-028~~ | P1 | 5 | PRD | ~~글로벌 헤더 컴포넌트 명세 누락~~ | user@Phase5 | 2026-05-15 | **resolved (common.md CM-16~19, batch-003)** |
+| ~~KI-029~~ | P1 | 5 | PRD | ~~OP-12 운영사 본인 프로필 화면 누락~~ | user@Phase5 | 2026-05-15 | **resolved (operator/OP-12-profile.md, batch-003)** |
+| ~~KI-030~~ | P1 | 5 | PRD | ~~시스템/정적 페이지 명세 누락~~ | user@Phase5 | 2026-05-15 | **resolved (CM-20~22 + LegalDocument/UserConsent + 이메일 템플릿, batch-003)** |
+| ~~KI-031~~ | P1 | 5 | Process | ~~evaluator 검증 축 부족~~ | user@Phase5 | 2026-05-15 | **resolved (evaluator.md L38/L61-64 + review-rubric.md L91, batch-003)** |
+| KI-032 | P3 | 1 (재평가) | PRD | prd/README.md L26/L29/L33 카운트 미갱신 (36→44, 15→22, 11→12) | evaluator Phase 1 rerun | 2026-05-15 | open (1줄 수정, 다음 batch-004) |
+| KI-033 | P3 | 1 (재평가) | PRD | prd/03-tech-architecture.md L46 디렉토리 트리 OP-12 + 정적 페이지 라우트 누락 | evaluator Phase 1 rerun | 2026-05-15 | open (1줄 수정, 다음 batch-004) |
+| KI-034 | P3 | 2 (재평가) | Backlog | tasks.md L182 / estimation.md L30 합계 stale + dependency-graph.md 신규 8 Story 미반영 + stories.md L6-28 인용 표 헤더 stale + ST-073~080 의존 필드 누락 + README.md L98 표현 stale (6 항목 묶음) | evaluator Phase 2 rerun | 2026-05-15 | open (Phase 6 KI-013과 함께 처리) |
+| KI-035 | P3 | 3 (재평가) | DB | seed.md legal v1.0.0 INSERT 누락 + erd.md L692 user_consents tenant_id NULL 엣지케이스 + indexes.md L132 부분 중복 (3 항목 묶음) | evaluator Phase 3 rerun | 2026-05-15 | open (Phase 7 KI-017/020과 함께 처리) |
+| KI-036 | P3 | 4 (재평가) | API | auth.md L230 cross-operator sessions 응답 본문 미정의 + cron.md L65-83 tenant_settings.value jsonb 경로 정합 미확인 + common.md L111 KI-026 정책 정합 Phase 7 재검증 (3 항목 묶음) | evaluator Phase 4 rerun | 2026-05-15 | open (Phase 7과 함께 처리) |
+| ~~KI-037~~ | P1 | 5 | Wireframe | ~~디자인 시스템 SSOT 부재~~ | 사용자 지적 | 2026-05-16 | **resolved (batch-004 evaluator PASS 8.61, archive 예정)** |
+| KI-038 | P3 | 5 | Wireframe | OP-01.html icon-btn/sidebar-item/profile-trigger svg attribute가 컴포넌트 강제 사이즈와 불일치 — _layout-shell 갱신 따라 화면별 attribute 일치 필요 (차기 batch-005에서 OP-02~12 + TA + EM + CM 일괄) | evaluator batch-004 | 2026-05-16 | open (batch-005) |
+| ~~KI-039~~ | P3 | 5 | Wireframe | ~~_showcase.html 누락 컴포넌트~~ | evaluator batch-004 | 2026-05-16 | **resolved (12 컴포넌트 시연 추가: Checkbox/Breadcrumb/Tooltip/Popover/FormRow+FormSection+InfoRow/Sidebar 미니어처 3 역할/Header AppShell/Footer/MaintenanceBanner/SessionRow/Code, 사용자 우려 후 추가 4 = batch-005-i18n과 함께 처리 2026-05-16)** |
+| KI-040 | P3 | 5 | Wireframe | wireframes/README.md L19~L21/L37/L64 구 SSOT(`_design-tokens.css`/`_icons.css`/`_icons.svg`) 참조 잔존 — `_design-system/` 신 SSOT로 갱신 필요 | evaluator batch-004 | 2026-05-16 | open (batch-005) |
+| KI-041 | P3 | 5 | Wireframe | html/ 디렉토리 구 _design-tokens.css/_icons.css/_icons.svg + OP-02~12 12 HTML 잔존 — 차기 batch에서 신 SSOT 적용 후 archive 이동 | evaluator batch-004 | 2026-05-16 | open (batch-005) |
 
 ## 등록 형식
 

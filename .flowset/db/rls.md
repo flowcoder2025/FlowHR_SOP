@@ -1,7 +1,8 @@
 # RLS (Row Level Security) 정책
 
-> 37 엔티티 × 6 역할 × CRUD 매트릭스. matrix.json `entities[*].permissions` 기반.
+> 39 엔티티 × 6 역할 × CRUD 매트릭스. matrix.json `entities[*].permissions` 기반.
 > KI-014 해소: AttendanceModification + 다른 polymorphic 결재가 approvals 테이블을 통해 routing.
+> KI-030 (2026-05-15): legal_documents/user_consents 정책 §6-1 추가, 컴플라이언스 도메인은 패턴 D로 분리.
 
 ## 1. 기본 헬퍼 함수
 
@@ -94,7 +95,21 @@ CREATE POLICY manager_team_select ON {table} FOR SELECT
   );
 ```
 
-## 3. 엔티티별 정책 (37개)
+### 패턴 D: 글로벌 정적 콘텐츠 + 불변 동의 이력 (KI-030 컴플라이언스)
+```sql
+-- 글로벌 (anonymous read 허용 + operator modify)
+CREATE POLICY global_active_read ON {table} FOR SELECT
+  USING (is_active = true OR is_operator());
+
+CREATE POLICY operator_modify ON {table} FOR INSERT|UPDATE
+  WITH CHECK (is_operator());
+
+-- 불변 이력 (INSERT만, UPDATE/DELETE 명시 차단)
+CREATE POLICY immutable_no_update ON {table} FOR UPDATE USING (false);
+CREATE POLICY immutable_no_delete ON {table} FOR DELETE USING (false);
+```
+
+## 3. 엔티티별 정책 (39개)
 
 ### 운영사 도메인
 | 테이블 | RLS | 핵심 정책 |
@@ -194,6 +209,80 @@ CREATE POLICY operator_cross_tenant_read ON {sensitive_table} FOR SELECT
 
 - **`audit_logs`** INSERT: 모든 액션이 자동 기록되어야 하므로 RLS bypass. 단 SELECT는 위 매트릭스대로 제한.
 - **시드 데이터** 마이그레이션: `service_role` 키로 bypass.
+- **`legal_documents` SELECT**: 비로그인 사용자도 푸터 링크로 active 버전 조회 가능 — `is_active=true` 행에 대해 anonymous SELECT 허용 (USING (is_active = true OR is_operator())).
+
+## 6-1. 컴플라이언스 도메인 RLS (KI-030 batch-003)
+
+```sql
+-- legal_documents (글로벌 — tenant_id 없음)
+CREATE POLICY legal_docs_anonymous_read ON legal_documents FOR SELECT
+  USING (is_active = true OR is_operator());
+
+CREATE POLICY legal_docs_operator_modify ON legal_documents FOR INSERT
+  WITH CHECK (is_operator());
+
+CREATE POLICY legal_docs_operator_update ON legal_documents FOR UPDATE
+  USING (is_operator())
+  WITH CHECK (is_operator());
+
+-- user_consents (자기 자신 + 운영사 감사)
+CREATE POLICY consents_self_insert ON user_consents FOR INSERT
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY consents_self_read ON user_consents FOR SELECT
+  USING (
+    user_id = auth.uid()
+    OR is_operator()  -- 감사 (운영사 user의 tenant_id IS NULL row도 포함)
+    OR (auth.jwt() ->> 'role' = 'tenant_super' AND tenant_id = current_tenant_id())  -- 본인 회사 동의 이력
+  );
+
+-- 불변성 명시 차단 (Phase 7 마이그레이션 시 패턴 D 적용)
+CREATE POLICY consents_no_update ON user_consents FOR UPDATE
+  USING (false);
+
+CREATE POLICY consents_no_delete ON user_consents FOR DELETE
+  USING (false);
+
+-- 추가 안전망: BEFORE UPDATE/DELETE trigger로 RAISE EXCEPTION
+CREATE OR REPLACE FUNCTION user_consents_block_modify() RETURNS trigger
+  LANGUAGE plpgsql AS $$
+  BEGIN
+    RAISE EXCEPTION 'user_consents are immutable (compliance log)';
+  END;
+$$;
+
+CREATE TRIGGER user_consents_block_update
+  BEFORE UPDATE OR DELETE ON user_consents
+  FOR EACH ROW EXECUTE FUNCTION user_consents_block_modify();
+```
+
+### legal_documents `is_active` 단일 보장 트리거 (language 차원 포함, i18n batch-005)
+
+```sql
+-- 같은 (type, language) 내 is_active=true는 항상 최대 1행 (INSERT/UPDATE 시 자동 false 전환)
+CREATE OR REPLACE FUNCTION legal_documents_ensure_single_active() RETURNS trigger
+  LANGUAGE plpgsql AS $$
+  BEGIN
+    IF NEW.is_active = true THEN
+      UPDATE legal_documents
+        SET is_active = false, updated_at = now()
+        WHERE type = NEW.type
+          AND language = NEW.language       -- i18n: ko/en 별도 active 유지
+          AND id <> NEW.id
+          AND is_active = true;
+    END IF;
+    RETURN NEW;
+  END;
+$$;
+
+CREATE TRIGGER legal_documents_single_active
+  BEFORE INSERT OR UPDATE ON legal_documents
+  FOR EACH ROW EXECUTE FUNCTION legal_documents_ensure_single_active();
+```
+
+partial unique index(`idx_legal_docs_active_per_type_lang`)와 이중 보호: 트리거가 기존 (type, language) active를 자동 false 전환 + index가 race condition 시 INSERT 차단.
+
+**i18n 게시 정책 (batch-005)**: 새 약관 버전 게시 시 ko + en **둘 다 동시 게시 의무** (운영사 OP-11 또는 별도 화면에서 양 언어 페어 검증). 한쪽만 게시하면 application 레벨에서 거부.
 
 ## 7. 정책 테스트 의무 (Phase 7 ST-021)
 
@@ -204,3 +293,5 @@ CREATE POLICY operator_cross_tenant_read ON {sensitive_table} FOR SELECT
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 37 테이블 RLS 정책 + 6 헬퍼 함수 + Approval polymorphic routing (KI-014 해소) | Phase 3 진입 |
+| 2026-05-15 | legal_documents / user_consents RLS 추가 (§6-1) | KI-030 batch-003 |
+| 2026-05-16 | i18n: legal_documents trigger language 차원 추가 + ko/en 동시 게시 의무 정책 | 사용자 결정 batch-005 |

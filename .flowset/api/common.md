@@ -1,6 +1,7 @@
-# Common API (CM-07~15)
+# Common API (CM-07~22)
 
-> 공통 인프라 — 알림, 파일, Excel, PDF, 감사 로그. 모든 도메인에서 공유.
+> 공통 인프라 — 알림, 파일, Excel, PDF, 감사 로그, 약관, 헤더 컴포넌트. 모든 도메인에서 공유.
+> 2026-05-15 (KI-028/030 batch-003): 헤더 알림 미니(CM-17), 도움말(CM-19), 약관(CM-21), 온보딩(CM-22) 엔드포인트 추가.
 
 ## 알림 (CM-07, CM-15)
 
@@ -181,8 +182,133 @@
 
 클라이언트 wrapper (`packages/api-client/realtime.ts`)는 JWT 자동 첨부 + 채널 다중 구독 + 재연결 처리.
 
+## 헤더 알림 미니 드롭다운 (CM-17)
+
+CM-07 알림 센터의 미니 미리보기 — 최근 N건 + 미읽음 카운트.
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/api/v1/me/notifications?limit=10&unread_only=false` | 본인 | 최근 10건 (헤더 드롭다운 기본) |
+| GET | `/api/v1/me/notifications/unread-count` | 본인 | 미읽음 카운트만 (배지 갱신용 — Realtime 미구독 폴백) |
+| POST | `/api/v1/me/notifications/mark-all-read` | 본인 | 일괄 읽음 처리 |
+| POST | `/api/v1/me/notifications/:id/read` | 본인 (RLS) | 개별 읽음 |
+
+응답:
+```json
+{
+  "ok": true,
+  "data": {
+    "items": [
+      {"id":"uuid","type":"approval_pending","title":"휴가 결재 요청","body":"한직원 — 연차 1일","relatedUrl":"/admin/leaves/uuid","unread":true,"createdAt":"2026-05-15T09:00:00Z"}
+    ],
+    "unreadCount": 3
+  }
+}
+```
+
+Realtime: `realtime:notifications:user_id={uid}` INSERT 이벤트로 즉시 헤더 배지 갱신 (≤ 2초).
+
+## 헤더 도움말 패널 (CM-19)
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/api/v1/help/screen/:screenId` | 모든 로그인 | 화면 ID별 1줄 도움말 + 외부 링크 |
+| GET | `/api/v1/help/faq` | 모든 로그인 | FAQ 5건 (역할별 필터링) |
+| POST | `/api/v1/help/contact-ticket` | 모든 로그인 | OP-08 신규 티켓 단축 생성 (subject + body) |
+
+응답 (`/help/screen/:screenId`):
+```json
+{
+  "ok": true,
+  "data": {
+    "screenId": "TA-09",
+    "title": "결재 처리 가이드",
+    "summary": "결재 인박스에서 항목 클릭 → 승인/반려/위임을 처리합니다.",
+    "externalUrl": "https://help.flowhr.kr/screens/ta-09",
+    "shortcuts": [
+      {"key":"Cmd+K","action":"명령 팔레트 (v1.1)"},
+      {"key":"Esc","action":"모달 닫기"}
+    ]
+  }
+}
+```
+
+## 약관/개인정보처리방침 (CM-21)
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/api/v1/legal/documents?type=terms\|privacy&language=ko\|en&latest=true` | 모두 (비로그인 OK) | 현재 활성 버전 본문. language 미지정 시 user.locale (인증 시) 또는 Accept-Language (비로그인) 기준 자동 |
+| GET | `/api/v1/legal/documents?type=terms&language=en` | operator | 모든 버전 (운영사 관리) |
+| GET | `/api/v1/legal/documents/:id` | RLS | 특정 버전 (language 필드 포함) |
+| POST | `/api/v1/operator/legal/documents` | operator_super | **신규 버전 게시 — body는 ko + en 페어** (한쪽만 게시 시 `400 LANGUAGE_PAIR_REQUIRED`) |
+| PATCH | `/api/v1/operator/legal/documents/:id` | operator_super | 활성 토글 / 본문 수정 (트랜잭션 내 기존 active → false) |
+| GET | `/api/v1/me/consents` | 본인 | 본인 동의 이력 |
+| POST | `/api/v1/me/consents` | 본인 | `{documentId, version}` 동의 기록 |
+| GET | `/api/v1/operator/legal/consents?documentId=...` | operator | 감사 — 동의 통계 + 이력 |
+| GET | `/api/v1/me/consents/required` | 본인 | 강제 동의 필요한 문서 목록 (가드 매트릭스 §8) |
+
+`POST /me/consents` 응답:
+```json
+{
+  "ok": true,
+  "data": {
+    "id": "uuid",
+    "documentId": "uuid",
+    "version": "2.0.0",
+    "consentedAt": "2026-05-15T09:00:00Z",
+    "ipAddress": "1.2.3.4"
+  }
+}
+```
+
+`GET /me/consents/required` 응답 (강제 동의 필요 시):
+```json
+{
+  "ok": true,
+  "data": {
+    "required": [
+      {"type":"terms","version":"2.0.0","documentId":"uuid","effectiveDate":"2026-06-01","summaryMd":"##주요 변경..."}
+    ]
+  }
+}
+```
+
+빈 배열이면 강제 동의 가드 통과.
+
+## 첫 사용자 온보딩 (CM-22)
+
+CM-22 자체는 클라이언트 모달 — API는 first_login_at 갱신만 사용.
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| GET | `/api/v1/me/profile` | 본인 | `first_login_at` 포함 (모달 트리거 판단) |
+| PATCH | `/api/v1/me/profile` | 본인 | `{firstLoginAt: "2026-05-15T09:00:00Z"}` (투어 종료 시) |
+| POST | `/api/v1/me/onboarding/event` | 본인 | `{action: "started\|step_completed\|skipped\|finished", step?: 1-4}` → audit_logs |
+
+## PWA 설치 가이드 (CM-20)
+
+CM-20은 정적 페이지 — 별도 API 없음. 다만 설치 추적용 이벤트 로깅:
+
+| 메서드 | 경로 | 권한 |
+|--------|------|------|
+| POST | `/api/v1/me/pwa-install-event` | 본인 (또는 anonymous) | `{action: "guide_viewed\|installed\|dismissed", platform: "ios\|android\|desktop"}` → audit_logs (08 success-metrics PWA 설치율 측정용) |
+
+## i18n locale API (batch-005, 2026-05-16)
+
+| 메서드 | 경로 | 권한 | 비고 |
+|--------|------|------|------|
+| GET | `/api/v1/i18n/messages?locale=ko\|en` | bypass (CDN 가능) | next-intl messages JSON. 화면별로 분할 가능: `?namespace=op-01` 등 |
+| GET | `/api/v1/me/locale` | self | 본인 locale 조회 (캐시 무효화용) |
+| PATCH | `/api/v1/me/profile` | self | body `{locale: 'ko'\|'en'}` 포함 — locale 즉시 변경 |
+
+알림 발송 (CM-15) 시 수신자 `users.locale` 기준 자동 분기:
+- `ko`: 인앱+푸시(ko 텍스트) → 카카오 알림톡(ko) → SMS(ko) → 이메일(ko 템플릿)
+- `en`: 인앱+푸시(en 텍스트) → SMS(en) → 이메일(en 템플릿) (카카오 skip)
+
 ## 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 알림/파일/Excel/PDF/감사/플래그 평가/점검/헬스/Realtime 채널 | Phase 4 진입 |
+| 2026-05-15 | 헤더 알림 미니(CM-17) / 도움말(CM-19) / 약관(CM-21) / 온보딩(CM-22) / PWA 설치 이벤트(CM-20) 엔드포인트 추가 | KI-028/030 batch-003 |
+| 2026-05-16 | i18n: legal docs language 파라미터 + ko/en 페어 게시 + i18n messages API + locale별 알림 분기 | 사용자 결정 batch-005 |

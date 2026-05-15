@@ -1,6 +1,6 @@
 # Operator 도메인 (운영사)
 
-> spec §6 (OP-01 ~ OP-11). 운영사 = FlowHR 자체 운영팀. 11개 화면.
+> spec §6 (OP-01 ~ OP-11) + KI-029 보강 (OP-12). 운영사 = FlowHR 자체 운영팀. 12개 화면.
 
 ## 인덱스
 
@@ -17,6 +17,7 @@
 | OP-09 | 감사 로그 | ✓ | P2 | [OP-09-audit-logs.md](OP-09-audit-logs.md) |
 | OP-10 | 운영 리포트 (요약) | △ | P2 | [OP-10-reports.md](OP-10-reports.md) |
 | OP-11 | 시스템 설정 | ✓ | P2 | [OP-11-system-settings.md](OP-11-system-settings.md) |
+| OP-12 | 운영사 본인 프로필 | ✓ | P1 | [OP-12-profile.md](OP-12-profile.md) |
 
 ## 권한 (spec §9-2 요약)
 
@@ -33,6 +34,7 @@
 | OP-09 | R/E/L | R/L |
 | OP-10 | R/E | R/E |
 | OP-11 | CRUS/L | R 일부 |
+| OP-12 | RU 본인 + 타 operator 세션 강제 종료 | RU 본인 |
 
 (C=Create, R=Read, U=Update, D=Delete, A=Approve/Process, E=Export, N=Notification, S=Settings, L=Log)
 
@@ -49,6 +51,7 @@
 | 감사 로그 | OP-09 |
 | 리포트 | OP-10 |
 | 시스템 설정 | OP-11 |
+| 내 프로필 (헤더 드롭다운 CM-16에서도 접근) | OP-12 |
 
 ## 도메인 의존성
 

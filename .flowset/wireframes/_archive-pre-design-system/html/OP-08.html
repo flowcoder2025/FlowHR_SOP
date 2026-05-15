@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-08 지원 티켓</title>
+<link rel="stylesheet" href="_design-tokens.css">
+<link rel="stylesheet" href="_icons.css">
+<style>
+  .ticket-layout { display: grid; grid-template-columns: 1fr 380px; gap: 16px; align-items: start; }
+  .ticket-detail { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow-sm); position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; }
+  .ticket-thread { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+  .thread-msg { padding: 12px; border-radius: var(--r-md); font-size: 13px; }
+  .thread-msg.user { background: var(--color-surface); border-left: 3px solid var(--color-text-muted); }
+  .thread-msg.operator { background: var(--color-info-bg); border-left: 3px solid var(--color-accent); }
+  .thread-msg.internal { background: var(--color-warning-bg); border-left: 3px solid var(--color-warning); }
+  .thread-meta { font-size: 11px; color: var(--color-text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .footer { padding: 16px 24px; background: var(--color-bg); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-muted); }
+  .footer-links { display: flex; gap: 16px; } .footer-links a { color: var(--color-text-muted); text-decoration: none; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/></symbol>
+  <symbol id="i-credit-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+  <symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+</svg>
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo">FlowHR</div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item active"><svg class="ico"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico"><use href="#i-settings"/></svg> 시스템 설정</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">지원 티켓</h1>
+      <div style="flex:1; max-width: 480px; position: relative;">
+        <svg class="icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--color-text-subtle);"><use href="#i-search"/></svg>
+        <input style="width:100%;height:36px;padding:0 12px 0 36px;border:1px solid var(--color-border);border-radius:var(--r-md);font-size:13px;background:var(--color-surface);" placeholder="티켓번호 / 제목 / 회사 검색" />
+      </div>
+      <div class="header-actions">
+        <div style="padding:8px;cursor:pointer;color:var(--color-text-muted);"><svg class="ico"><use href="#i-help"/></svg></div>
+        <div class="bell"><svg class="ico"><use href="#i-bell"/></svg><span class="bell-badge">3</span></div>
+        <div class="avatar">김</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="filter-bar" style="margin-bottom:16px;">
+        <div class="filter-chip active">상태: 진행중</div>
+        <div class="filter-chip">유형: 전체</div>
+        <div class="filter-chip">우선순위: 전체</div>
+        <div class="filter-chip">담당자: 전체</div>
+        <div class="filter-chip">테넌트: 전체</div>
+        <div class="filter-chip">기간: 30일</div>
+      </section>
+
+      <div class="ticket-layout">
+        <!-- 좌측: 티켓 목록 -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="table">
+            <thead><tr><th>번호</th><th>회사</th><th>제목</th><th>유형</th><th>우선순위</th><th>상태</th><th>담당자</th><th>SLA</th><th>생성일</th></tr></thead>
+            <tbody>
+              <tr style="background:var(--color-info-bg);"><td style="font-family:monospace;font-size:12px;"><strong>TK-2026-0042</strong></td><td>(주)테크스타트</td><td>출퇴근 기록 오류</td><td>장애</td><td><span class="badge danger">P1</span></td><td><span class="badge info">진행중</span></td><td>박오퍼</td><td style="color:var(--color-warning);">1h 24m</td><td>05-16 09:30</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px;">TK-2026-0041</td><td>(주)치킨매니아</td><td>휴가 잔여 문의</td><td>문의</td><td><span class="badge info">P3</span></td><td><span class="badge info">신규</span></td><td>—</td><td>48h</td><td>05-16 08:15</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px;">TK-2026-0040</td><td>(주)디자인스튜디오</td><td>급여명세서 미수신</td><td>장애</td><td><span class="badge warning">P2</span></td><td><span class="badge warning">대기</span></td><td>박오퍼</td><td>12h</td><td>05-15 17:42</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px;">TK-2026-0039</td><td>(주)이커머스랩</td><td>SSO 연동 요청</td><td>요청</td><td><span class="badge info">P3</span></td><td><span class="badge info">진행중</span></td><td>김운영</td><td>56h</td><td>05-15 14:20</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px;">TK-2026-0038</td><td>(주)카페오너스</td><td>대시보드 차트 오류</td><td>장애</td><td><span class="badge warning">P2</span></td><td><span class="badge success">해결</span></td><td>박오퍼</td><td>—</td><td>05-15 10:08</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px;">TK-2026-0037</td><td>(주)에듀테크</td><td>엑셀 가져오기 실패</td><td>장애</td><td><span class="badge warning">P2</span></td><td><span class="badge success">해결</span></td><td>김운영</td><td>—</td><td>05-14 16:30</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 우측: 티켓 상세 패널 -->
+        <aside class="ticket-detail">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div>
+              <div style="font-family:monospace;font-size:12px;color:var(--color-text-muted);">TK-2026-0042</div>
+              <h3 style="font-size:16px;font-weight:700;margin-top:4px;">출퇴근 기록 오류</h3>
+            </div>
+            <span class="badge info">진행중</span>
+          </div>
+          <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:16px;">(주)테크스타트 · 김대표 · 05-16 09:30</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">유형</div>
+              <select style="width:100%;border:1px solid var(--color-border);border-radius:var(--r-sm);padding:6px;font-size:13px;"><option>장애</option><option>문의</option><option>요청</option></select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">우선순위</div>
+              <select style="width:100%;border:1px solid var(--color-border);border-radius:var(--r-sm);padding:6px;font-size:13px;"><option>P1</option><option>P0</option><option>P2</option><option>P3</option></select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">담당자</div>
+              <select style="width:100%;border:1px solid var(--color-border);border-radius:var(--r-sm);padding:6px;font-size:13px;"><option>박오퍼</option><option>김운영</option></select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">상태</div>
+              <select style="width:100%;border:1px solid var(--color-border);border-radius:var(--r-sm);padding:6px;font-size:13px;"><option>진행중</option><option>신규</option><option>대기</option><option>해결</option></select>
+            </div>
+          </div>
+
+          <div style="background:var(--color-warning-bg);border-radius:var(--r-md);padding:8px 12px;font-size:12px;color:var(--color-warning);margin-bottom:16px;">
+            ⏱ SLA 1시간 24분 남음 (P1 응답 2시간)
+          </div>
+
+          <div class="ticket-thread">
+            <div class="thread-msg user">
+              <div class="thread-meta"><span><strong>김대표</strong> · 테넌트 관리자</span><span>09:30</span></div>
+              직원 한직원의 5/15 출근 기록이 자동으로 02:00에 등록되었습니다. GPS 위치도 회사가 아니어서 확인이 필요합니다.
+            </div>
+            <div class="thread-msg operator">
+              <div class="thread-meta"><span><strong>박오퍼</strong> · 운영사</span><span>10:15</span></div>
+              안녕하세요. 로그 확인 결과 PWA 백그라운드 동기화 큐가 잘못 발화된 것으로 보입니다. 현재 원인 분석 중이며 곧 회신드리겠습니다.
+            </div>
+            <div class="thread-msg internal">
+              <div class="thread-meta"><span><strong>박오퍼</strong> · 내부 메모 (사용자에게 비공개)</span><span>10:18</span></div>
+              attendance_modifications 테이블 조회 결과 동일 패턴 3건 추가 발견. EM-02 출퇴근 큐잉 로직 점검 필요. 김운영님 에스컬레이션 검토.
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--color-border);padding-top:12px;">
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox"> 내부 메모</label>
+            </div>
+            <textarea style="width:100%;min-height:80px;padding:8px;border:1px solid var(--color-border);border-radius:var(--r-md);font-size:13px;font-family:inherit;resize:vertical;" placeholder="답변 작성..."></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <button class="btn btn-ghost btn-sm"><svg class="ico ico-sm"><use href="#i-paperclip"/></svg>첨부</button>
+              <button class="btn btn-primary btn-sm"><svg class="ico ico-sm"><use href="#i-send"/></svg>전송</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a></div>
+      <div style="font-family:monospace;">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+</body>
+</html>

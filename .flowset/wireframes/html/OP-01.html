@@ -1,142 +1,243 @@
 <!DOCTYPE html>
+<!--
+  OP-01 운영사 대시보드
+  PRD: prd/domains/operator/OP-01-dashboard.md
+  Layout: _design-system/_layout-shell.html (AppShell + 글로벌 컴포넌트)
+  Pattern: Dashboard (_design-system/04-patterns.md §Dashboard 패턴)
+  사이드바 active: 대시보드
+-->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <title>FlowHR — OP-01 운영사 대시보드</title>
-<link rel="stylesheet" href="_design-tokens.css">
-<link rel="stylesheet" href="_icons.css">
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
 <style>
+  /* 페이지 고유 grid layout만 정의 (컴포넌트 재정의 금지) */
   .kpi-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 20px; }
   .chart-row { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .activity-row { display: grid; grid-template-columns: 1.2fr 1.2fr 1fr; gap: 16px; }
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .section-header h3 { font-size: 14px; font-weight: 600; }
-  .section-header .link { font-size: 12px; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-success); display: inline-block; margin-right: 6px; }
-  .kpi-label .ico { width: 16px; height: 16px; opacity: 0.65; }
-  .sidebar-item .ico { width: 18px; height: 18px; }
+  .activity-row { display: grid; grid-template-columns: 1.2fr 1.2fr 1fr; gap: 16px; margin-bottom: 24px; }
 </style>
 </head>
 <body>
 
-<!-- 아이콘 sprite (인라인) -->
+<!-- ===========================================================================
+     아이콘 SVG sprite — 단일 source는 _design-system/icons.svg
+     수정은 source 파일에서만. 화면별 인라인은 file:// 호환 위한 sync 복사본.
+     동기화 정책: _design-system/README.md §아이콘 sync
+     =========================================================================== -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
-  <symbol id="i-building" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></symbol>
-  <symbol id="i-credit-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></symbol>
-  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
-  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
-  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
-  <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M15 8h-5"/><path d="M15 12h-5"/></symbol>
-  <symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
-  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
-  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
-  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
-  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
-  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
-  <symbol id="i-arrow-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
-  <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
-  <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
-  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
-  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
-  <symbol id="i-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
-  <symbol id="i-trending-up" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
-  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+  <!-- 사이드바 / 도메인 -->
+  <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></symbol>
+  <symbol id="i-credit-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M15 8h-5"/><path d="M15 12h-5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></symbol>
+  <symbol id="i-check-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-network" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="6"/><rect x="16" y="16" width="6" height="6"/><rect x="2" y="16" width="6" height="6"/><path d="M5 16v-4h14v4"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+
+  <!-- 헤더 / 글로벌 -->
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></symbol>
+
+  <!-- 액션 / 컨트롤 -->
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <symbol id="i-paperclip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+  <symbol id="i-excel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="10" y1="13" y2="13"/><line x1="8" x2="10" y1="17" y2="17"/><line x1="14" x2="16" y1="13" y2="13"/><line x1="14" x2="16" y1="17" y2="17"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+  <symbol id="i-more-h" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+
+  <!-- 네비게이션 -->
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+
+  <!-- 상태 / 알림 -->
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+  <symbol id="i-alert-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-alert-t" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+  <symbol id="i-trending-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
 </svg>
 
 <div class="app-shell">
 
-  <!-- 사이드바 -->
+  <!-- ========================================================================
+       사이드바 (operator 9 메뉴, _design-system/05-layouts.md §사이드바 메뉴 - operator)
+       ======================================================================== -->
   <nav class="sidebar">
-    <div class="sidebar-logo">FlowHR</div>
+    <div class="sidebar-logo">
+      <div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div>
+    </div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item active"><svg class="ico"><use href="#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico"><use href="#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item active"><svg class="ico" width="16" height="16"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
-    <div style="padding: 16px 24px; font-size: 11px; color: rgba(255,255,255,0.4);">v1.0.0 · 운영사 환경</div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
 
-  <!-- 메인 -->
   <div class="main">
+
+    <!-- ========================================================================
+         글로벌 헤더 (CM-16~19 의무 — _layout-shell.html과 동일)
+         ======================================================================== -->
     <header class="header">
       <h1 class="page-title">운영사 대시보드</h1>
-      <div class="header-search">
-        <svg class="icon"><use href="#i-search"/></svg>
-        <input placeholder="회사명 / 사업자번호 / 도메인 검색" />
+
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
+          <input placeholder="검색은 v1.1에서 제공됩니다 (현재 화면별 필터 사용)" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
       </div>
+
       <div class="header-actions">
-        <button class="btn btn-secondary"><svg class="ico"><use href="#i-calendar"/></svg>이번달<svg class="ico ico-sm"><use href="#i-chevron-down"/></svg></button>
-        <button class="btn btn-secondary"><svg class="ico"><use href="#i-credit-card"/></svg>전체 요금제<svg class="ico ico-sm"><use href="#i-chevron-down"/></svg></button>
-        <button class="btn btn-secondary"><svg class="ico"><use href="#i-building"/></svg>전체 상태<svg class="ico ico-sm"><use href="#i-chevron-down"/></svg></button>
-        <div class="bell"><svg class="ico"><use href="#i-bell"/></svg><span class="bell-badge">3</span></div>
-        <div class="avatar">김</div>
+        <button class="icon-btn" data-tooltip="도움말 (현재 화면 가이드)">
+          <svg class="ico" width="18" height="18"><use href="#i-help"/></svg>
+        </button>
+        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)">
+          <svg class="ico" width="18" height="18"><use href="#i-bell"/></svg>
+          <span class="badge-dot">3</span>
+        </button>
+        <div style="position:relative;">
+          <button class="profile-trigger">
+            <div class="avatar">김</div>
+            <svg class="ico" width="16" height="16"><use href="#i-chevron-down"/></svg>
+          </button>
+          <!-- CM-16 드롭다운 펼친 상태 (시각화) -->
+          <div class="dropdown dropdown-right-0" style="width:280px;">
+            <div class="dropdown-header">
+              <div class="dropdown-name">김운영</div>
+              <div class="dropdown-meta">operator_super · FlowHR 운영팀</div>
+            </div>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-user"/></svg>내 프로필 (OP-12)</a>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-bell"/></svg>알림 설정</a>
+            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-help"/></svg>도움말</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="#i-logout"/></svg>로그아웃</a>
+          </div>
+        </div>
       </div>
     </header>
 
+    <!-- ========================================================================
+         페이지 콘텐츠 (Dashboard 패턴)
+         ======================================================================== -->
     <main class="content">
 
-      <!-- 액션 영역 (PRD §4) -->
-      <section style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <div style="font-size: 13px; color: var(--color-text-muted);">2026-05-15 · 마지막 갱신 1분 전</div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn btn-secondary"><svg class="ico"><use href="#i-ticket"/></svg>티켓 보기</button>
-          <button class="btn btn-secondary"><svg class="ico"><use href="#i-receipt"/></svg>청구 보기</button>
-          <button class="btn btn-secondary"><svg class="ico"><use href="#i-download"/></svg>리포트 다운로드</button>
-          <button class="btn btn-primary"><svg class="ico"><use href="#i-plus"/></svg>신규 테넌트 등록</button>
-        </div>
-      </section>
+      <!-- §3-4 필터 (filter-bar) -->
+      <div class="filter-bar" style="margin-bottom: 16px;">
+        <span style="font-size:12px;color:var(--color-text-muted);align-self:center;padding-right:8px;">필터</span>
+        <div class="filter-chip active"><svg class="ico ico-sm" width="14" height="14"><use href="#i-calendar-days"/></svg>이번달<svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-down"/></svg></div>
+        <div class="filter-chip"><svg class="ico ico-sm" width="14" height="14"><use href="#i-credit-card"/></svg>전체 요금제<svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-down"/></svg></div>
+        <div class="filter-chip"><svg class="ico ico-sm" width="14" height="14"><use href="#i-building"/></svg>전체 상태<svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-down"/></svg></div>
+      </div>
 
+      <!-- §4 액션 영역 -->
+      <div class="page-action-bar">
+        <div class="summary">2026-05-16 · 마지막 갱신 1분 전</div>
+        <div class="actions">
+          <button class="btn btn-secondary"><svg class="ico" width="16" height="16"><use href="#i-ticket"/></svg>티켓 보기</button>
+          <button class="btn btn-secondary"><svg class="ico" width="16" height="16"><use href="#i-receipt"/></svg>청구 보기</button>
+          <button class="btn btn-secondary"><svg class="ico" width="16" height="16"><use href="#i-download"/></svg>리포트 다운로드</button>
+          <button class="btn btn-primary"><svg class="ico" width="16" height="16"><use href="#i-plus"/></svg>신규 테넌트 등록</button>
+        </div>
+      </div>
+
+      <!-- §3-1 KPI 7 카드 -->
       <section class="kpi-row">
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico"><use href="#i-building"/></svg>전체 테넌트</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-building"/></svg>전체 테넌트</div>
           <div class="kpi-value">47</div>
           <div class="kpi-sub">활성 42 / 비활성 5</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico"><use href="#i-check-circle"/></svg>활성 테넌트</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-check-circle"/></svg>활성 테넌트</div>
           <div class="kpi-value">42</div>
-          <div class="kpi-delta up"><svg class="ico ico-sm"><use href="#i-arrow-up"/></svg>+3 (이번달)</div>
+          <div class="kpi-delta up"><svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-up"/></svg>+3 (이번달)</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico"><use href="#i-users"/></svg>총 사용자</div>
-          <div class="kpi-value">1,247<span style="font-size: 14px; color: var(--color-text-muted);">명</span></div>
-          <div class="kpi-delta up"><svg class="ico ico-sm"><use href="#i-arrow-up"/></svg>+82 (전월 대비)</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-users"/></svg>총 사용자</div>
+          <div class="kpi-value">1,247<span style="font-size:14px;color:var(--color-text-muted);">명</span></div>
+          <div class="kpi-delta up"><svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-up"/></svg>+82 (전월 대비)</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico"><use href="#i-trending-up"/></svg>MRR</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-trending-up"/></svg>MRR</div>
           <div class="kpi-value">₩3,117,500</div>
-          <div class="kpi-delta up"><svg class="ico ico-sm"><use href="#i-arrow-up"/></svg>+₩205,000</div>
+          <div class="kpi-delta up"><svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-up"/></svg>+₩205,000</div>
         </div>
         <div class="kpi-card" style="border-color: var(--color-warning-bg);">
-          <div class="kpi-label"><svg class="ico"><use href="#i-alert"/></svg>미수금</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-alert-c"/></svg>미수금</div>
           <div class="kpi-value" style="color: var(--color-warning);">₩412,500</div>
-          <div class="kpi-sub"><span class="badge danger">2건</span></div>
+          <div class="kpi-sub"><span class="badge warning">2건</span></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico"><use href="#i-ticket"/></svg>오픈 티켓</div>
-          <div class="kpi-value">8<span style="font-size: 14px; color: var(--color-text-muted);">건</span></div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-ticket"/></svg>오픈 티켓</div>
+          <div class="kpi-value">8<span style="font-size:14px;color:var(--color-text-muted);">건</span></div>
           <div class="kpi-sub"><span class="badge warning">SLA 임박 2건</span></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico"><use href="#i-activity"/></svg>시스템 상태</div>
-          <div class="kpi-value" style="font-size: 18px; padding-top: 6px;"><span class="status-dot"></span>정상</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-activity"/></svg>시스템 상태</div>
+          <div class="kpi-value" style="font-size:18px;padding-top:6px;"><span class="status-dot"></span>정상</div>
           <div class="kpi-sub">Supabase · Vercel</div>
         </div>
       </section>
 
+      <!-- §3-2 차트 4개 -->
       <section class="chart-row">
         <div class="card">
-          <div class="section-header"><h3>월별 MRR 추이</h3><span class="link">상세 보기<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
-          <svg viewBox="0 0 400 180" style="width: 100%; height: 200px;" preserveAspectRatio="none">
+          <div class="section-header"><h3>월별 MRR 추이</h3><span class="link">상세 보기<svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></span></div>
+          <svg viewBox="0 0 400 180" style="width:100%;height:200px;" preserveAspectRatio="none">
             <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/></linearGradient></defs>
             <polyline fill="none" stroke="#3B82F6" stroke-width="2.5" points="20,140 60,128 100,118 140,108 180,98 220,84 260,72 300,58 340,46 380,32"/>
             <polygon fill="url(#g1)" points="20,140 60,128 100,118 140,108 180,98 220,84 260,72 300,58 340,46 380,32 380,180 20,180"/>
@@ -144,8 +245,8 @@
           </svg>
         </div>
         <div class="card">
-          <div class="section-header"><h3>신규 / 해지 테넌트</h3><span class="link">상세<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
-          <svg viewBox="0 0 400 180" style="width: 100%; height: 200px;">
+          <div class="section-header"><h3>신규 / 해지 테넌트</h3><span class="link">상세<svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></span></div>
+          <svg viewBox="0 0 400 180" style="width:100%;height:200px;">
             <rect x="30" y="55" width="40" height="40" fill="#10B981" rx="2"/><rect x="90" y="50" width="40" height="45" fill="#10B981" rx="2"/><rect x="150" y="40" width="40" height="55" fill="#10B981" rx="2"/><rect x="210" y="45" width="40" height="50" fill="#10B981" rx="2"/><rect x="270" y="35" width="40" height="60" fill="#10B981" rx="2"/><rect x="330" y="30" width="40" height="65" fill="#10B981" rx="2"/>
             <line x1="20" y1="95" x2="385" y2="95" stroke="#E5E7EB"/>
             <rect x="30" y="95" width="40" height="20" fill="#EF4444" rx="2"/><rect x="90" y="95" width="40" height="15" fill="#EF4444" rx="2"/><rect x="150" y="95" width="40" height="25" fill="#EF4444" rx="2"/><rect x="210" y="95" width="40" height="18" fill="#EF4444" rx="2"/><rect x="270" y="95" width="40" height="22" fill="#EF4444" rx="2"/><rect x="330" y="95" width="40" height="20" fill="#EF4444" rx="2"/>
@@ -155,15 +256,15 @@
         </div>
         <div class="card">
           <div class="section-header"><h3>요금제 분포</h3></div>
-          <div style="display: flex; flex-direction: column; align-items: center;">
-            <svg viewBox="0 0 100 100" style="width: 130px; height: 130px;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <svg viewBox="0 0 100 100" style="width:130px;height:130px;">
               <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="16"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" stroke-width="16" stroke-dasharray="150.8 251.3" transform="rotate(-90 50 50)"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#10B981" stroke-width="16" stroke-dasharray="87.9 251.3" stroke-dashoffset="-150.8" transform="rotate(-90 50 50)"/>
               <text x="50" y="48" text-anchor="middle" font-size="9" fill="#6B7280">합계</text>
               <text x="50" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#111827">42</text>
             </svg>
-            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 8px; line-height: 1.6;">
+            <div style="font-size:11px;color:var(--color-text-muted);margin-top:8px;line-height:1.6;">
               <div><span style="display:inline-block;width:8px;height:8px;background:#3B82F6;border-radius:2px;"></span> 기본 60%</div>
               <div><span style="display:inline-block;width:8px;height:8px;background:#10B981;border-radius:2px;"></span> 프리미엄 35%</div>
               <div><span style="display:inline-block;width:8px;height:8px;background:#F59E0B;border-radius:2px;"></span> 커스텀 5%</div>
@@ -172,8 +273,8 @@
         </div>
         <div class="card">
           <div class="section-header"><h3>티켓 유형 (30일)</h3></div>
-          <div style="display: flex; flex-direction: column; align-items: center;">
-            <svg viewBox="0 0 100 100" style="width: 130px; height: 130px;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <svg viewBox="0 0 100 100" style="width:130px;height:130px;">
               <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="16"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" stroke-width="16" stroke-dasharray="125.6 251.3" transform="rotate(-90 50 50)"/>
               <circle cx="50" cy="50" r="40" fill="none" stroke="#EF4444" stroke-width="16" stroke-dasharray="50.3 251.3" stroke-dashoffset="-125.6" transform="rotate(-90 50 50)"/>
@@ -181,7 +282,7 @@
               <text x="50" y="48" text-anchor="middle" font-size="9" fill="#6B7280">총</text>
               <text x="50" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#111827">32</text>
             </svg>
-            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 8px; line-height: 1.6;">
+            <div style="font-size:11px;color:var(--color-text-muted);margin-top:8px;line-height:1.6;">
               <div><span style="display:inline-block;width:8px;height:8px;background:#3B82F6;border-radius:2px;"></span> 문의 50%</div>
               <div><span style="display:inline-block;width:8px;height:8px;background:#EF4444;border-radius:2px;"></span> 장애 20%</div>
               <div><span style="display:inline-block;width:8px;height:8px;background:#F59E0B;border-radius:2px;"></span> 요청 25%</div>
@@ -190,35 +291,36 @@
         </div>
       </section>
 
+      <!-- §3-3 활동 테이블 3개 -->
       <section class="activity-row">
         <div class="card">
-          <div class="section-header"><h3>최근 가입 테넌트</h3><span class="link">전체<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <div class="section-header"><h3>최근 가입 테넌트</h3><span class="link">전체<svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></span></div>
           <table class="table">
             <thead><tr><th>회사명</th><th>플랜</th><th>가입일</th><th>직원</th><th>상태</th></tr></thead>
             <tbody>
-              <tr><td>(주)치킨매니아</td><td>기본</td><td>05-14</td><td>32명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td>(주)테크스타트</td><td>프리미엄</td><td>05-12</td><td>78명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td>(주)디자인스튜디오</td><td>기본</td><td>05-10</td><td>15명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td>(주)카페오너스</td><td>기본</td><td>05-08</td><td>22명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td>(주)이커머스랩</td><td>커스텀</td><td>05-05</td><td>112명</td><td><span class="badge info">수습</span></td></tr>
+              <tr><td><a class="row-link">(주)치킨매니아</a></td><td>기본</td><td>05-14</td><td>32명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link">(주)테크스타트</a></td><td>프리미엄</td><td>05-12</td><td>78명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link">(주)디자인스튜디오</a></td><td>기본</td><td>05-10</td><td>15명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link">(주)카페오너스</a></td><td>기본</td><td>05-08</td><td>22명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link">(주)이커머스랩</a></td><td>커스텀</td><td>05-05</td><td>112명</td><td><span class="badge info">수습</span></td></tr>
             </tbody>
           </table>
         </div>
         <div class="card">
-          <div class="section-header"><h3>최근 티켓</h3><span class="link">전체<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <div class="section-header"><h3>최근 티켓</h3><span class="link">전체<svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></span></div>
           <table class="table">
             <thead><tr><th>티켓번호</th><th>회사</th><th>제목</th><th>우선순위</th><th>SLA</th></tr></thead>
             <tbody>
-              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0042</td><td>(주)테크스타트</td><td>출퇴근 기록 오류</td><td><span class="badge danger">P1</span></td><td style="color: var(--color-warning);">1h 24m</td></tr>
-              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0041</td><td>(주)치킨매니아</td><td>휴가 잔여 문의</td><td><span class="badge info">P3</span></td><td>48h</td></tr>
-              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0040</td><td>(주)디자인스튜디오</td><td>급여명세서 미수신</td><td><span class="badge warning">P2</span></td><td>12h</td></tr>
-              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0039</td><td>(주)이커머스랩</td><td>SSO 연동 요청</td><td><span class="badge info">P3</span></td><td>56h</td></tr>
-              <tr><td style="font-family: monospace; font-size: 12px;">TK-2026-0038</td><td>(주)카페오너스</td><td>대시보드 차트 오류</td><td><span class="badge warning">P2</span></td><td>18h</td></tr>
+              <tr><td><span class="code">TK-2026-0042</span></td><td>(주)테크스타트</td><td>출퇴근 기록 오류</td><td><span class="badge danger">P1</span></td><td style="color:var(--color-warning);">1h 24m</td></tr>
+              <tr><td><span class="code">TK-2026-0041</span></td><td>(주)치킨매니아</td><td>휴가 잔여 문의</td><td><span class="badge info">P3</span></td><td>48h</td></tr>
+              <tr><td><span class="code">TK-2026-0040</span></td><td>(주)디자인스튜디오</td><td>급여명세서 미수신</td><td><span class="badge warning">P2</span></td><td>12h</td></tr>
+              <tr><td><span class="code">TK-2026-0039</span></td><td>(주)이커머스랩</td><td>SSO 연동 요청</td><td><span class="badge info">P3</span></td><td>56h</td></tr>
+              <tr><td><span class="code">TK-2026-0038</span></td><td>(주)카페오너스</td><td>대시보드 차트 오류</td><td><span class="badge warning">P2</span></td><td>18h</td></tr>
             </tbody>
           </table>
         </div>
         <div class="card">
-          <div class="section-header"><h3>최근 시스템 이벤트</h3><span class="link">감사 로그<svg class="ico ico-sm"><use href="#i-arrow-right"/></svg></span></div>
+          <div class="section-header"><h3>최근 시스템 이벤트</h3><span class="link">감사 로그<svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></span></div>
           <table class="table">
             <thead><tr><th>시각</th><th>이벤트</th><th>결과</th></tr></thead>
             <tbody>
@@ -233,7 +335,22 @@
       </section>
 
     </main>
+
+    <!-- ========================================================================
+         글로벌 푸터 (변경 금지)
+         ======================================================================== -->
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a href="/legal/terms">이용약관</a>
+        <a href="/legal/privacy">개인정보처리방침</a>
+        <a>도움말</a>
+        <a>운영팀 문의</a>
+      </div>
+      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+    </footer>
   </div>
 </div>
+
 </body>
 </html>
