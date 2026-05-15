@@ -1,0 +1,171 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  commit-msg-format:
+    name: Commit Message Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify WI-NNN-[type] 한글 작업명 format
+        shell: bash
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+
+          # wi-global.md §1 규칙:
+          #   WI-NNN-[type] 한글 작업명
+          #   NNN: [A-Za-z0-9][A-Za-z0-9+\-_]* (영숫자 + +/- 허용, batch-003+005 같은 묶음 포함)
+          #   type: feat|fix|docs|style|refactor|test|chore|perf|ci|revert
+          #   예외: WI-chore / WI-docs / WI-Handoff (번호 없는 시스템 커밋)
+          pattern='^WI-([A-Za-z0-9][A-Za-z0-9+\-_]*(-(feat|fix|docs|style|refactor|test|chore|perf|ci|revert))?|chore|docs|Handoff)[[:space:]]+[^[:space:]]'
+
+          fail=0
+          while IFS= read -r sha; do
+            msg=$(git log -1 --format=%s "$sha")
+            if ! echo "$msg" | grep -qE "$pattern"; then
+              echo "::error::Invalid commit message format: $msg"
+              echo "  Expected: WI-NNN-[type] 한글 작업명"
+              fail=1
+            else
+              echo "OK: $msg"
+            fi
+          done < <(git log --format=%H "$base_sha..$head_sha")
+
+          exit $fail
+
+  encoding-check:
+    name: UTF-8 + LF Encoding
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify UTF-8 no-BOM LF for changed text files
+        shell: bash
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+
+          fail=0
+          # 텍스트 파일만 검사 (바이너리 svg/png 제외)
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            [ ! -f "$f" ] && continue
+
+            # UTF-8 검사 (file -bi 사용)
+            charset=$(file -bi "$f" | sed -n 's/.*charset=//p')
+            case "$charset" in
+              utf-8|us-ascii|binary)
+                ;;
+              *)
+                echo "::error file=$f::Not UTF-8 (charset=$charset)"
+                fail=1
+                ;;
+            esac
+
+            # BOM 검사 (첫 3바이트 EF BB BF)
+            if [ "$(head -c 3 "$f" | xxd -p)" = "efbbbf" ]; then
+              echo "::error file=$f::Has UTF-8 BOM"
+              fail=1
+            fi
+
+            # CRLF 검사
+            if grep -lU $'\r' "$f" >/dev/null 2>&1; then
+              echo "::error file=$f::Has CRLF line endings"
+              fail=1
+            fi
+          done < <(git diff --name-only "$base_sha..$head_sha" -- '*.md' '*.html' '*.css' '*.json' '*.yml' '*.yaml' '*.ts' '*.tsx' '*.js' '*.jsx' '*.sh' 'VERSION')
+
+          exit $fail
+
+  html-syntax:
+    name: HTML Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install htmlhint
+        run: npm install -g htmlhint@1.1.4
+      - name: Lint wireframe HTML
+        shell: bash
+        run: |
+          # 와이어프레임 화면 + 디자인 시스템 + showcase. archive 제외
+          mapfile -t files < <(find .flowset/wireframes -name '*.html' -not -path '*/\_archive-*/*' 2>/dev/null)
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No wireframe HTML files found"
+            exit 0
+          fi
+
+          echo "Linting ${#files[@]} file(s):"
+          printf '  %s\n' "${files[@]}"
+
+          htmlhint --config .github/htmlhintrc.json "${files[@]}"
+
+  design-system-ssot:
+    name: Design System SSOT Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify _design-system references + no inline component definitions
+        shell: bash
+        run: |
+          fail=0
+
+          # 1. html/ 화면이 _design-system/tokens.css + components.css 참조 의무
+          for f in .flowset/wireframes/html/*.html; do
+            [ ! -f "$f" ] && continue
+            if ! grep -q '_design-system/tokens\.css' "$f"; then
+              echo "::error file=$f::Does not import _design-system/tokens.css"
+              fail=1
+            fi
+            if ! grep -q '_design-system/components\.css' "$f"; then
+              echo "::error file=$f::Does not import _design-system/components.css"
+              fail=1
+            fi
+          done
+
+          # 2. html/ 화면 <style> 안에서 컴포넌트 클래스 정의 금지
+          #    (페이지 grid layout만 inline <style> 허용)
+          banned_classes='\.(btn|btn-primary|btn-secondary|btn-ghost|btn-danger|card|dropdown|dropdown-item|sidebar|sidebar-item|sidebar-logo|icon-btn|avatar|avatar-sm|avatar-lg|badge|badge-dot|chip|table|kpi-card|empty-state|profile-trigger|header-search|maintenance-banner|tooltip|popover|breadcrumb|form-row|form-section|info-row|session-row|footer|header|app-shell|logo|tenant-logo)[[:space:]]*\{'
+          for f in .flowset/wireframes/html/*.html; do
+            [ ! -f "$f" ] && continue
+            inline=$(awk 'BEGIN{p=0} /<style/{p=1} p{print} /<\/style>/{p=0}' "$f")
+            if echo "$inline" | grep -qE "$banned_classes"; then
+              offending=$(echo "$inline" | grep -nE "$banned_classes" | head -5)
+              echo "::error file=$f::Inline component definition (SSOT violation):"
+              echo "$offending"
+              fail=1
+            fi
+          done
+
+          exit $fail
+
+  version-format:
+    name: VERSION File Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify .flowset/VERSION semver shape
+        shell: bash
+        run: |
+          if [ ! -f .flowset/VERSION ]; then
+            echo "::error::.flowset/VERSION missing"
+            exit 1
+          fi
+
+          version=$(tr -d '[:space:]' < .flowset/VERSION)
+          if ! echo "$version" | grep -qE '^wf-v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid VERSION: '$version' (expected wf-vX.Y.Z)"
+            exit 1
+          fi
+
+          echo "VERSION: $version"
