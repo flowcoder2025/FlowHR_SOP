@@ -35,7 +35,11 @@
 ├── guardrails.md          # 누적 규칙
 ├── spec/matrix.json       # 데이터 모델 SSOT
 ├── contracts/             # API / 데이터 / 스타일 / 스프린트 / review-rubric
-├── eval-results/          # evaluator 채점 결과 + PASS 마커
+├── eval-results/          # evaluator 채점 결과 + PASS 마커 (임계 8.0)
+├── known-issues/          # Known Issue Registry (P0~P3 + trigger 정책)
+│   ├── INDEX.md           # 활성 이슈 SSOT
+│   ├── triggers.md        # 해결 발동 정책
+│   └── archive/           # 해결된 이슈 아카이브
 ├── backlog/               # Phase 2 산출물
 ├── db/                    # Phase 3 ERD
 ├── api/                   # Phase 4 OpenAPI

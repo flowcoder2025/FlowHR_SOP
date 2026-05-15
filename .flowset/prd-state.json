@@ -8,8 +8,26 @@
     "agent_path": ".claude/agents/evaluator.md",
     "rubric_path": ".flowset/contracts/review-rubric.md",
     "results_dir": ".flowset/eval-results",
-    "threshold": 7.0,
+    "threshold_total": 8.0,
+    "threshold_per_axis": 7.5,
     "max_retries": 3
+  },
+  "known_issues": {
+    "enabled": true,
+    "registry_path": ".flowset/known-issues/INDEX.md",
+    "triggers_path": ".flowset/known-issues/triggers.md",
+    "archive_dir": ".flowset/known-issues/archive",
+    "thresholds": {
+      "P0": 1,
+      "P1": 3,
+      "P2": 5,
+      "P3": 10
+    },
+    "phase_gate": {
+      "phase_end": "P0/P1 잔존 0건 필수",
+      "beta_entry": "P0/P1/P2 0건 필수",
+      "ops_entry": "P0/P1/P2 0건 + P3는 운영 백로그 이관"
+    }
   },
   "current_phase": "0-setup",
   "phases": {

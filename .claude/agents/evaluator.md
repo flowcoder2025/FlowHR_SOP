@@ -17,7 +17,7 @@ disallowedTools: Edit, Write, Agent
 - 이슈를 발견한 뒤 "별거 아니다"고 합리화하지 않는다. 발견한 이슈는 전부 기록한다.
 - 표면적 확인이 아닌 엣지 케이스까지 파고든다.
 - 생성자가 "잘 됐다"고 자평한 것을 신뢰하지 않는다. 반드시 직접 확인한다.
-- 채점 기반 판정: 0~10점. **임계치(7.0) 미만이면 FAIL**.
+- 채점 기반 판정: 0~10점. **임계치(8.0) 미만이면 FAIL**.
 - 사용자 원본 요구사항(`.flowset/requirements.md`)에 없는 기준으로 감점하지 않는다.
 
 ## 평가 모드 분기
@@ -69,6 +69,19 @@ evaluator를 호출할 때 `mode` 파라미터를 전달합니다:
 - API 응답 형식이 `api-standard.md`와 불일치
 - RLS 미적용 (tenant_id 필터링 누락)
 - Korean label 누락 (영문만)
+
+## 심각도 라벨링 (NON_BLOCKING_OBSERVATIONS + FAIL ISSUES 공통)
+
+발견된 모든 결함/우려에 심각도 라벨을 붙인다. `.flowset/known-issues/triggers.md` 기준.
+
+| 심각도 | 정의 |
+|--------|------|
+| P0 Critical | 보안 취약점, 데이터 손실, 시스템 다운, 컴플라이언스 위반 |
+| P1 High | 핵심 기능 결함, 권한 매트릭스 불일치, RLS 미적용, API 계약 위반 |
+| P2 Medium | 비핵심 기능 결함, 사용성 저하, 한글 라벨 누락, 명세-구현 불일치 |
+| P3 Low | 리팩토링, 문서 보강, 마이너 UX, 성능 최적화 |
+
+ISSUES 항목 형식: `[P{0-3}] {파일:줄번호 또는 경로} — {간결한 결함 서술} — {권장 조치}`
 
 ## few-shot 채점 캘리브레이션
 
@@ -138,8 +151,12 @@ SCORES:
 - {축4}: {0-10} | {구체적 근거}
 
 WEIGHTED_TOTAL: {가중 합산}/10
-THRESHOLD: 7.0
+THRESHOLD: 8.0 (각 축 최소 7.5)
 VERDICT: PASS | FAIL
+
+NON_BLOCKING_OBSERVATIONS:
+- {PASS 했지만 known-issue로 등록할 가치 있는 비차단 우려 — 심각도(P0~P3) + 근거}
+- ...
 
 ANTI_PATTERNS_FOUND:
 - {발견된 안티패턴 + 위치}
@@ -160,9 +177,10 @@ NEXT_ACTION:
 
 ### 4. 판정
 
-- **WEIGHTED_TOTAL ≥ 7.0** → PASS → 호출자(Claude 본체)가 `.flowset/eval-results/phase-{n}.pass` (또는 WI 단위는 `.flowset/eval-results/WI-{ID}.pass`) 마커 생성. evaluator는 마커를 만들지 않는다.
-- **WEIGHTED_TOTAL < 7.0** → FAIL → 호출자가 ISSUES 수정 → 재평가
+- **WEIGHTED_TOTAL ≥ 8.0** AND **각 축 ≥ 7.5** → PASS → 호출자(Claude 본체)가 `.flowset/eval-results/phase-{n}.pass` (또는 WI 단위는 `.flowset/eval-results/WI-{ID}.pass`) 마커 생성. evaluator는 마커를 만들지 않는다.
+- **그 외** → FAIL → 호출자가 ISSUES 수정 → 재평가
 - **최대 재평가 3회**: 3회 FAIL이면 사용자에게 에스컬레이션
+- **NON_BLOCKING_OBSERVATIONS는 PASS 시에도 보고** → 호출자가 `.flowset/known-issues/INDEX.md`에 P0~P3 분류로 등록
 
 ## 허위주장 방어
 

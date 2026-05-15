@@ -44,16 +44,37 @@
 
 ## 5-1. evaluator 게이트 규칙 (필수)
 
-각 Phase 종료 또는 코드 WI 완료 시 **evaluator 호출 의무**:
+각 Phase 종료 또는 코드 WI 완료 시 **evaluator 호출 의무**. 통과 임계 **8.0**, 각 축 임계 **7.5**.
 
 1. 산출물 생성 직후 Claude 본체가 Agent 도구로 evaluator 호출
    - `subagent_type: "evaluator"`
    - 프롬프트에 `phase`, `mode` (`doc`|`code`), `artifact_paths`, `context_files`, `wi_id`(선택) 전달
-2. evaluator가 채점표(`---EVAL_RESULT---`) 반환
+2. evaluator가 채점표(`---EVAL_RESULT---`) 반환 — `ISSUES` + `NON_BLOCKING_OBSERVATIONS` 모두 P0~P3 라벨링
 3. 채점표를 `.flowset/eval-results/phase-{n}.eval.md` 또는 `WI-{ID}.eval.md`에 저장
-4. **PASS**: Claude 본체가 `.flowset/eval-results/phase-{n}.pass` 마커 생성 → 다음 Phase 진입
-5. **FAIL**: ISSUES 수정 → 재호출 (동일 단위 최대 3회, 초과 시 사용자 에스컬레이션)
-6. **사용자 보고 시 채점표 요약 포함** — Total/Verdict/ISSUES 3건 이상 요약
+4. **PASS** (총점 ≥ 8.0 AND 각 축 ≥ 7.5):
+   - `NON_BLOCKING_OBSERVATIONS`를 `.flowset/known-issues/INDEX.md`에 KI-NNN으로 등록
+   - 카운트 표 재계산 + 트리거 임계 도달 검사
+   - `.flowset/eval-results/phase-{n}.pass` 마커 생성 → 다음 Phase 진입
+5. **FAIL** (총점 < 8.0 OR 한 축 < 7.5):
+   - ISSUES 수정 → 재호출 (동일 단위 최대 3회, 초과 시 사용자 에스컬레이션)
+   - 재호출 후에도 잔존하는 비차단 ISSUES는 known-issues로 적재 (수정 보류)
+6. **사용자 보고 시 채점표 요약 포함** — Total/Verdict/ISSUES + NON_BLOCKING + 트리거 도달 여부
+
+## 5-2. Known Issue Registry 룰 (필수)
+
+`.flowset/known-issues/` 운영 정책 — 자세한 트리거는 `triggers.md`.
+
+| 룰 | 내용 |
+|----|------|
+| **단일 진실** | `INDEX.md`가 활성 이슈의 SSOT. 다른 곳에 산재 금지 |
+| **즉시 등록** | 발견 즉시 KI-NNN 부여 + 카운트 갱신 (지연 등록 금지) |
+| **카운트 갱신 시점** | 이슈 등록 / 해결 / 심각도 재조정 직후 |
+| **트리거 자동 점검** | 매 작업 종료 시 임계 도달 여부 검사, 도달 시 사용자 보고 |
+| **P0 즉시 진행** | P0 1건 발견 → 진행 중 작업 일시 정지, batch WI 즉시 생성, 자동 승인 |
+| **P1/P2/P3 누적** | 임계(3/5/10건) 도달 시 사용자 승인 받아 batch WI 생성 |
+| **Phase 종료 게이트** | P0/P1 잔존 0건 + 베타/운영 진입 전 P2도 0건 |
+| **아카이브** | 해결 시 `archive/YYYY-MM-DD-batch-NNN.md`로 이동, INDEX 활성 표에서 제거 |
+| **batch 후 재평가** | batch WI 완료 후 영향 영역 evaluator 재호출 → PASS 재확인 |
 
 ## 6. 산출물 디렉토리 매핑
 
@@ -69,6 +90,8 @@
 | 8 QA | `.flowset/qa/scenarios.md`, `.flowset/qa/e2e.md` |
 | 9 베타 | `.flowset/beta/onboarding.md` |
 | 10 운영 | `.flowset/ops/{runbook,sla,backup}.md` |
+| (전 단계) | Known Issue: `.flowset/known-issues/{INDEX,triggers}.md`, `archive/` |
+| (전 단계) | Eval 결과: `.flowset/eval-results/phase-N.{eval.md,pass}` |
 
 ## 7. Phase 진입 / 종료 기준
 
@@ -77,15 +100,21 @@
 1. 산출물이 `§6 디렉토리 매핑`대로 존재하는지 ls로 확인
 2. **evaluator 호출** (Agent 도구, `subagent_type: "evaluator"`)
 3. 채점표를 `.flowset/eval-results/phase-{n}.eval.md`에 저장
-4. PASS 시:
+4. PASS 시 (총점 ≥ 8.0 AND 각 축 ≥ 7.5):
+   - **NON_BLOCKING_OBSERVATIONS**를 `known-issues/INDEX.md`로 등록 (P0~P3 라벨링)
+   - 카운트 표 재계산 + 트리거 임계 도달 검사
+   - **Phase 종료 게이트 검사** — `triggers.md §3` 시점 룰 확인
+     - Phase 종료 직전 P0/P1 잔존 → batch WI 의무
+     - 베타/운영 진입 전 P2도 0건 의무
    - `.flowset/eval-results/phase-{n}.pass` 마커 생성
    - `.flowset/prd-state.json`의 해당 phase status를 `completed`로 업데이트
    - 다음 phase status를 `in_progress`로 전환
    - `fix_plan.md`의 해당 WI를 `[x]`로 체크
-   - 사용자에게 PASS 보고 + 채점표 요약
-5. FAIL 시:
+   - 사용자에게 PASS 보고 + 채점표 요약 + known-issue 카운트
+5. FAIL 시 (총점 < 8.0 OR 한 축 < 7.5):
    - ISSUES 수정 후 재호출
    - 3회 연속 FAIL → 사용자 에스컬레이션
+   - 잔존 비차단 ISSUES → known-issues 적재
 
 ## 8. 발견된 실패 패턴 (날짜순 누적)
 

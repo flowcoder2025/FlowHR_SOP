@@ -54,8 +54,23 @@ context_files:
 
 evaluator 결과를 받으면:
 1. 채점표를 `.flowset/eval-results/phase-{n}.eval.md` (또는 `WI-{ID}.eval.md`)로 저장
-2. PASS면 `.flowset/eval-results/phase-{n}.pass` 마커 생성
-3. FAIL이면 ISSUES 수정 → 재호출 (최대 3회)
+2. PASS (총점 ≥ 8.0 AND 각 축 ≥ 7.5):
+   - `NON_BLOCKING_OBSERVATIONS`를 `.flowset/known-issues/INDEX.md`로 등록 (P0~P3 라벨링 + KI-NNN 부여)
+   - INDEX.md 카운트 표 재계산, 트리거 임계 도달 검사
+   - `.flowset/eval-results/phase-{n}.pass` 마커 생성
+   - 사용자에게 PASS 보고 + 채점표 + KI 카운트 요약
+3. FAIL (총점 < 8.0 OR 한 축 < 7.5):
+   - ISSUES 즉시 수정 → 재호출 (최대 3회)
+   - 비차단 ISSUES는 known-issues로 적재
+
+## Known Issue 트리거 점검
+
+매 작업 종료 시 `.flowset/known-issues/INDEX.md` 카운트 표를 보고:
+- P0 ≥ 1 → 즉시 batch WI 생성 (사용자 자동 보고, 진행 중 작업 일시 정지)
+- P1 ≥ 3 / P2 ≥ 5 / P3 ≥ 10 → batch WI 생성 (사용자 승인 후 진행)
+- Phase 종료 직전 → `triggers.md §3` 시점 룰 적용 (P0/P1 0건 의무)
+
+batch WI 처리 후 영향 영역 evaluator 재호출 → PASS 확인 → archive 이동.
 
 ## 와이어프레임 단계 처리 방식 (5단계)
 

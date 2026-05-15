@@ -12,6 +12,7 @@
 - [x] WI-chore 기술 스택 확정 (Next.js + Supabase + Tauri Desktop + PWA)
 - [x] WI-chore Git 저장소 초기화 + 원격 연결 + 첫 푸시
 - [x] WI-chore evaluator 라이트 셋업 (agent + rubric + eval-results/ + 게이트 룰)
+- [x] WI-chore Known Issue Registry 셋업 + eval 임계 8.0 상향 + P0~P3 트리거
 
 ## Phase 1 — 개발용 PRD 작성
 
@@ -71,3 +72,7 @@
 - [ ] WI-027-docs SLA + 장애 대응
 - [ ] WI-028-docs 백업/복구 절차
 - [ ] WI-029-docs 모니터링 / 알림
+
+## Known Issue Batch WI (트리거 도달 시 자동 추가)
+
+- (트리거 도달 시 `WI-KI-batch-NNN` 형식으로 본 섹션에 추가됨. 현재 활성 0건)
