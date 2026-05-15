@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+.expo/
+dist/
+build/
+out/
+
+# Env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Supabase
+supabase/.branches/
+supabase/.temp/
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Coverage / Test
+coverage/
+.nyc_output/
+
+# Cache
+.turbo/
+.cache/
+
+# FlowSet 라이트 — 로컬 임시
+.flowset/wireframes/images/*.tmp.png
+.flowset/.local/

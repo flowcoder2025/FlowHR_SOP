@@ -1,0 +1,24 @@
+{
+  "_comment": "FlowHR 매트릭스 SSOT — Phase 1(PRD) Step 4에서 entities를 채웁니다. 36개 화면 × CRUD × Role × Permission.",
+  "schema_version": "v2",
+  "class": "code",
+  "project": "FlowHR",
+  "auth_framework": "supabase",
+  "auth_patterns": [
+    "supabase\\.auth\\.getSession",
+    "createServerClient",
+    "createBrowserClient"
+  ],
+  "roles": [
+    "operator_super",
+    "operator_staff",
+    "tenant_super",
+    "tenant_hr_admin",
+    "tenant_manager",
+    "employee"
+  ],
+  "screens": {
+    "_comment": "36개 화면 메타. Phase 2 백로그 작성 시 각 화면을 어떤 entity의 CRUD에 매핑할지 entity_refs로 연결."
+  },
+  "entities": {}
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": "v2-lite",
+  "project_name": "FlowHR",
+  "project_class": "code",
+  "platforms": ["web", "pwa", "desktop_tauri"],
+  "current_phase": "0-setup",
+  "phases": {
+    "0-setup": {"status": "in_progress", "owner": "claude", "started_at": "2026-05-15"},
+    "1-prd": {"status": "pending"},
+    "2-backlog": {"status": "pending"},
+    "3-erd": {"status": "pending"},
+    "4-api": {"status": "pending"},
+    "5-wireframes": {"status": "pending"},
+    "6-sprint-plan": {"status": "pending"},
+    "7-dev-kickoff": {"status": "pending"},
+    "8-qa": {"status": "pending"},
+    "9-beta": {"status": "pending"},
+    "10-ops": {"status": "pending"}
+  },
+  "tech_stack": {
+    "decided": true,
+    "decided_at": "2026-05-15",
+    "web": "Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui",
+    "pwa": "Next.js PWA (next-pwa, Service Worker, manifest.json) — 모바일 iOS/Android 대응",
+    "desktop": "Tauri 2.x (Rust core + WebView, Next.js 동일 코드 임베드) — 관리자/직원 데스크톱 앱 (Windows/Mac/Linux)",
+    "backend": "Supabase (Postgres + Auth + Storage + Realtime + Edge Functions)",
+    "deployment": {
+      "web_pwa": "Vercel",
+      "desktop": "Tauri 빌드 → GitHub Releases (자동 업데이트는 tauri-updater)"
+    },
+    "monorepo": "pnpm workspaces + Turborepo",
+    "auth": "Supabase Auth (이메일 + TOTP 2FA + 매직링크)",
+    "state": "TanStack Query + Zustand",
+    "ui_kit": "shadcn/ui + Lucide icons + Pretendard font",
+    "i18n": "next-intl (ko 기본, en 추후)",
+    "testing": "Vitest + Playwright (E2E) + Testing Library"
+  },
+  "pwa_constraints_notes": [
+    "iOS 푸시: 16.4+ + 홈화면 추가 필수 → 폴백 카카오 알림톡/SMS",
+    "iOS 백그라운드 위치 불가 → 출퇴근은 포그라운드 클릭 시점 GPS만",
+    "오프라인 동기화는 출퇴근 큐만 처리, 나머지는 온라인 전제"
+  ],
+  "constraints": {
+    "tenancy": "multi-tenant",
+    "row_security": "Supabase RLS",
+    "korean_first": true,
+    "encoding": "UTF-8 LF",
+    "windows_dev_env": true
+  },
+  "git": {
+    "remote": "https://github.com/flowcoder2025/FlowHR_SOP.git",
+    "default_branch": "main",
+    "initialized": false
+  }
+}
