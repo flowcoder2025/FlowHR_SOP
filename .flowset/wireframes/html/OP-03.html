@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<!--
+  OP-03 테넌트 상세 (`/operator/tenants/:id`).
+  PRD: prd/domains/operator/OP-03-tenant-detail.md
+  Layout: _design-system/_layout-shell.html (active=테넌트)
+  Pattern: Detail Header + Tabs(8).
+  상태 (5): 1 basic(기본정보) / 2 usage(사용량) / 3 audit(감사로그) / 4 deactivate(모달) / 5 not_found
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-03 테넌트 상세</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .header-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+  .header-card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 14px 16px; }
+  .header-card .label-sm { font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .header-card .value { font-size: 14px; font-weight: 600; color: var(--color-text); }
+  .header-card .meta { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+
+  .tab-content { display: none; padding-top: 20px; }
+  body[data-state="basic"] #tab-basic,
+  body[data-state="usage"] #tab-usage,
+  body[data-state="audit"] #tab-audit { display: block; }
+
+  body[data-state="basic"] .tab[data-tab="basic"],
+  body[data-state="usage"] .tab[data-tab="usage"],
+  body[data-state="audit"] .tab[data-tab="audit"] { color: var(--color-accent); border-bottom-color: var(--color-accent); font-weight: 700; }
+  .tab { display: inline-block; padding: 8px 16px; font-size: 13px; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab:hover { color: var(--color-text); }
+  .tabs-row { border-bottom: 1px solid var(--color-border-light); display: flex; gap: 4px; }
+
+  .usage-chart-placeholder { background: var(--color-surface-2); border: 1px dashed var(--color-border); border-radius: var(--r-md); padding: 60px 24px; text-align: center; font-family: var(--font-mono); font-size: 12px; color: var(--color-text-muted); }
+
+  /* deactivate 모달 */
+  body[data-state="deactivate"] .modal-overlay { display: flex; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-box { background: var(--color-bg); border-radius: var(--r-lg); padding: 24px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg); }
+
+  /* not_found state */
+  body[data-state="not_found"] .detail-body { display: none; }
+  body[data-state="not_found"] .not-found-hero { display: flex; }
+  .not-found-hero { display: none; flex-direction: column; align-items: center; padding: 60px 32px; text-align: center; gap: 12px; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="basic">
+
+<div class="app-shell">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">테넌트 상세</h1>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg>
+          <input placeholder="검색은 v1.1에서 제공됩니다" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- breadcrumb -->
+      <div style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px;">
+        <a style="color: var(--color-accent);">테넌트</a> ›
+        <span>플로우상사 (주)</span>
+      </div>
+
+      <!-- not_found state -->
+      <div class="not-found-hero">
+        <svg class="ico" width="56" height="56" style="color: var(--color-text-muted);"><use href="../_design-system/icons.svg#i-building"/></svg>
+        <div style="font-size: 20px; font-weight: 700;">테넌트를 찾을 수 없습니다</div>
+        <div style="font-size: 13px; color: var(--color-text-muted);">코드: TENANT_NOT_FOUND · 이미 archived되었거나 잘못된 경로입니다.</div>
+        <a href="/operator/tenants" class="btn btn-primary" style="margin-top: 8px;">테넌트 목록으로</a>
+      </div>
+
+      <div class="detail-body">
+
+        <!-- 상세 헤더 -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <div>
+            <h2 style="font-size: 22px; font-weight: 700; margin: 0;">플로우상사 (주)</h2>
+            <div style="font-size: 13px; color: var(--color-text-muted); margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+              <code style="font-family: var(--font-mono);">flowtrading.flowhr.kr</code>
+              <span class="badge badge-success">활성</span>
+              <span class="muted">· tenant_id: ten_8a3f9b2c</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-user"/></svg> 관리자 변경</button>
+            <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 요금제 변경</button>
+            <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능권한</button>
+            <button class="btn btn-danger" onclick="applyState('deactivate')"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-x"/></svg> 비활성화</button>
+          </div>
+        </div>
+
+        <!-- 핵심 카드 3개 -->
+        <div class="header-cards">
+          <div class="header-card">
+            <div class="label-sm">대표관리자</div>
+            <div class="value">이대표 (tenant_super)</div>
+            <div class="meta">ceo@flowtrading.kr · 010-1234-5678</div>
+          </div>
+          <div class="header-card">
+            <div class="label-sm">계약 정보</div>
+            <div class="value">프리미엄 플랜 · 2025-08-01 ~ 2027-07-31</div>
+            <div class="meta">갱신까지 14개월 · 자동 갱신 ON</div>
+          </div>
+          <div class="header-card">
+            <div class="label-sm">사용량</div>
+            <div class="value">활성 47 / 계약 50명</div>
+            <div class="meta">계약 한도 94% · 최근 활동 3시간 전</div>
+          </div>
+        </div>
+
+        <!-- 8 탭 -->
+        <div class="tabs-row" style="margin-top: 16px;">
+          <span class="tab" data-tab="basic"  onclick="applyState('basic')">기본정보</span>
+          <span class="tab" data-tab="users">사용자 / 조직</span>
+          <span class="tab" data-tab="subscription">구독 / 요금제</span>
+          <span class="tab" data-tab="billing">청구</span>
+          <span class="tab" data-tab="features">기능권한</span>
+          <span class="tab" data-tab="usage"  onclick="applyState('usage')">사용량</span>
+          <span class="tab" data-tab="audit"  onclick="applyState('audit')">감사로그</span>
+          <span class="tab" data-tab="tickets">티켓</span>
+        </div>
+
+        <!-- 탭: 기본정보 -->
+        <div class="tab-content" id="tab-basic">
+          <div class="form-section" style="max-width: 720px;">
+            <div class="form-section-header">
+              <h2>기본정보</h2>
+              <p>수정 사항은 감사 로그에 자동 기록됩니다.</p>
+            </div>
+            <div style="margin-top: 16px;">
+              <div class="form-row"><span class="label">회사명</span><div>플로우상사 (주) <a style="color: var(--color-accent); font-size: 12px; margin-left: 8px; cursor: pointer;">수정</a></div></div>
+              <div class="form-row"><span class="label">사업자번호</span><div>123-45-67890</div></div>
+              <div class="form-row"><span class="label">대표자</span><div>이대표</div></div>
+              <div class="form-row"><span class="label">업종</span><div>도소매 / 무역</div></div>
+              <div class="form-row"><span class="label">주소</span><div>서울특별시 강남구 테헤란로 123, 10층</div></div>
+              <div class="form-row"><span class="label">도메인</span><div><code style="font-family: var(--font-mono);">flowtrading.flowhr.kr</code></div></div>
+              <div class="form-row"><span class="label">가입일</span><div>2025-08-01 · 9개월 경과</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 탭: 사용량 -->
+        <div class="tab-content" id="tab-usage">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="card">
+              <div class="card-title">월별 활성 사용자 (최근 12개월)</div>
+              <div class="usage-chart-placeholder">[ Line Chart placeholder<br>Phase 7 recharts/visx ]</div>
+            </div>
+            <div class="card">
+              <div class="card-title">출퇴근 기록 수 (월별)</div>
+              <div class="usage-chart-placeholder">[ Bar Chart placeholder ]</div>
+            </div>
+            <div class="card">
+              <div class="card-title">휴가 신청 수 (월별)</div>
+              <div class="usage-chart-placeholder">[ Bar Chart placeholder ]</div>
+            </div>
+            <div class="card">
+              <div class="card-title">활성/비활성 분포</div>
+              <div class="usage-chart-placeholder">[ Pie Chart placeholder ]</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 탭: 감사로그 -->
+        <div class="tab-content" id="tab-audit">
+          <div class="card card-flat">
+            <table class="table">
+              <thead><tr><th>시각</th><th>액터</th><th>액션</th><th>대상</th><th>결과</th><th>IP</th></tr></thead>
+              <tbody>
+                <tr><td>2026-05-16 09:32</td><td>이대표 (tenant_super)</td><td>UPDATE employee</td><td>김인사</td><td><span class="badge badge-success">success</span></td><td>211.45.67.89</td></tr>
+                <tr><td>2026-05-16 09:14</td><td>김인사 (hr_admin)</td><td>APPROVE leave</td><td>박직원 (3일 휴가)</td><td><span class="badge badge-success">success</span></td><td>211.45.67.89</td></tr>
+                <tr><td>2026-05-16 08:42</td><td>최부장 (manager)</td><td>access /admin/payroll</td><td>—</td><td><span class="badge badge-danger">denied</span></td><td>211.45.67.89</td></tr>
+                <tr><td>2026-05-15 22:08</td><td>system</td><td>CRON: leave_balance recompute</td><td>tenant 전체</td><td><span class="badge badge-success">success</span></td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a href="/legal/terms">이용약관</a>
+        <a href="/legal/privacy">개인정보처리방침</a>
+        <a>도움말</a>
+        <a>운영팀 문의</a>
+      </div>
+      <div class="footer-version">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+
+<!-- 비활성화 모달 -->
+<div class="modal-overlay">
+  <div class="modal-box">
+    <h2 style="margin-top: 0; font-size: 18px;">테넌트 비활성화</h2>
+    <p style="font-size: 13px; color: var(--color-text-muted);"><strong>플로우상사 (주)</strong>를 비활성화합니다. 모든 사용자 세션이 즉시 무효화되며 다시 로그인할 수 없습니다.</p>
+    <div class="form-row-stacked" style="padding: 12px 0; border: 0;">
+      <label class="label label-required">비활성화 사유</label>
+      <textarea class="textarea" placeholder="예: 결제 미납 3개월 경과"></textarea>
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+      <button class="btn btn-ghost" onclick="applyState('basic')">취소</button>
+      <button class="btn btn-danger" onclick="applyState('basic')">비활성화 확정</button>
+    </div>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="basic"      data-key="1">1 기본</span>
+  <span class="state-debug-key" data-state-key="usage"      data-key="2">2 사용량</span>
+  <span class="state-debug-key" data-state-key="audit"      data-key="3">3 감사</span>
+  <span class="state-debug-key" data-state-key="deactivate" data-key="4">4 비활성화</span>
+  <span class="state-debug-key" data-state-key="not_found"  data-key="5">5 없음</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'basic');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'basic', '2': 'usage', '3': 'audit', '4': 'deactivate', '5': 'not_found' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>
