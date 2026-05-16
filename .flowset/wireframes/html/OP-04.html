@@ -15,16 +15,7 @@
 <style>
   .wizard-shell { display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: start; }
 
-  .stepper { display: flex; flex-direction: column; gap: 4px; padding: 16px; }
-  .step { display: flex; gap: 12px; padding: 10px 12px; border-radius: var(--r-md); cursor: pointer; font-size: 13px; align-items: center; }
-  .step:hover { background: var(--color-surface-2); }
-  .step .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--color-surface-2); color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-  .step.completed .step-num { background: var(--color-success); color: white; }
-  .step.completed .step-num::before { content: '✓'; }
-  .step.completed .step-num-text { display: none; }
-  .step.active { background: var(--color-accent-bg); }
-  .step.active .step-num { background: var(--color-accent); color: white; }
-  .step.active .step-label { color: var(--color-accent); font-weight: 700; }
+  /* .stepper/.step/.step-num/.is-completed/.is-active는 components.css SSOT */
 
   .state-only { display: none; }
   body[data-state="step1"]         #step-1,
@@ -125,15 +116,15 @@
     <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item active" href="/operator/tenants"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
@@ -143,34 +134,34 @@
       <h1 class="page-title">신규 테넌트 등록</h1>
       <div class="header-search-wrap">
         <div class="header-search">
-          <svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg>
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
           <input placeholder="검색 v1.1" disabled />
           <span class="v11-badge">v1.1</span>
         </div>
       </div>
       <div class="header-actions">
-        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
-        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
-        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
       </div>
     </header>
 
     <main class="content">
 
       <div style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px;">
-        <a style="color: var(--color-accent);">테넌트</a> › <span>신규 등록</span>
-        <span style="float: right;">임시저장됨 · 12분 전 · <a style="color: var(--color-accent); cursor: pointer;">임시저장</a></span>
+        <a style="color: var(--color-accent);" href="#">테넌트</a> › <span>신규 등록</span>
+        <span style="float: right;">임시저장됨 · 12분 전 · <a style="color: var(--color-accent); cursor: pointer;" href="#">임시저장</a></span>
       </div>
 
       <div class="wizard-shell">
 
         <!-- Stepper -->
         <aside class="card stepper">
-          <div class="step completed"><div class="step-num"><span class="step-num-text">1</span></div><div class="step-label">회사정보</div></div>
-          <div class="step completed"><div class="step-num"><span class="step-num-text">2</span></div><div class="step-label">도메인</div></div>
-          <div class="step completed"><div class="step-num"><span class="step-num-text">3</span></div><div class="step-label">요금제</div></div>
-          <div class="step completed"><div class="step-num"><span class="step-num-text">4</span></div><div class="step-label">관리자 계정</div></div>
-          <div class="step active"><div class="step-num">5</div><div class="step-label">모듈 선택</div></div>
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">1</span></div><div class="step-label">회사정보</div></div>
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">2</span></div><div class="step-label">도메인</div></div>
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">3</span></div><div class="step-label">요금제</div></div>
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">4</span></div><div class="step-label">관리자 계정</div></div>
+          <div class="step is-active"><div class="step-num">5</div><div class="step-label">모듈 선택</div></div>
           <div class="step"><div class="step-num">6</div><div class="step-label">초기 데이터</div></div>
           <div class="step"><div class="step-num">7</div><div class="step-label">완료 / 검토</div></div>
         </aside>
@@ -188,7 +179,7 @@
               <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">업종</label><select class="select"><option>도소매</option><option>제조업</option><option>서비스업</option><option>건설업</option><option>IT</option></select></div>
               <div class="form-row-stacked" style="padding: 0; border: 0; grid-column: 1 / 3;"><label class="label">주소</label><input class="input" placeholder="서울특별시 ..."></div>
               <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">대표 연락처</label><input class="input" placeholder="02-1234-5678"></div>
-              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">로고 (선택)</label><input class="input" type="file"></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">로고 (선택)</label><label class="file-input"><input type="file" class="sr-only"><span class="file-input-btn"><svg class="ico" width="14" height="14"><use href="#i-upload"/></svg> 파일 선택</span><span class="file-input-filename is-empty">선택된 파일 없음</span></label></div>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 24px;"><button class="btn btn-ghost" disabled>← 이전</button><button class="btn btn-primary">다음 →</button></div>
           </div>
@@ -239,7 +230,7 @@
               </tbody>
             </table>
             <div class="auth-alert auth-alert-info" style="margin-top: 16px;">
-              <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-info"/></svg>
+              <svg class="ico" width="18" height="18"><use href="#i-info"/></svg>
               <div><strong>등록 후 다음이 자동 실행됩니다.</strong><span class="auth-alert-meta">1. tenants + subscriptions + tenant_settings INSERT (트랜잭션)<br>2. 대표관리자 초대 메일 발송 (welcome_invite 템플릿)<br>3. OP-02 테넌트 목록으로 이동</span></div>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 24px;"><button class="btn btn-ghost">← 이전</button><button class="btn btn-primary" onclick="applyState('invite_failed')">등록 완료 →</button></div>
@@ -248,7 +239,7 @@
           <!-- Step 7 invite_failed -->
           <div class="state-only" id="step-7-failed">
             <div class="auth-alert auth-alert-warning">
-              <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-t"/></svg>
+              <svg class="ico" width="18" height="18"><use href="#i-alert-t"/></svg>
               <div><strong>테넌트는 생성되었으나 초대 메일 발송이 실패했습니다.</strong><span class="auth-alert-meta">tenants.status = pending_invite · request_id: req_8b3f9c2a · 재시도하시거나 OP-03 상세에서 수동으로 발송할 수 있습니다.</span></div>
             </div>
             <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
@@ -267,8 +258,8 @@
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a>도움말</a>
-        <a>운영팀 문의</a>
+        <a href="#">도움말</a>
+        <a href="#">운영팀 문의</a>
       </div>
       <div class="footer-version">v1.0.0-beta</div>
     </footer>

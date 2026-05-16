@@ -793,6 +793,240 @@ type FormSectionProps = {
 
 ---
 
+### Modal (Dialog Overlay)
+
+**Anatomy**
+```
+[modal-overlay (배경 + flex 중앙 정렬)]
+  └─ [modal-box (.modal-box-sm/md/lg/xl)]
+        ├─ [modal-header — title + close]
+        ├─ [modal-body]
+        └─ [modal-footer — actions]
+```
+
+**Variant**
+| Variant | 클래스 | maxWidth |
+|---------|--------|----------|
+| sm      | `.modal-box .modal-box-sm` | 360px |
+| md      | `.modal-box .modal-box-md` | 480px |
+| lg      | `.modal-box .modal-box-lg` | 560px |
+| xl      | `.modal-box .modal-box-xl` | 720px |
+
+**Code (HTML)**
+```html
+<div class="modal-overlay is-open" role="dialog" aria-modal="true" aria-labelledby="mt1">
+  <div class="modal-box modal-box-md">
+    <div class="modal-header"><h3 id="mt1">제목</h3></div>
+    <div class="modal-body">본문</div>
+    <div class="modal-footer"><button class="btn btn-ghost">취소</button><button class="btn btn-primary">확인</button></div>
+  </div>
+</div>
+```
+
+**Props (React)**
+```ts
+interface ModalProps {
+  open: boolean; onClose: () => void;
+  title: string; body: ReactNode; footer?: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+}
+```
+
+---
+
+### Switch (Toggle)
+
+**Anatomy**: `.switch` (38×22 pill 배경) + `::after` (18×18 thumb, transition: left 0.15s).
+
+**Variant**
+| 상태 | 클래스 |
+|------|--------|
+| off  | `.switch` |
+| on   | `.switch.is-on` (배경 색=accent, thumb left=18px) |
+
+**Code**
+```html
+<div class="switch is-on" role="switch" aria-checked="true" tabindex="0"></div>
+```
+
+**Props**: `{ checked: boolean; onChange: (v) => void; ariaLabel: string; disabled? }`.
+
+---
+
+### Stepper (Wizard)
+
+**Anatomy**
+```
+[stepper (column flex)]
+  └─ [step (.is-completed | .is-active | (기본))]
+        ├─ [step-num + step-num-text]
+        └─ [step-label]
+```
+
+**Variant**
+| 상태 | 클래스 | 표시 |
+|------|--------|------|
+| 미진행 | `.step` | 회색 번호 |
+| 완료   | `.step.is-completed` | 성공색 + `✓` (번호 숨김) |
+| 진행중 | `.step.is-active` | accent 배경 + 강조 라벨 |
+
+**Code**
+```html
+<div class="stepper">
+  <div class="step is-completed"><div class="step-num"><span class="step-num-text">1</span></div><div class="step-label">회사정보</div></div>
+  <div class="step is-active"><div class="step-num">2</div><div class="step-label">모듈 선택</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-label">검토</div></div>
+</div>
+```
+
+**Props (React)**
+```ts
+interface StepperProps {
+  steps: { label: string }[];
+  currentIndex: number;  // 0-based; 이전은 completed, 같은 인덱스는 active
+}
+```
+
+---
+
+### Toggle Pill (Status Pill)
+
+**Anatomy**: `.toggle-pill` (inline-flex pill, 11px font, 700 weight) + variant 클래스.
+
+**Variant**
+| 상태 | 클래스 | 배경 / 색 |
+|------|--------|----------|
+| 활성 | `.toggle-pill.is-on`   | success-bg / success |
+| 비활성 | `.toggle-pill.is-off` | surface-2 / muted |
+| 베타 | `.toggle-pill.is-beta` | warning-bg / warning |
+
+**Code**
+```html
+<span class="toggle-pill is-on">● ON</span>
+<span class="toggle-pill is-off">○ OFF</span>
+<span class="toggle-pill is-beta">⚙ 베타</span>
+```
+
+**Props**: `{ label: string; variant: 'on' | 'off' | 'beta'; onClick? }`.
+
+---
+
+### Period Chip
+
+**Anatomy**: `.period-chip` (4px×14px pill, border + bg) + `.is-active` (accent 채움).
+
+**Code**
+```html
+<span class="period-chip">이번달</span>
+<span class="period-chip is-active">분기</span>
+<span class="period-chip">연간</span>
+```
+
+**Props**: `{ label: string; active: boolean; onClick: () => void }`.
+
+---
+
+### Drawer (Side Panel)
+
+**Anatomy**
+```
+[drawer (.is-open — fixed, right 0, width 480px, full height)]
+  ├─ [drawer-header — title + close]
+  ├─ [drawer-body — scroll-y, flex:1]
+  └─ [drawer-footer — actions]
+```
+
+**Code**
+```html
+<div class="drawer is-open" role="dialog" aria-modal="true" aria-labelledby="dt1">
+  <div class="drawer-header"><h3 id="dt1">상세</h3><button class="icon-btn"><svg class="ico"><use href="#i-x"/></svg></button></div>
+  <div class="drawer-body">...</div>
+  <div class="drawer-footer"><button class="btn btn-ghost">닫기</button></div>
+</div>
+```
+
+**Props**: `{ open: boolean; onClose; title; body; footer? }`.
+
+---
+
+### Diff (Before/After Highlight)
+
+**Anatomy**: 인라인 `<span class="diff-before">old</span> → <span class="diff-after">new</span>` 형식.
+
+**Variant**
+| 클래스 | 배경 / 색 |
+|--------|----------|
+| `.diff-before` | danger-bg / danger |
+| `.diff-after`  | success-bg / success |
+
+**Code**
+```html
+<div class="diff-row">
+  <span class="diff-before">manager</span> → <span class="diff-after">hr_admin</span>
+</div>
+```
+
+---
+
+### File Input (.file-input wrapper)
+
+**Anatomy**
+```
+[label.file-input (clickable wrap, 점선 border)]
+  ├─ [input.sr-only type=file]
+  ├─ [span.file-input-btn — 아이콘 + "파일 선택"]
+  └─ [span.file-input-filename (.is-empty시 italic)]
+```
+
+**Variant**: `.is-error` (danger border), `.is-disabled`.
+
+**Code**
+```html
+<label class="file-input">
+  <input type="file" class="sr-only">
+  <span class="file-input-btn"><svg class="ico"><use href="#i-upload"/></svg> 파일 선택</span>
+  <span class="file-input-filename is-empty">선택된 파일 없음</span>
+</label>
+```
+
+**Props (React)**: `{ accept?; multiple?; onChange: (files: FileList) => void; error?: string }`.
+
+---
+
+### Date Input (.date-input wrapper)
+
+**Anatomy**: `.date-input > .input[type="date"]` + `::after` (캘린더 아이콘).
+
+**Code**
+```html
+<label class="date-input">
+  <input class="input" type="date">
+</label>
+```
+
+**Variant**: `.date-input.is-error > .input` (danger border).
+
+**Props (React)**: `{ value: string; onChange; min?; max?; error? }`.
+
+---
+
+### Select Wrap (.select-wrap + chevron)
+
+**Anatomy**: `.select-wrap > .select` (chevron은 .select 자체의 background-image로 표시).
+
+**Code**
+```html
+<label class="select-wrap">
+  <select class="select"><option>옵션 1</option><option>옵션 2</option></select>
+</label>
+```
+
+**Variant**: `.select-wrap.is-error > .select`, `.select-wrap.is-disabled > .select`.
+
+**Props (React)**: `{ options: { value; label }[]; value; onChange; disabled?; error? }`.
+
+---
+
 ## 컴포넌트 사용 규칙
 
 ### 1. 변수화 의무
@@ -865,3 +1099,4 @@ type FormSectionProps = {
 | 2026-05-16 | 초안 — 40+ 컴포넌트 카탈로그 + shadcn/ui 매핑 | KI-037 batch-004 |
 | 2026-05-16 | Anatomy + Props + Variant matrix + 정렬 의무 + svg attribute 강제 | 사용자 지적 (변수화 누락 + 버튼 정렬 깨짐) |
 | 2026-05-16 | Variable Notation 정책 §1-1 + 텍스트 가변성 검증 §2-1 추가 | 사용자 지적 (showcase 도메인 텍스트 하드코딩) |
+| 2026-05-16 | 신규 8 컴포넌트 섹션 등록 (Modal / Switch / Stepper / Toggle Pill / Period Chip / Drawer / Diff / File Input / Date Input / Select Wrap) | KI-batch-006-fix2 hotfix2 — evaluator/codex 양 평가자 P1 지적 |

@@ -111,14 +111,14 @@
 
     <div class="auth-header-actions">
       <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language" aria-label="언어 전환">
-        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <svg class="ico" width="14" height="14"><use href="#i-globe"/></svg>
         <span class="auth-lang-current">한국어</span>
         <span class="auth-lang-divider">/</span>
         <span class="muted">English</span>
       </button>
 
       <a class="icon-btn" href="/help" data-tooltip="도움말">
-        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+        <svg class="ico" width="18" height="18"><use href="#i-help"/></svg>
       </a>
     </div>
   </header>
@@ -146,7 +146,7 @@
 
         <!-- 상태별 알림 박스 -->
         <div class="auth-alert auth-alert-error state-only state-error" role="alert">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-c"/></svg>
+          <svg class="ico" width="18" height="18"><use href="#i-alert-c"/></svg>
           <div>
             <strong>이메일 또는 비밀번호가 올바르지 않습니다.</strong>
             <span class="auth-alert-meta">코드: <span class="lock-countdown">AUTH_INVALID_CREDENTIALS</span> · 남은 시도 <strong>2회</strong></span>
@@ -154,7 +154,7 @@
         </div>
 
         <div class="auth-alert auth-alert-warning state-only state-locked" role="alert">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-lock"/></svg>
+          <svg class="ico" width="18" height="18"><use href="#i-lock"/></svg>
           <div>
             <strong>5회 연속 잘못된 시도</strong>로 일시적으로 잠겼습니다.
             <span class="auth-alert-meta">코드: AUTH_LOCKED · <span class="lock-countdown">04:32</span> 후 다시 시도 가능 (같은 IP에서 같은 이메일 차단)</span>
@@ -162,7 +162,7 @@
         </div>
 
         <div class="auth-alert auth-alert-success state-only state-success" role="alert">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-shield"/></svg>
+          <svg class="ico" width="18" height="18"><use href="#i-shield"/></svg>
           <div>
             <strong>1단계 인증 완료.</strong> 2단계 인증 코드를 입력해 주세요.
             <span class="auth-alert-meta">코드: AUTH_2FA_REQUIRED → <a href="/2fa">CM-04 2단계 인증</a>로 이동합니다…</span>
@@ -180,7 +180,7 @@
             <div class="password-field">
               <input class="input login-password" id="login-password" type="password" placeholder="비밀번호" autocomplete="current-password" value="••••••••">
               <button class="password-toggle" type="button" aria-label="비밀번호 보이기/숨기기" data-tooltip="비밀번호 표시">
-                <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg>
+                <svg class="ico" width="16" height="16"><use href="#i-eye"/></svg>
               </button>
             </div>
           </div>
@@ -204,7 +204,7 @@
           <button class="btn btn-primary btn-block login-submit" type="submit" data-tooltip="로그인 (Enter)">
             <span class="login-submit-label">로그인</span>
             <span class="login-submit-spinner">
-              <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-loader"/></svg>
+              <svg class="ico" width="16" height="16"><use href="#i-loader"/></svg>
               로그인 중…
             </span>
           </button>

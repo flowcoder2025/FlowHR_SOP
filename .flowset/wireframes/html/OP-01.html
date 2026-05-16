@@ -111,15 +111,15 @@
     </div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item active"><svg class="ico" width="16" height="16"><use href="#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="16" height="16"><use href="#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item active" href="/operator"><svg class="ico" width="16" height="16"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/operator/tenants"><svg class="ico" width="16" height="16"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="16" height="16"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="16" height="16"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="16" height="16"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item" href="/operator/tickets"><svg class="ico" width="16" height="16"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="16" height="16"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="16" height="16"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="16" height="16"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
@@ -159,12 +159,12 @@
               <div class="dropdown-name">김운영</div>
               <div class="dropdown-meta">operator_super · FlowHR 운영팀</div>
             </div>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-user"/></svg>내 프로필 (OP-12)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-bell"/></svg>알림 설정</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="#i-help"/></svg>도움말</a>
+            <a class="dropdown-item" href="/operator/me"><svg class="ico" width="16" height="16"><use href="#i-user"/></svg>내 프로필 (OP-12)</a>
+            <a class="dropdown-item" href="/operator/me?tab=security"><svg class="ico" width="16" height="16"><use href="#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
+            <a class="dropdown-item" href="/operator/me?tab=notifications"><svg class="ico" width="16" height="16"><use href="#i-bell"/></svg>알림 설정</a>
+            <a class="dropdown-item" href="#"><svg class="ico" width="16" height="16"><use href="#i-help"/></svg>도움말</a>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="#i-logout"/></svg>로그아웃</a>
+            <a class="dropdown-item danger" href="#"><svg class="ico" width="16" height="16"><use href="#i-logout"/></svg>로그아웃</a>
           </div>
         </div>
       </div>
@@ -298,11 +298,11 @@
           <table class="table">
             <thead><tr><th>회사명</th><th>플랜</th><th>가입일</th><th>직원</th><th>상태</th></tr></thead>
             <tbody>
-              <tr><td><a class="row-link">(주)치킨매니아</a></td><td>기본</td><td>05-14</td><td>32명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td><a class="row-link">(주)테크스타트</a></td><td>프리미엄</td><td>05-12</td><td>78명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td><a class="row-link">(주)디자인스튜디오</a></td><td>기본</td><td>05-10</td><td>15명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td><a class="row-link">(주)카페오너스</a></td><td>기본</td><td>05-08</td><td>22명</td><td><span class="badge success">활성</span></td></tr>
-              <tr><td><a class="row-link">(주)이커머스랩</a></td><td>커스텀</td><td>05-05</td><td>112명</td><td><span class="badge info">수습</span></td></tr>
+              <tr><td><a class="row-link" href="#">(주)치킨매니아</a></td><td>기본</td><td>05-14</td><td>32명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link" href="#">(주)테크스타트</a></td><td>프리미엄</td><td>05-12</td><td>78명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link" href="#">(주)디자인스튜디오</a></td><td>기본</td><td>05-10</td><td>15명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link" href="#">(주)카페오너스</a></td><td>기본</td><td>05-08</td><td>22명</td><td><span class="badge success">활성</span></td></tr>
+              <tr><td><a class="row-link" href="#">(주)이커머스랩</a></td><td>커스텀</td><td>05-05</td><td>112명</td><td><span class="badge info">수습</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -344,8 +344,8 @@
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a>도움말</a>
-        <a>운영팀 문의</a>
+        <a href="#">도움말</a>
+        <a href="#">운영팀 문의</a>
       </div>
       <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
     </footer>

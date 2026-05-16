@@ -134,14 +134,18 @@ jobs:
             fi
           done
 
-          # 2. html/ 화면 <style> 안에서 컴포넌트 클래스 정의 금지
+          # 2. html/ 화면 <style> 안에서 컴포넌트 클래스 "정의" 금지
           #    (페이지 grid layout만 inline <style> 허용)
-          banned_classes='\.(btn|btn-primary|btn-secondary|btn-ghost|btn-danger|card|dropdown|dropdown-item|sidebar|sidebar-item|sidebar-logo|icon-btn|avatar|avatar-sm|avatar-lg|badge|badge-dot|chip|table|kpi-card|empty-state|profile-trigger|header-search|maintenance-banner|tooltip|popover|breadcrumb|form-row|form-section|info-row|session-row|footer|header|app-shell|logo|tenant-logo)[[:space:]]*\{'
+          # hotfix2 (KI-batch-006-fix2):
+          #   - G2 신규 9 컴포넌트 추가 — modal-overlay/modal-box/drawer/stepper/switch/toggle-pill/period-chip/diff-before/diff-after
+          #   - state binding (body[data-state="X"] .class { ... }) 허용 — 라인 시작이 . 또는 ,이면 정의로 간주
+          banned_classes='^[[:space:]]*[.,][[:space:]]*\.(btn|btn-primary|btn-secondary|btn-ghost|btn-danger|card|dropdown|dropdown-item|sidebar|sidebar-item|sidebar-logo|icon-btn|avatar|avatar-sm|avatar-lg|badge|badge-dot|chip|table|kpi-card|empty-state|profile-trigger|header-search|maintenance-banner|tooltip|popover|breadcrumb|form-row|form-section|info-row|session-row|footer|header|app-shell|logo|tenant-logo|modal-overlay|modal-box|drawer|stepper|switch|toggle-pill|period-chip|diff-before|diff-after)[[:space:],]*[{,]'
+          banned_classes_start='^[[:space:]]*\.(btn|btn-primary|btn-secondary|btn-ghost|btn-danger|card|dropdown|dropdown-item|sidebar|sidebar-item|sidebar-logo|icon-btn|avatar|avatar-sm|avatar-lg|badge|badge-dot|chip|table|kpi-card|empty-state|profile-trigger|header-search|maintenance-banner|tooltip|popover|breadcrumb|form-row|form-section|info-row|session-row|footer|header|app-shell|logo|tenant-logo|modal-overlay|modal-box|drawer|stepper|switch|toggle-pill|period-chip|diff-before|diff-after)[[:space:].:,#\[]*[{,]'
           for f in .flowset/wireframes/html/*.html; do
             [ ! -f "$f" ] && continue
             inline=$(awk 'BEGIN{p=0} /<style/{p=1} p{print} /<\/style>/{p=0}' "$f")
-            if echo "$inline" | grep -qE "$banned_classes"; then
-              offending=$(echo "$inline" | grep -nE "$banned_classes" | head -5)
+            if echo "$inline" | grep -qE "$banned_classes_start"; then
+              offending=$(echo "$inline" | grep -nE "$banned_classes_start" | head -5)
               echo "::error file=$f::Inline component definition (SSOT violation):"
               echo "$offending"
               fail=1
@@ -179,16 +183,21 @@ jobs:
       - name: Verify inline svg sprite in wireframe HTML (file:// 호환)
         shell: bash
         run: |
-          # 화면 HTML이 외부 svg `<use href="../_design-system/icons.svg#...">` 참조하면
-          # 인라인 sprite (`<svg xmlns... style="display:none"><symbol id="i-...">`) 보유 의무.
+          # 화면 HTML은 외부 svg `<use href="../_design-system/icons.svg#...">` 참조 금지.
+          # 모두 인라인 sprite의 fragment-only reference (`<use href="#i-...">`) 사용 의무.
           # WI-RSv3 §1 — Chrome/Safari file:// 차단 우회.
+          # hotfix2 (KI-batch-006-fix2): 외부 참조 1건이라도 발견 시 fail (sprite 보유 무관).
           fail=0
           for f in .flowset/wireframes/html/*.html; do
             [ ! -f "$f" ] && continue
             has_external=$(grep -c 'href="../_design-system/icons.svg' "$f" || true)
             has_inline=$(grep -c 'xmlns="http://www.w3.org/2000/svg" style="display:none"' "$f" || true)
-            if [ "${has_external:-0}" -gt 0 ] && [ "${has_inline:-0}" -eq 0 ]; then
-              echo "::error file=$f::외부 svg 참조($has_external 회)인데 인라인 sprite 없음 (file:// 차단). _layout-{shell,auth}.html 복사 또는 sprite 인라인 추가."
+            if [ "${has_external:-0}" -gt 0 ]; then
+              echo "::error file=$f::외부 svg 참조 ${has_external}건 — 인라인 #i-... reference로 변경 필요 (sed 's|href=\"../_design-system/icons.svg#|href=\"#|g')"
+              fail=1
+            fi
+            if [ "${has_inline:-0}" -eq 0 ]; then
+              echo "::error file=$f::인라인 sprite 없음 (file:// 차단). <svg xmlns=... style=\"display:none\"><symbol id=\"i-...\">…</symbol></svg> 추가 필요."
               fail=1
             fi
           done

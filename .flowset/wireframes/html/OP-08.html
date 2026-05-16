@@ -134,15 +134,15 @@
     <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/operator/tenants"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item active" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
@@ -150,11 +150,11 @@
   <div class="main">
     <header class="header">
       <h1 class="page-title">지원 티켓</h1>
-      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
       <div class="header-actions">
-        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
-        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
-        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
       </div>
     </header>
 
@@ -163,7 +163,7 @@
       <div class="page-action-bar">
         <div class="summary"><strong>34</strong>건 미해결 · P0 1 / P1 8 / P2 17 / P3 8</div>
         <div class="actions">
-          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-excel"/></svg> 내보내기</button>
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-excel"/></svg> 내보내기</button>
           <button class="btn btn-ghost" onclick="applyState('list')">목록으로</button>
         </div>
       </div>
@@ -217,7 +217,7 @@
         <div class="ticket-detail">
 
           <div class="ticket-detail-empty">
-            <svg class="ico" width="48" height="48"><use href="../_design-system/icons.svg#i-ticket"/></svg>
+            <svg class="ico" width="48" height="48"><use href="#i-ticket"/></svg>
             <div style="font-size: 14px; font-weight: 600; color: var(--color-text);">티켓을 선택하세요</div>
             <div style="font-size: 13px;">좌측 목록에서 티켓을 클릭하면 상세 내용과 응답 스레드가 표시됩니다.</div>
           </div>
@@ -240,7 +240,7 @@
 
             <div class="ticket-closed-banner" style="margin-bottom: 16px;">
               <div class="auth-alert auth-alert-success" style="width: 100%;">
-                <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-check-circle"/></svg>
+                <svg class="ico" width="18" height="18"><use href="#i-check-circle"/></svg>
                 <div><strong>이 티켓은 해결되었습니다.</strong><span class="auth-alert-meta">해결자: 김운영 · 2026-05-16 13:42 · 새 응답이 필요하면 재오픈하세요.</span></div>
               </div>
             </div>
@@ -251,7 +251,7 @@
               <div class="ticket-thread-msg from-tenant">
                 <div class="ticket-thread-meta"><strong>이대표</strong> · tenant_super · 플로우상사 · 4h 전</div>
                 <div style="font-size: 13px; line-height: 1.6;">출근 시간대(오전 9시 ~ 10시)에 대시보드 진입이 5초 이상 걸립니다. 평소 1초 이내였는데 오늘부터 갑자기 느려졌습니다.<br><br>스크린샷 첨부합니다.</div>
-                <div style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted);"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-paperclip"/></svg> screenshot-2026-05-16.png (824 KB)</div>
+                <div style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted);"><svg class="ico" width="14" height="14"><use href="#i-paperclip"/></svg> screenshot-2026-05-16.png (824 KB)</div>
               </div>
 
               <div class="ticket-thread-msg from-operator">
@@ -260,7 +260,7 @@
               </div>
 
               <div class="ticket-thread-msg internal">
-                <div class="ticket-thread-meta"><svg class="ico" width="12" height="12"><use href="../_design-system/icons.svg#i-eye"/></svg> 내부 메모 · <strong>박오퍼</strong> · 1h 전 <span class="muted">(테넌트에게 보이지 않음)</span></div>
+                <div class="ticket-thread-meta"><svg class="ico" width="12" height="12"><use href="#i-eye"/></svg> 내부 메모 · <strong>박오퍼</strong> · 1h 전 <span class="muted">(테넌트에게 보이지 않음)</span></div>
                 <div style="font-size: 13px; line-height: 1.6;">PG 슬로우 쿼리 확인. attendance.user_id 인덱스에 created_at_idx 추가 검토. 김운영 확인 부탁.</div>
               </div>
 
@@ -280,8 +280,8 @@
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 13px;">
                 <label class="reply-internal-toggle"><input class="checkbox" type="checkbox" id="internal-toggle" onchange="applyState(this.checked ? 'internal_memo' : 'reply')"> 내부 메모 (테넌트에게 안 보임)</label>
                 <div style="display: flex; gap: 8px;">
-                  <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-paperclip"/></svg></button>
-                  <button class="btn btn-primary"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-send"/></svg> 답변 보내기</button>
+                  <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-paperclip"/></svg></button>
+                  <button class="btn btn-primary"><svg class="ico" width="14" height="14"><use href="#i-send"/></svg> 답변 보내기</button>
                 </div>
               </div>
             </div>
@@ -303,7 +303,7 @@
 
     <footer class="footer">
       <div>© 2026 FlowHR</div>
-      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a><a>운영팀 문의</a></div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a href="#">도움말</a><a href="#">운영팀 문의</a></div>
       <div class="footer-version">v1.0.0-beta</div>
     </footer>
   </div>

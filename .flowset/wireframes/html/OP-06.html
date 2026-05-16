@@ -18,10 +18,9 @@
   .filter-row .select { width: 130px; }
   .filter-row .filter-label { color: var(--color-text-muted); font-weight: 500; }
 
-  body[data-state="batch_issue"] .modal-batch,
-  body[data-state="refund_modal"] .modal-refund { display: flex; }
-  .modal-batch, .modal-refund { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
-  .modal-box { background: var(--color-bg); border-radius: var(--r-lg); padding: 24px; width: 100%; max-width: 540px; box-shadow: var(--shadow-lg); }
+  /* .modal-overlay/.modal-box는 components.css SSOT — page state binding만 인라인 */
+  body[data-state="batch_issue"]  .modal-overlay.modal-batch,
+  body[data-state="refund_modal"] .modal-overlay.modal-refund { display: flex; }
 
   body[data-state="empty"] .table-body { display: none; }
   body[data-state="empty"] .empty-state-block { display: flex; }
@@ -115,15 +114,15 @@
     <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/operator/tenants"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item active" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
@@ -131,11 +130,11 @@
   <div class="main">
     <header class="header">
       <h1 class="page-title">청구 / 정산</h1>
-      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
       <div class="header-actions">
-        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
-        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
-        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
       </div>
     </header>
 
@@ -144,27 +143,27 @@
       <!-- KPI 5 -->
       <div class="kpi-row">
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-receipt"/></svg> 이번달 청구액</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-receipt"/></svg> 이번달 청구액</div>
           <div class="kpi-value">₩142,800,000</div>
           <div class="kpi-meta"><span class="badge badge-success">▲ 8.2%</span> 전월 ₩131,940,000</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-check-circle"/></svg> 이번달 수납액</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-check-circle"/></svg> 이번달 수납액</div>
           <div class="kpi-value">₩128,520,000</div>
           <div class="kpi-meta">수납율 <strong>90.0%</strong></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-alert-t"/></svg> 미수금</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-alert-t"/></svg> 미수금</div>
           <div class="kpi-value" style="color: var(--color-warning);">₩14,280,000</div>
           <div class="kpi-meta">미수 <strong>12</strong>개 테넌트</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-x"/></svg> 결제실패</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-x"/></svg> 결제실패</div>
           <div class="kpi-value">0건</div>
           <div class="kpi-meta">자동 PG v1.1 (MVP 미적용)</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-file-text"/></svg> 세금계산서 대기</div>
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-file-text"/></svg> 세금계산서 대기</div>
           <div class="kpi-value">47건</div>
           <div class="kpi-meta">발행 마감 <strong>D-3</strong></div>
         </div>
@@ -173,8 +172,8 @@
       <div class="page-action-bar">
         <div class="summary"><strong>247</strong>건 청구 · 이번달 (2026-05)</div>
         <div class="actions">
-          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-excel"/></svg> 내보내기</button>
-          <button class="btn btn-primary" onclick="applyState('batch_issue')"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-send"/></svg> 청구 일괄 발행</button>
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-excel"/></svg> 내보내기</button>
+          <button class="btn btn-primary" onclick="applyState('batch_issue')"><svg class="ico" width="14" height="14"><use href="#i-send"/></svg> 청구 일괄 발행</button>
         </div>
       </div>
 
@@ -187,13 +186,13 @@
         <span class="filter-label" style="margin-left: 8px;">요금제</span>
         <select class="select input-sm"><option>전체</option><option>기본</option><option>프리미엄</option><option>커스텀</option></select>
         <label style="margin-left: 8px; display: flex; align-items: center; gap: 4px;"><input class="checkbox" type="checkbox" onclick="applyState(this.checked ? 'overdue_only' : 'default')"> 미수만 보기</label>
-        <a style="margin-left: auto; color: var(--color-accent); cursor: pointer;">초기화</a>
+        <a style="margin-left: auto; color: var(--color-accent); cursor: pointer;" href="#">초기화</a>
       </div>
 
       <div class="card card-flat">
 
         <div class="empty-state-block empty-state" style="padding: 60px 32px;">
-          <svg class="ico ico-empty" width="48" height="48"><use href="../_design-system/icons.svg#i-receipt"/></svg>
+          <svg class="ico ico-empty" width="48" height="48"><use href="#i-receipt"/></svg>
           <div style="font-size: 16px; font-weight: 600;">청구 내역이 없습니다</div>
           <div style="font-size: 13px; color: var(--color-text-muted);">선택한 청구월의 청구 내역이 없거나 일괄 발행이 아직 안 됐습니다.</div>
         </div>
@@ -209,9 +208,9 @@
                 <td style="text-align: right; font-variant-numeric: tabular-nums;">99,000</td>
                 <td style="text-align: right; font-variant-numeric: tabular-nums;"><strong>1,089,000</strong></td>
                 <td><span class="badge badge-success">정상</span></td>
-                <td><a style="color: var(--color-accent); cursor: pointer;">발행됨</a></td>
+                <td><a style="color: var(--color-accent); cursor: pointer;" href="#">발행됨</a></td>
                 <td>2026-05-03</td>
-                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
               </tr>
               <tr>
                 <td>2026-05</td><td>치킨플러스 코리아</td><td>기본</td><td>32/35</td>
@@ -221,7 +220,7 @@
                 <td><span class="badge badge-warning">미납 (3일)</span></td>
                 <td><span class="muted">대기</span></td>
                 <td>—</td>
-                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
               </tr>
               <tr class="row-normal">
                 <td>2026-05</td><td>스마트팩토리 (주)</td><td>커스텀</td><td>128/150</td>
@@ -229,9 +228,9 @@
                 <td style="text-align: right; font-variant-numeric: tabular-nums;">254,545</td>
                 <td style="text-align: right; font-variant-numeric: tabular-nums;"><strong>2,800,000</strong></td>
                 <td><span class="badge badge-success">정상</span></td>
-                <td><a style="color: var(--color-accent); cursor: pointer;">발행됨</a></td>
+                <td><a style="color: var(--color-accent); cursor: pointer;" href="#">발행됨</a></td>
                 <td>2026-05-02</td>
-                <td><button class="icon-btn icon-btn-sm" onclick="applyState('refund_modal')"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+                <td><button class="icon-btn icon-btn-sm" onclick="applyState('refund_modal')"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
               </tr>
               <tr>
                 <td>2026-05</td><td>디자인하우스 코리아</td><td>기본</td><td>0/12</td>
@@ -241,7 +240,7 @@
                 <td><span class="badge badge-danger">결제실패</span></td>
                 <td><span class="muted">대기</span></td>
                 <td>—</td>
-                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
               </tr>
               <tr>
                 <td>2026-05</td><td>서울건설 컨소시엄</td><td>프리미엄</td><td>67/80</td>
@@ -251,7 +250,7 @@
                 <td><span class="badge badge-warning">미납 (8일)</span></td>
                 <td><span class="muted">대기</span></td>
                 <td>—</td>
-                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+                <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
               </tr>
             </tbody>
           </table>
@@ -259,12 +258,12 @@
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--color-border-light); font-size: 13px; color: var(--color-text-muted);">
             <span>1-5 / 247</span>
             <div style="display: flex; gap: 4px;">
-              <button class="btn btn-ghost btn-sm" disabled><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-left"/></svg></button>
+              <button class="btn btn-ghost btn-sm" disabled><svg class="ico" width="14" height="14"><use href="#i-chevron-left"/></svg></button>
               <button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">1</button>
               <button class="btn btn-ghost btn-sm">2</button>
               <button class="btn btn-ghost btn-sm">3</button>
               <span style="padding: 0 6px;">…</span>
-              <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-right"/></svg></button>
+              <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="#i-chevron-right"/></svg></button>
             </div>
           </div>
         </div>
@@ -274,14 +273,14 @@
 
     <footer class="footer">
       <div>© 2026 FlowHR</div>
-      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a><a>운영팀 문의</a></div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a href="#">도움말</a><a href="#">운영팀 문의</a></div>
       <div class="footer-version">v1.0.0-beta</div>
     </footer>
   </div>
 </div>
 
 <!-- 일괄 발행 모달 -->
-<div class="modal-batch" role="dialog" aria-modal="true" aria-labelledby="modal-title-op06-batch">
+<div class="modal-overlay modal-batch" role="dialog" aria-modal="true" aria-labelledby="modal-title-op06-batch">
   <div class="modal-box">
     <h2 id="modal-title-op06-batch" style="margin-top: 0; font-size: 18px;">2026-06 청구 일괄 발행</h2>
     <div class="form-row-stacked" style="padding: 0; border: 0;">
@@ -293,7 +292,7 @@
       <div style="font-size: 18px; font-weight: 700; color: var(--color-accent);">₩148,200,000 <span style="font-size: 12px; font-weight: 400; color: var(--color-text-muted);">(부가세 10% 포함)</span></div>
     </div>
     <div class="auth-alert auth-alert-warning" style="margin-top: 12px;">
-      <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-t"/></svg>
+      <svg class="ico" width="18" height="18"><use href="#i-alert-t"/></svg>
       <div><strong>발행 후 되돌릴 수 없습니다.</strong><span class="auth-alert-meta">실수로 발행 시 개별 환불(operator_super)만 가능.</span></div>
     </div>
     <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
@@ -304,11 +303,11 @@
 </div>
 
 <!-- 환불 모달 -->
-<div class="modal-refund" role="dialog" aria-modal="true" aria-labelledby="modal-title-op06-refund">
+<div class="modal-overlay modal-refund" role="dialog" aria-modal="true" aria-labelledby="modal-title-op06-refund">
   <div class="modal-box">
     <h2 id="modal-title-op06-refund" style="margin-top: 0; font-size: 18px;">환불 — 스마트팩토리 (주) 2026-05</h2>
     <div class="auth-alert auth-alert-error" style="margin-top: 12px;">
-      <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-c"/></svg>
+      <svg class="ico" width="18" height="18"><use href="#i-alert-c"/></svg>
       <div><strong>환불은 operator_super만 가능합니다.</strong><span class="auth-alert-meta">audit_logs에 actor + 사유 + before/after 기록됩니다.</span></div>
     </div>
     <div class="form-row-stacked" style="padding: 12px 0 0; border: 0;">
