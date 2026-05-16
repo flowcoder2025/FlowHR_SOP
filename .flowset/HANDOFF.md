@@ -72,29 +72,51 @@ G2 운영 후 사용자 검수에서 아이콘 미표시 + native control + show
 
 ## 3. 신규 세션 첫 작업 (우선순위 순)
 
-### 작업 1 — agent 결과 파일 확인 (반드시 먼저)
+### 작업 1 — agent 결과 파일 확인 + hotfix3 즉시 진입
 
-**evaluator hotfix2 재평가** 결과 파일:
-```
-.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.eval.md
-.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.pass  (PASS 시만)
-```
+**상태 (2026-05-16 컨텍스트 종료 시점)**:
+- ✅ codex hotfix2 결과 통지 받음 → `.flowset/eval-results/WI-G2-codex-review-hotfix2.md` 저장 (Claude 본체가 통지 요약 작성, agent는 read-only sandbox)
+  - **점수 6.5/10 FAIL** — P0 잔존 (JS password toggle 외부참조 재주입) + 신규 P1 (.active vs .is-active drift) + P2 (select-wrap 17건)
+- ❓ evaluator hotfix2 결과 미통지 — `.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.eval.md` 존재 여부 확인 필요:
+  ```bash
+  ls -la .flowset/eval-results/WI-G2-wireframes-operator-hotfix2.* 2>&1
+  ```
 
-**codex hotfix2 재리뷰** 결과 파일:
-```
-.flowset/eval-results/WI-G2-codex-review-hotfix2.md
-```
+**evaluator 결과 없으면**: agent 재호출 (`Agent(subagent_type=evaluator, run_in_background=true, prompt=...본 §6 참조...)`)
 
-두 파일 존재 확인 (background agent가 컨텍스트 종료 시점에 진행 중이었음 — 작성 완료 여부 불확실):
-```bash
-ls -la .flowset/eval-results/WI-G2-wireframes-operator-hotfix2.* .flowset/eval-results/WI-G2-codex-review-hotfix2.md 2>&1
-```
+### 작업 2 — hotfix3 즉시 진입 (3회 중 마지막)
 
-**파일 없으면**: agent 재호출 필요 (이전 세션 종료로 background 중단됨)
-- evaluator: `Agent(subagent_type=evaluator, run_in_background=true, prompt=...)` (본 문서 §6 참조)
-- codex: `Agent(subagent_type=general-purpose, run_in_background=true, prompt=...mcp__codex__codex 위탁...)`
+codex 결과 FAIL 확정 → review-system.md §4 OR 원칙으로 BLOCKED_FOR_HOTFIX_3.
 
-### 작업 2 — 통합 판정
+**hotfix3 정정 사항** (codex 결과 §결함 참조 — `.flowset/eval-results/WI-G2-codex-review-hotfix2.md`):
+
+**P0 (즉시)**:
+- 4 화면 JS sed (CM-01 / CM-02 / CM-03 / OP-12):
+  ```bash
+  for f in .flowset/wireframes/html/{CM-01,CM-02,CM-03,OP-12}.html; do
+    sed -i "s|'\.\./_design-system/icons\.svg#|'#|g" "$f"
+  done
+  ```
+- 검증: `grep -n "'\.\./_design-system/icons\.svg" .flowset/wireframes/html/*.html` 결과 0건
+
+**P1**:
+- `.active` → `.is-active` 전역 통일 (components.css / _showcase.html / 03-components.md / 화면 inline 모두)
+- variant naming v3 표준 (`.is-*`) 적용
+
+**P2 (KI 등록, NON_BLOCKING)**:
+- `.select-wrap` 미적용 17건 — KI 등록 후 다음 batch
+- CI showcase-coverage 강화 — KI 등록
+
+**CI 추가**:
+- JS source 외부 sprite reference 검사 (codex §결론 권장 — codex 5항목 §17-7-1 확장)
+  ```yaml
+  # inline-svg-sprite-check job 보강
+  if grep -nE "'?\\.\\./_design-system/icons\\.svg" *.html | grep -v '<use ' ; then
+    fail=1
+  fi
+  ```
+
+### 작업 3 — hotfix3 evaluator + codex 재평가
 
 **review-system.md §4 매트릭스**:
 - evaluator PASS + codex PASS → **PASS_BOTH** → 즉시 ready/auto-merge
