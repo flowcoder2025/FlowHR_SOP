@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<!--
+  OP-11 시스템 설정 (`/operator/system-settings`).
+  PRD: prd/domains/operator/OP-11-system-settings.md
+  Layout: _design-system/_layout-shell.html (active=시스템 설정)
+  Pattern: Vertical Tabs (9 탭) + 변경 미저장 sticky bar.
+  상태 (5): 1 general / 2 maintenance / 3 notifications / 4 security / 5 backup
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-11 시스템 설정</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .settings-shell { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+
+  .vert-tabs { display: flex; flex-direction: column; gap: 2px; }
+  .vert-tab { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: var(--r-md); font-size: 13px; cursor: pointer; color: var(--color-text-muted); border-left: 3px solid transparent; }
+  .vert-tab:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .vert-tab > svg.ico { width: 16px !important; height: 16px !important; }
+
+  body[data-state="general"]       .vert-tab[data-t="general"],
+  body[data-state="maintenance"]   .vert-tab[data-t="maintenance"],
+  body[data-state="notifications"] .vert-tab[data-t="notifications"],
+  body[data-state="security"]      .vert-tab[data-t="security"],
+  body[data-state="backup"]        .vert-tab[data-t="backup"] {
+    background: var(--color-accent-bg); color: var(--color-accent); font-weight: 700; border-left-color: var(--color-accent);
+  }
+
+  .tab-pane { display: none; }
+  body[data-state="general"]       #pane-general,
+  body[data-state="maintenance"]   #pane-maintenance,
+  body[data-state="notifications"] #pane-notifications,
+  body[data-state="security"]      #pane-security,
+  body[data-state="backup"]        #pane-backup { display: block; }
+
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--color-border-light); }
+  .toggle-row:last-child { border-bottom: 0; }
+  .toggle-row .toggle-label { font-weight: 600; font-size: 14px; }
+  .toggle-row .toggle-desc { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+  .switch { width: 38px; height: 22px; background: var(--color-surface-2); border-radius: 11px; position: relative; cursor: pointer; }
+  .switch.on { background: var(--color-accent); }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: left 0.15s; box-shadow: var(--shadow-sm); }
+  .switch.on::after { left: 18px; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="general">
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">시스템 설정</h1>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="settings-shell">
+
+        <!-- Vert Tabs -->
+        <aside class="vert-tabs">
+          <div class="vert-tab" data-t="general"       onclick="applyState('general')"><svg class="ico"><use href="../_design-system/icons.svg#i-settings"/></svg> 일반</div>
+          <div class="vert-tab" data-t="brand"><svg class="ico"><use href="../_design-system/icons.svg#i-flag"/></svg> 브랜드 / 로고</div>
+          <div class="vert-tab" data-t="domain"><svg class="ico"><use href="../_design-system/icons.svg#i-link"/></svg> 도메인 / SSL</div>
+          <div class="vert-tab" data-t="email"><svg class="ico"><use href="../_design-system/icons.svg#i-mail"/></svg> 이메일 / SMTP</div>
+          <div class="vert-tab" data-t="notifications" onclick="applyState('notifications')"><svg class="ico"><use href="../_design-system/icons.svg#i-bell"/></svg> 알림 채널</div>
+          <div class="vert-tab" data-t="maintenance"   onclick="applyState('maintenance')"><svg class="ico"><use href="../_design-system/icons.svg#i-tool"/></svg> 점검 모드</div>
+          <div class="vert-tab" data-t="security"      onclick="applyState('security')"><svg class="ico"><use href="../_design-system/icons.svg#i-shield"/></svg> 보안</div>
+          <div class="vert-tab" data-t="backup"        onclick="applyState('backup')"><svg class="ico"><use href="../_design-system/icons.svg#i-database"/></svg> 백업 / 복원</div>
+          <div class="vert-tab" data-t="integration"><svg class="ico"><use href="../_design-system/icons.svg#i-network"/></svg> 통합</div>
+        </aside>
+
+        <!-- Panes -->
+        <div style="max-width: 720px;">
+
+          <!-- 일반 -->
+          <div class="tab-pane form-section" id="pane-general">
+            <div class="form-section-header"><h2>일반 설정</h2><p>플랫폼 기본 정보 (운영사 super만 수정 가능)</p></div>
+            <div class="form-row"><span class="label">플랫폼명</span><div><input class="input" value="FlowHR"></div></div>
+            <div class="form-row"><span class="label">기본 도메인</span><div><code style="font-family: var(--font-mono);">flowhr.kr</code> <span class="muted" style="font-size: 12px;">(테넌트는 sub-domain 부여)</span></div></div>
+            <div class="form-row"><span class="label">기본 시간대</span><div><select class="select"><option>Asia/Seoul (UTC+9)</option></select></div></div>
+            <div class="form-row"><span class="label">기본 통화</span><div><select class="select"><option>KRW (원)</option></select></div></div>
+            <div class="form-row"><span class="label">기본 언어</span><div><select class="select"><option>한국어 (ko)</option><option>English (en)</option></select></div></div>
+            <div class="form-row"><span class="label">운영팀 이메일</span><div><input class="input" value="support@flowhr.kr"></div></div>
+          </div>
+
+          <!-- 점검 모드 -->
+          <div class="tab-pane form-section" id="pane-maintenance">
+            <div class="form-section-header"><h2>점검 모드</h2><p>활성화 시 모든 사용자 접근이 CM-06 maintenance 화면으로 리다이렉트 (operator_super는 우회)</p></div>
+            <div class="auth-alert auth-alert-warning" style="margin-bottom: 16px;">
+              <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-t"/></svg>
+              <div><strong>위험: 점검 모드 활성화는 즉시 전 사용자에 영향</strong><span class="auth-alert-meta">활성화 7일 전 미리 공지 (.maintenance-banner)를 사용하여 사전 안내 권장.</span></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">점검 모드 활성화</div><div class="toggle-desc">현재 상태: <strong style="color: var(--color-success);">정상 운영</strong></div></div>
+              <div class="switch"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">사전 공지 배너 표시</div><div class="toggle-desc">점검 24시간 전부터 헤더 아래 배너 자동 표시</div></div>
+              <div class="switch on"></div>
+            </div>
+            <div class="form-row" style="margin-top: 8px;"><span class="label">예정 시작</span><div><input class="input" type="datetime-local" value="2026-05-20T22:00"></div></div>
+            <div class="form-row"><span class="label">예정 종료</span><div><input class="input" type="datetime-local" value="2026-05-20T23:00"></div></div>
+            <div class="form-row"><span class="label">공지 메시지</span><div><textarea class="textarea">시스템 안정성 개선을 위한 정기 점검이 진행됩니다. 미리 작업을 저장해 주세요.</textarea></div></div>
+          </div>
+
+          <!-- 알림 채널 -->
+          <div class="tab-pane form-section" id="pane-notifications">
+            <div class="form-section-header"><h2>알림 채널</h2><p>인앱 / 푸시 / 카카오 알림톡 / SMS / 이메일 4단 폴백</p></div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">인앱 + 푸시</div><div class="toggle-desc">기본 채널 (즉시) — Supabase Realtime + Web Push</div></div>
+              <div class="switch on"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">카카오 알림톡 (NHN Cloud)</div><div class="toggle-desc">30분 미열람 시 폴백. locale='ko' 사용자만.</div></div>
+              <div class="switch on"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">SMS (NHN Cloud)</div><div class="toggle-desc">1시간 미열람 + 카카오 미수신 시 폴백. ko/en 둘 다.</div></div>
+              <div class="switch on"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">이메일 (Supabase SMTP)</div><div class="toggle-desc">중요 알림 (급여명세서 / 계정 변경) + 24h 폴백</div></div>
+              <div class="switch on"></div>
+            </div>
+            <div class="form-row" style="margin-top: 8px;"><span class="label">NHN Cloud 발신번호</span><div><input class="input" value="1588-0000"></div></div>
+            <div class="form-row"><span class="label">알림톡 발신 프로필</span><div><input class="input" value="@flowhr"></div></div>
+          </div>
+
+          <!-- 보안 -->
+          <div class="tab-pane form-section" id="pane-security">
+            <div class="form-section-header"><h2>보안</h2><p>플랫폼 차원의 보안 정책. 변경 시 모든 테넌트 사용자에 영향.</p></div>
+            <div class="auth-alert auth-alert-error" style="margin-bottom: 16px;">
+              <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-shield"/></svg>
+              <div><strong>위험 영역</strong><span class="auth-alert-meta">변경 시 audit_logs 자동 기록 + 운영팀 슬랙 알림. operator_super만 수정 가능.</span></div>
+            </div>
+            <div class="toggle-row"><div><div class="toggle-label">운영사 계정 2FA 강제</div><div class="toggle-desc">operator_*는 2FA 없이 로그인 불가</div></div><div class="switch on"></div></div>
+            <div class="toggle-row"><div><div class="toggle-label">테넌트 super 2FA 강제</div><div class="toggle-desc">tenant_super는 2FA 활성화 의무 (직원은 권장)</div></div><div class="switch on"></div></div>
+            <div class="toggle-row"><div><div class="toggle-label">로그인 캡차</div><div class="toggle-desc">5회 실패 시 reCAPTCHA / Turnstile 노출</div></div><div class="switch on"></div></div>
+            <div class="toggle-row"><div><div class="toggle-label">IP 화이트리스트</div><div class="toggle-desc">운영사 대시보드는 특정 IP에서만 접근 (v1.1)</div></div><div class="switch"></div></div>
+            <div class="form-row"><span class="label">세션 만료 (분)</span><div><input class="input" type="number" value="60" style="width: 120px;"></div></div>
+            <div class="form-row"><span class="label">refresh token 만료 (일)</span><div><input class="input" type="number" value="30" style="width: 120px;"></div></div>
+            <div class="form-row"><span class="label">비밀번호 만료 (일)</span><div><input class="input" type="number" value="90" style="width: 120px;"></div></div>
+          </div>
+
+          <!-- 백업 -->
+          <div class="tab-pane form-section" id="pane-backup">
+            <div class="form-section-header"><h2>백업 / 복원</h2><p>Supabase 자동 백업 + 운영사 수동 트리거</p></div>
+            <div class="toggle-row"><div><div class="toggle-label">자동 일일 백업</div><div class="toggle-desc">매일 03:00 KST · 보관 30일</div></div><div class="switch on"></div></div>
+            <div class="toggle-row"><div><div class="toggle-label">자동 주간 백업</div><div class="toggle-desc">매주 일요일 04:00 KST · 보관 12주</div></div><div class="switch on"></div></div>
+
+            <h3 style="font-size: 14px; margin-top: 24px;">백업 이력</h3>
+            <table class="table" style="margin-top: 8px;">
+              <thead><tr><th>일시</th><th>유형</th><th>크기</th><th>상태</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>2026-05-16 03:00</td><td>일일</td><td>2.4 GB</td><td><span class="badge badge-success">성공</span></td><td><a style="color: var(--color-accent); cursor: pointer;">다운로드</a> · <a style="color: var(--color-danger); cursor: pointer;">복원</a></td></tr>
+                <tr><td>2026-05-15 03:00</td><td>일일</td><td>2.4 GB</td><td><span class="badge badge-success">성공</span></td><td><a style="color: var(--color-accent); cursor: pointer;">다운로드</a></td></tr>
+                <tr><td>2026-05-12 04:00</td><td>주간</td><td>14.2 GB</td><td><span class="badge badge-success">성공</span></td><td><a style="color: var(--color-accent); cursor: pointer;">다운로드</a></td></tr>
+              </tbody>
+            </table>
+
+            <div style="margin-top: 16px;">
+              <button class="btn btn-primary"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-database"/></svg> 즉시 백업</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a><a>운영팀 문의</a></div>
+      <div class="footer-version">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="general"       data-key="1">1 일반</span>
+  <span class="state-debug-key" data-state-key="maintenance"   data-key="2">2 점검</span>
+  <span class="state-debug-key" data-state-key="notifications" data-key="3">3 알림</span>
+  <span class="state-debug-key" data-state-key="security"      data-key="4">4 보안</span>
+  <span class="state-debug-key" data-state-key="backup"        data-key="5">5 백업</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'general');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.querySelectorAll('.switch').forEach(function (sw) {
+    sw.addEventListener('click', function () { sw.classList.toggle('on'); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'general', '2': 'maintenance', '3': 'notifications', '4': 'security', '5': 'backup' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>
