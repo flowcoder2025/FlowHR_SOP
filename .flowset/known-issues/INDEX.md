@@ -9,7 +9,7 @@
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ✅ 모두 해소 (KI-037 → batch-004 evaluator PASS 8.61, archive 예정) |
 | P2 Medium | 0 | 5 | ✅ 모두 해소 (batch-004 evaluator P2 2건 즉시 처리: 정책 표기 통일 + _layout-shell svg attribute) |
-| P3 Low | **14** | 10 | ✅ 트리거 도달 — 14건 활성 (기존 11 + KI-038/040/041 3건, KI-039 resolved batch-005) |
+| P3 Low | **17** | 10 | ✅ 트리거 도달 — 17건 활성 (기존 14 + KI-042/043/044 G1 fix1 NON_BLOCKING 3건) |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -57,7 +57,11 @@
 | KI-038 | P3 | 5 | Wireframe | OP-01.html icon-btn/sidebar-item/profile-trigger svg attribute가 컴포넌트 강제 사이즈와 불일치 — _layout-shell 갱신 따라 화면별 attribute 일치 필요 (차기 batch-005에서 OP-02~12 + TA + EM + CM 일괄) | evaluator batch-004 | 2026-05-16 | open (batch-005) |
 | ~~KI-039~~ | P3 | 5 | Wireframe | ~~_showcase.html 누락 컴포넌트~~ | evaluator batch-004 | 2026-05-16 | **resolved (12 컴포넌트 시연 추가: Checkbox/Breadcrumb/Tooltip/Popover/FormRow+FormSection+InfoRow/Sidebar 미니어처 3 역할/Header AppShell/Footer/MaintenanceBanner/SessionRow/Code, 사용자 우려 후 추가 4 = batch-005-i18n과 함께 처리 2026-05-16)** |
 | KI-040 | P3 | 5 | Wireframe | wireframes/README.md L19~L21/L37/L64 구 SSOT(`_design-tokens.css`/`_icons.css`/`_icons.svg`) 참조 잔존 — `_design-system/` 신 SSOT로 갱신 필요 | evaluator batch-004 | 2026-05-16 | open (batch-005) |
-| KI-041 | P3 | 5 | Wireframe | html/ 디렉토리 구 _design-tokens.css/_icons.css/_icons.svg + OP-02~12 12 HTML 잔존 — 차기 batch에서 신 SSOT 적용 후 archive 이동 | evaluator batch-004 | 2026-05-16 | open (batch-005) |
+| KI-041 | P3 | 5 | Wireframe | html/ 디렉토리 구 _design-tokens.css/_icons.css/_icons.svg + OP-02~12 12 HTML 잔존 — 차기 batch에서 신 SSOT 적용 후 archive 이동 | evaluator batch-004 | 2026-05-16 | open (resolved at G0 baseline — archive 처리 완료) |
+| KI-042 | P3 | 5 | Wireframe | 08-i18n.md L58 §2 키 컨벤션 예시 표에 `system.error.403.title` deprecated 키 한 줄 잔존 — §4 catalog L157 정식 키 + §9 deprecation note와 미세 불일치. 예시 표 성격으로 차단 사유 아님 | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1 또는 G2 작업 시) |
+| KI-043 | P3 | 5 | Wireframe | CM-21.html L97 `<span class="version-change">하이라이트</span>` i18n 매핑 누락 — `legal.terms.version_change_label` 키 추가 권장 | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1 hotfix) |
+| KI-044 | P3 | 5 | Wireframe | CM-04.html .state-error-alert / .state-loading-spinner 가 .state-otp-form 자손 → 부모 hidden 시 ancestor 가시성에 의존. CSS selector 명시성 보강 권장 (`body[data-state="error"] .state-otp-form .state-error-alert`) | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1) |
+| KI-045 | P3 | 5 | Wireframe | CM-03.html 운영사 계정 활성화 시 "건너뛰기 (직원)" 버튼 숨김 처리 미명시 — 와이어프레임에서는 두 버튼 항상 표시. Phase 7 React 변환 시 `users.role === 'operator_*'` 조건 분기 명세 | evaluator G1 | 2026-05-16 | open (Phase 7) |
 
 ## 등록 형식
 

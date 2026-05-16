@@ -8,7 +8,25 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
-## [wf-v0.1.0] — 2026-05-16 (G1 최초 진입점 완료)
+## [wf-v0.1.0] — 2026-05-16 (G1 최초 진입점 완료, evaluator PASS 8.86)
+
+### evaluator 결과
+
+| 평가 | 점수 | 결과 |
+|------|------|------|
+| 1회 (`WI-G1-wireframes-auth.eval.md`) | 7.84/10 | FAIL (실행가능성 7.3 < 7.5) |
+| 2회 fix1 (`WI-G1-wireframes-auth-fix1.eval.md`) | **8.86/10** | **PASS** (모든 축 8.7+) |
+
+4축 fix1: 완성도 8.8 / 정합성 8.9 / 구체성 9.0 / 실행가능성 8.7. tag `wf-v0.1.0` 부여 (merge commit 3c2f62c).
+
+### 신규 P3 (NON_BLOCKING)
+
+- KI-042 — 08-i18n.md L58 deprecated `system.error.403.title` 예시 표 잔존
+- KI-043 — CM-21 L97 `version-change` i18n 키 누락
+- KI-044 — CM-04 state-error-alert ancestor 가시성 의존 (CSS specificity 보강 권장)
+- KI-045 — CM-03 운영사 skip 버튼 숨김 분기 명세 필요 (Phase 7)
+
+
 
 ### 산출물
 

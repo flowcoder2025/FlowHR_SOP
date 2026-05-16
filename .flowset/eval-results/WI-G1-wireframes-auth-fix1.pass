@@ -1,0 +1,28 @@
+PASS — WI-G1-wireframes-auth-fix1 (재평가)
+Phase: 5 (와이어프레임 G1 wf-v0.1.0)
+Mode: doc
+Weighted Total: 8.86 / 10
+Threshold: 8.0 (각 축 ≥ 7.5)
+Date: 2026-05-16
+Evaluator: .claude/agents/evaluator.md (라이트)
+
+Scores:
+- 완성도 (30%): 8.8
+- 정합성 (25%): 8.9
+- 구체성 (25%): 9.0
+- 실행가능성 (20%): 8.7
+
+P2 5건 처리 결과 (직전 FAIL 7.84 정정):
+- P2-1 CM-04 state-only 무력화 → HEAL (인라인 display 0건)
+- P2-2 CM-21 인라인 display 8건 → HEAL (인라인 display 0건)
+- P2-3 CM-04.md L74 "검토" 안티패턴 → HEAL (구체적 cookie 정책 명시)
+- P2-4 i18n catalog 분열 → HEAL (§4 도메인 등록 + §9 매핑 표)
+- P2-5 CM-05/06 키 분열 → HEAL (system.error.* 단일 키 통일)
+
+P3 새 발견 3건 (NON_BLOCKING):
+- 08-i18n.md L58 예시 표 stale key
+- CM-21 L97 version-change-label i18n 누락
+- CM-04 inline flex-direction / CSS specificity 권장
+
+다음 단계: G2 (OP-02~12 운영 화면 11개) 진입 승인.
+git tag wf-v0.1.0 부여 권장.
