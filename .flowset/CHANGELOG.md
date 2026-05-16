@@ -8,6 +8,41 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.2.0] — 2026-05-16 (G2 운영 완료 + hotfix 진행 중)
+
+### 산출물 (OP-02 ~ OP-12, 11 화면 + 11 analysis)
+
+| ID | 패턴 | 5 상태 |
+|----|------|-------|
+| OP-02 테넌트 관리 | List + Side Filter + 10 Cols Table | default/loading/filtered/empty/error |
+| OP-03 테넌트 상세 | Detail + 3 Header Cards + 8 Tabs | basic/usage/audit/deactivate/not_found |
+| OP-04 신규 등록 | 7-Step Wizard Stepper | step1/step3/step5/step7/invite_failed |
+| OP-05 구독/요금제 | Plan List + Top Filter + Create/Edit Modal | default/create/edit/inactive/empty |
+| OP-06 청구/정산 | KPI 5 + 11 Cols Table + 일괄/환불 모달 | default/overdue_only/batch/refund/empty |
+| OP-07 기능 플래그 | Toggle Table + Add/Override/History 모달 | default/modified/add/override/history |
+| OP-08 지원 티켓 | Master-Detail + 응답 스레드 + 내부 메모 | list/detail/reply/internal/closed |
+| OP-09 감사 로그 | Filter Panel + 10 Cols + Drawer + CSV | default/filtered/drawer/export/empty |
+| OP-10 운영 리포트 | KPI 6 + Charts 4 + Heatmap + 상위 테넌트 | month/quarter/year/custom/empty |
+| OP-11 시스템 설정 | Vertical Tabs 9 + Switch | general/maintenance/notifications/security/backup |
+| OP-12 본인 프로필 | Detail + Tabs 5 + 운영사 보안 강화 | basic/security/sessions/notifications/force_logout |
+
+### 패턴 도입
+
+- `.session-row` is-current/is-staff/default 3 variant
+- `.toggle-pill` on/off/beta + `.switch` (38×22 round)
+- `.period-chip` active 색상 분기
+- `.vert-tab` border-left-active
+- `.drawer` 480px slide-in (감사 로그 상세)
+- `.diff-before/after` highlight (감사 before→after)
+
+### Hotfix (WI-KI-batch-006, 진행 중)
+
+KI-046 (DS SSOT, P1 both) + KI-047 (모바일, P1 codex) + KI-048 (라우팅, P1 codex) → trigger 도달. system-v3 (아래) 적용 후 DS 보강 + 19 화면 patch + CI 4 job 진행.
+
+### 다음
+
+G3 테넌트 매니저 (TA-01~14, 14 화면, wf-v0.3.0).
+
 ## [system-v3] — 2026-05-16 (평가 시스템 v3 — file:// 호환 + 렌더링 검수 + DS 충실도)
 
 산출물 버전 아님 (시스템 강화). Codex 협의 합의안 반영.
@@ -36,7 +71,7 @@ evaluator(PASS 8.11), codex(WARNING 6.8) 둘 다 못 잡음 — 정적 텍스트
 
 Phase 5 와이어프레임 (G1 hotfix + G2 hotfix + G3/G4 + 전체 evaluator). 다른 Phase는 v2 4축 그대로.
 
-### 후속 작업 (별도 PR)
+### 후속 작업
 
 - G2 hotfix 확장 (`feature/WI-G2-wireframes-operator`): DS 보강 (.select-wrap / .file-input / 인라인 sprite) + 19 화면 patch + CI 4 job + showcase 매트릭스 → wf-v0.2.0 머지
 
