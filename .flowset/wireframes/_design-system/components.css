@@ -445,9 +445,19 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .toast.info { border-left: 3px solid var(--color-info); }
 .toast .close { margin-left: auto; cursor: pointer; opacity: 0.6; }
 
-/* ============ Tooltip / Popover ============ */
+/* ============ Tooltip / Popover ============
+   기본 방향: top (element 위쪽).
+   자동 bottom: 헤더(.header, .auth-header) 내부 element는 viewport top 밖으로 잘리므로 강제 bottom.
+   명시 bottom: data-tooltip-pos="bottom" attribute로 임의 element도 bottom 강제. */
 [data-tooltip] { position: relative; }
-[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; z-index: var(--z-tooltip); pointer-events: none; }
+[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; z-index: var(--z-tooltip); pointer-events: none; max-width: 280px; line-height: 1.4; }
+
+.header [data-tooltip]:hover::after,
+.auth-header [data-tooltip]:hover::after,
+[data-tooltip-pos="bottom"][data-tooltip]:hover::after {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
 
 .popover { position: absolute; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 16px; z-index: var(--z-dropdown); }
 
