@@ -140,3 +140,29 @@ codex가 반복 지적하는 항목은 `.github/workflows/pr-checks.yml` 정적 
 - `media-query-check`
 - `ds-redefinition-check` (기존 design-system-ssot 확장)
 - `aria-modal-check`
+
+### 7-6. v3 추가 검증 (2026-05-16, file:// 호환 + 렌더링)
+
+v2 운영 후 검증 누락(아이콘 미표시 / native control / showcase 분리) 대응. `review-system.md §17` SSOT.
+
+#### CI 신규 4 job
+| Job | 검사 |
+|-----|------|
+| `inline-svg-sprite-check` | 화면 HTML이 외부 `icons.svg#` 참조 시 인라인 sprite 보유 의무 (file:// 차단 방지) |
+| `native-element-wrap-check` | `<select>` `<input type=file/date>` 발견 시 `.select-wrap` / `.file-input` / `.date-input` wrap 패턴 의무 |
+| `showcase-coverage-check` | 화면이 사용한 DS 클래스가 `component-usage-matrix.json`에 매핑 의무 |
+| `playwright-smoke` | Playwright headless로 모든 화면 file:// 렌더링 + console error 0 + svg use bbox > 0 + native appearance != auto + screenshot artifact |
+
+#### evaluator 5번째 축
+- Phase 5 와이어프레임 한정 — DS 사용 충실도 10% (`review-rubric.md §10`)
+- Hard gate: file:// 아이콘 미표시 2화면+ → 최대 4점 + WARNING 강제
+
+#### codex 프롬프트 의무 체크리스트 (5항목)
+1. file:// asset compatibility
+2. native control visual compliance
+3. showcase-to-usage consistency
+4. rendered evidence requirement
+5. cross-screen pattern drift
+
+#### Playwright smoke 도입 시점
+**지금 도입** (Phase 7로 미루지 않음). pixelmatch baseline regression은 Phase 7로 유보.

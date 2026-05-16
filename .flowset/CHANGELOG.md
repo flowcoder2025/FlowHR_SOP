@@ -8,6 +8,38 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [system-v3] — 2026-05-16 (평가 시스템 v3 — file:// 호환 + 렌더링 검수 + DS 충실도)
+
+산출물 버전 아님 (시스템 강화). Codex 협의 합의안 반영.
+
+### 배경
+
+G2 운영 후 사용자 검수에서 **검증 누락** 발견:
+- file:// 외부 SVG `<use>` 차단으로 아이콘 미표시 (OP-01 제외 19 화면)
+- `<select>`, `<input type=file>` 등 native control이 디자인 시스템과 시각 불일치 (22건 / 6 화면)
+- showcase가 "보여주기용"으로만, 실제 화면 작성 시 매핑 룰 없음
+
+evaluator(PASS 8.11), codex(WARNING 6.8) 둘 다 못 잡음 — 정적 텍스트 분석 한계.
+
+### 변경 (`review-system.md §17` SSOT)
+
+1. **file:// 호환 산출물 계약** — 외부 SVG `<use>` 금지, 인라인 sprite 의무
+2. **native control DS 패턴 명시** — `.select-wrap > select.select` / `.file-input > input.sr-only + label/button + filename` / `.date-input > input.input`
+3. **Playwright smoke 즉시 도입** — file:// 렌더링 + console error + svg use bbox + native appearance 검사. pixelmatch는 Phase 7 유보.
+4. **showcase 사용 매트릭스** — `_design-system/component-usage-matrix.json` 신설 의무
+5. **CI 신규 4 job** — `inline-svg-sprite-check` / `native-element-wrap-check` / `showcase-coverage-check` / `playwright-smoke`
+6. **evaluator 5번째 축** — Phase 5 와이어프레임 한정 "DS 사용 충실도 10%" (가중치 재조정: 완성도 30→25 / 구체성 25→20)
+7. **Hard gate** — file:// 아이콘 미표시 2화면+ → 최대 4점 + WARNING 강제
+8. **codex 프롬프트 5항목 의무 체크리스트** — file:// compat / native compliance / showcase consistency / rendered evidence / cross-screen drift
+
+### 적용 범위
+
+Phase 5 와이어프레임 (G1 hotfix + G2 hotfix + G3/G4 + 전체 evaluator). 다른 Phase는 v2 4축 그대로.
+
+### 후속 작업 (별도 PR)
+
+- G2 hotfix 확장 (`feature/WI-G2-wireframes-operator`): DS 보강 (.select-wrap / .file-input / 인라인 sprite) + 19 화면 patch + CI 4 job + showcase 매트릭스 → wf-v0.2.0 머지
+
 ## [wf-v0.1.1] — 2026-05-16 (G1 hotfix — state 토글 flex-direction)
 
 ### Hotfix
