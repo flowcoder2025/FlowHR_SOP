@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<!--
+  OP-09 감사 로그 (`/operator/audit-logs`).
+  PRD: prd/domains/operator/OP-09-audit-logs.md
+  Layout: _design-system/_layout-shell.html (active=감사 로그)
+  Pattern: Filter Panel + Table 10 cols + 상세 drawer + CSV 모달.
+  상태 (5): 1 default / 2 filtered / 3 detail_drawer / 4 export_modal / 5 empty
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-09 감사 로그</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .audit-shell { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
+
+  .filter-section { padding: 12px 14px; border-bottom: 1px solid var(--color-border-light); }
+  .filter-section:last-child { border-bottom: 0; }
+  .filter-section .label { font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .filter-period { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .filter-period .chip { padding: 4px 0; text-align: center; font-size: 12px; border: 1px solid var(--color-border); border-radius: var(--r-sm); cursor: pointer; background: var(--color-bg); }
+  .filter-period .chip.active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+
+  .event-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--color-surface-2); font-family: var(--font-mono); font-size: 11px; color: var(--color-text); }
+
+  body[data-state="detail_drawer"] .drawer { display: flex; }
+  .drawer { display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 480px; background: var(--color-bg); border-left: 1px solid var(--color-border); box-shadow: var(--shadow-lg); z-index: 1000; flex-direction: column; }
+  .drawer-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border-light); display: flex; justify-content: space-between; align-items: center; }
+  .drawer-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .diff-row { padding: 8px 0; border-bottom: 1px solid var(--color-border-light); font-size: 13px; }
+  .diff-before { background: var(--color-danger-bg); padding: 2px 6px; border-radius: 3px; color: var(--color-danger); }
+  .diff-after { background: var(--color-success-bg); padding: 2px 6px; border-radius: 3px; color: var(--color-success); }
+
+  body[data-state="export_modal"] .modal-export { display: flex; }
+  .modal-export { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-box { background: var(--color-bg); border-radius: var(--r-lg); padding: 24px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg); }
+
+  body[data-state="empty"] .table-body { display: none; }
+  body[data-state="empty"] .empty-state-block { display: flex; }
+  .empty-state-block { display: none; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">감사 로그</h1>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="page-action-bar">
+        <div class="summary">오늘 <strong>2,847</strong>건 · 차단 <strong style="color: var(--color-danger);">23</strong>건 · 로그인 <strong>447</strong>건</div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="applyState('export_modal')"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-download"/></svg> CSV 내보내기</button>
+        </div>
+      </div>
+
+      <div class="audit-shell">
+
+        <!-- 좌측 필터 -->
+        <aside class="card" style="padding: 0;">
+          <div class="filter-section">
+            <div class="label">기간 (필수)</div>
+            <div class="filter-period">
+              <span class="chip active">오늘</span>
+              <span class="chip">7일</span>
+              <span class="chip">30일</span>
+              <span class="chip">90일</span>
+              <span class="chip" style="grid-column: 1 / 3;">커스텀 범위…</span>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <div class="label">테넌트</div>
+            <input class="input input-sm" placeholder="회사명 자동완성..." value="플로우상사 (주)">
+          </div>
+
+          <div class="filter-section">
+            <div class="label">이벤트 유형</div>
+            <div style="display: flex; flex-direction: column; gap: 3px; font-size: 12px; max-height: 220px; overflow-y: auto;">
+              <label><input class="checkbox" type="checkbox" checked> auth.* (5)</label>
+              <label><input class="checkbox" type="checkbox"> tenant.*</label>
+              <label><input class="checkbox" type="checkbox" checked> employee.*</label>
+              <label><input class="checkbox" type="checkbox"> attendance.*</label>
+              <label><input class="checkbox" type="checkbox"> leave.*</label>
+              <label><input class="checkbox" type="checkbox"> approval.*</label>
+              <label><input class="checkbox" type="checkbox"> document.*</label>
+              <label><input class="checkbox" type="checkbox"> setting.*</label>
+              <label><input class="checkbox" type="checkbox" checked> feature_flag.toggle</label>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <div class="label">사용자</div>
+            <input class="input input-sm" placeholder="이름 또는 이메일...">
+          </div>
+
+          <div class="filter-section">
+            <div class="label">결과</div>
+            <div style="display: flex; flex-direction: column; gap: 3px; font-size: 12px;">
+              <label><input class="checkbox" type="checkbox" checked> 성공</label>
+              <label><input class="checkbox" type="checkbox" checked> 실패</label>
+              <label><input class="checkbox" type="checkbox" checked> 차단</label>
+            </div>
+          </div>
+
+          <div class="filter-section" style="display: flex; gap: 6px;">
+            <button class="btn btn-primary btn-sm btn-block" onclick="applyState('filtered')">필터 적용</button>
+          </div>
+        </aside>
+
+        <!-- 우측 테이블 -->
+        <div class="card card-flat">
+
+          <div class="empty-state-block empty-state" style="padding: 60px 32px;">
+            <svg class="ico ico-empty" width="48" height="48"><use href="../_design-system/icons.svg#i-scroll"/></svg>
+            <div style="font-size: 16px; font-weight: 600;">조건에 맞는 로그가 없습니다</div>
+            <div style="font-size: 13px; color: var(--color-text-muted);">기간을 늘리거나 필터를 완화해 보세요.</div>
+          </div>
+
+          <div class="table-body">
+            <table class="table">
+              <colgroup><col style="width: 12%"><col style="width: 12%"><col style="width: 11%"><col style="width: 8%"><col style="width: 16%"><col style="width: 16%"><col style="width: 7%"><col style="width: 9%"><col style="width: 5%"></colgroup>
+              <thead><tr><th>발생일시 ↕</th><th>테넌트</th><th>사용자</th><th>역할</th><th>이벤트 ↕</th><th>대상</th><th>결과 ↕</th><th>IP</th><th></th></tr></thead>
+              <tbody>
+                <tr onclick="applyState('detail_drawer')" style="cursor: pointer;">
+                  <td style="font-family: var(--font-mono); font-size: 12px;">2026-05-16 11:42:08</td>
+                  <td>플로우상사</td>
+                  <td>이대표</td>
+                  <td>tenant_super</td>
+                  <td><span class="event-chip">employee.update</span></td>
+                  <td>employee:emp_8a3f</td>
+                  <td><span class="badge badge-success">success</span></td>
+                  <td>211.45.67.89</td>
+                  <td><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-right"/></svg></td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 12px;">2026-05-16 11:40:22</td>
+                  <td>플로우상사</td>
+                  <td>김인사</td>
+                  <td>hr_admin</td>
+                  <td><span class="event-chip">leave.approve</span></td>
+                  <td>leave_request:lr_92ab</td>
+                  <td><span class="badge badge-success">success</span></td>
+                  <td>211.45.67.89</td>
+                  <td><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-right"/></svg></td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 12px;">2026-05-16 11:32:55</td>
+                  <td>치킨플러스</td>
+                  <td>박직원</td>
+                  <td>employee</td>
+                  <td><span class="event-chip">auth.login</span></td>
+                  <td>—</td>
+                  <td><span class="badge badge-danger">denied</span></td>
+                  <td>118.32.45.67</td>
+                  <td><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-right"/></svg></td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 12px;">2026-05-16 11:28:11</td>
+                  <td>스마트팩토리</td>
+                  <td>최부장</td>
+                  <td>manager</td>
+                  <td><span class="event-chip">approval.process</span></td>
+                  <td>approval:ap_5f8d</td>
+                  <td><span class="badge badge-success">success</span></td>
+                  <td>61.78.123.45</td>
+                  <td><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-right"/></svg></td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 12px;">2026-05-16 09:00:00</td>
+                  <td>system</td>
+                  <td>cron</td>
+                  <td>—</td>
+                  <td><span class="event-chip">feature_flag.toggle</span></td>
+                  <td>flag:i18n.english_support</td>
+                  <td><span class="badge badge-success">success</span></td>
+                  <td>—</td>
+                  <td><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-right"/></svg></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--color-border-light); font-size: 13px; color: var(--color-text-muted);">
+              <span>1-5 / 2,847 (페이지당 50)</span>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn btn-ghost btn-sm" disabled><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-left"/></svg></button>
+                <button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">1</button>
+                <button class="btn btn-ghost btn-sm">2</button>
+                <span style="padding: 0 6px;">…</span>
+                <button class="btn btn-ghost btn-sm">57</button>
+                <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-right"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a><a>운영팀 문의</a></div>
+      <div class="footer-version">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+
+<!-- 상세 drawer -->
+<div class="drawer">
+  <div class="drawer-header">
+    <div>
+      <div style="font-size: 12px; color: var(--color-text-muted); font-family: var(--font-mono);">log_a8c3f9b2 · 2026-05-16 11:42:08</div>
+      <div style="font-size: 16px; font-weight: 700;">employee.update</div>
+    </div>
+    <button class="icon-btn" onclick="applyState('default')"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-x"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <div class="diff-row"><strong style="font-size: 12px;">액터</strong><div style="font-size: 13px; margin-top: 2px;">이대표 (tenant_super) · 플로우상사 (주)</div></div>
+    <div class="diff-row"><strong style="font-size: 12px;">대상</strong><div style="font-size: 13px; margin-top: 2px;">employee:emp_8a3f9b2c · 김인사</div></div>
+    <div class="diff-row"><strong style="font-size: 12px;">IP / User-Agent</strong><div style="font-size: 12px; margin-top: 2px; color: var(--color-text-muted); font-family: var(--font-mono);">211.45.67.89<br>Mozilla/5.0 (Windows NT 10.0) ...</div></div>
+    <div class="diff-row"><strong style="font-size: 12px;">request_id</strong><div style="font-size: 12px; margin-top: 2px; font-family: var(--font-mono);">req_5f8a3b2c</div></div>
+
+    <div style="margin-top: 16px;">
+      <strong style="font-size: 12px;">변경 내역 (before → after)</strong>
+      <div style="margin-top: 8px; font-size: 13px;">
+        <div class="diff-row">
+          <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px;">role</div>
+          <span class="diff-before">manager</span> → <span class="diff-after">hr_admin</span>
+        </div>
+        <div class="diff-row">
+          <div style="font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px;">department</div>
+          <span class="diff-before">개발팀</span> → <span class="diff-after">인사팀</span>
+        </div>
+      </div>
+    </div>
+
+    <details style="margin-top: 16px;">
+      <summary style="font-size: 12px; cursor: pointer; color: var(--color-text-muted);">Raw JSON</summary>
+      <pre style="margin-top: 8px; background: var(--color-surface-2); padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto;">{
+  "id": "log_a8c3f9b2",
+  "tenant_id": "ten_8a3f9b2c",
+  "actor_id": "usr_92ab5c",
+  "actor_role": "tenant_super",
+  "action": "employee.update",
+  "target_type": "employee",
+  "target_id": "emp_8a3f9b2c",
+  "before": { "role": "manager", "department": "개발팀" },
+  "after":  { "role": "hr_admin", "department": "인사팀" },
+  "ip": "211.45.67.89",
+  "request_id": "req_5f8a3b2c",
+  "created_at": "2026-05-16T11:42:08Z"
+}</pre>
+    </details>
+  </div>
+</div>
+
+<!-- CSV 내보내기 모달 -->
+<div class="modal-export">
+  <div class="modal-box">
+    <h2 style="margin-top: 0; font-size: 18px;">CSV 내보내기</h2>
+    <p style="font-size: 13px; color: var(--color-text-muted);">현재 필터 조건에 매칭되는 로그를 CSV로 내보냅니다. 최대 10만 행. (operator_super만)</p>
+    <div class="form-row-stacked" style="padding: 0; border: 0; margin-top: 12px;">
+      <label class="label">예상 행 수</label>
+      <div style="font-size: 16px; font-weight: 700;">2,847행 (오늘, 플로우상사)</div>
+    </div>
+    <div class="form-row-stacked" style="padding: 12px 0 0; border: 0;">
+      <label class="label">컬럼 선택</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 12px;">
+        <label><input class="checkbox" type="checkbox" checked> 발생일시</label>
+        <label><input class="checkbox" type="checkbox" checked> 테넌트</label>
+        <label><input class="checkbox" type="checkbox" checked> 사용자</label>
+        <label><input class="checkbox" type="checkbox" checked> 역할</label>
+        <label><input class="checkbox" type="checkbox" checked> 이벤트</label>
+        <label><input class="checkbox" type="checkbox" checked> 대상</label>
+        <label><input class="checkbox" type="checkbox" checked> 결과</label>
+        <label><input class="checkbox" type="checkbox"> IP</label>
+        <label><input class="checkbox" type="checkbox"> User-Agent</label>
+        <label><input class="checkbox" type="checkbox"> Before/After (JSON)</label>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-ghost" onclick="applyState('default')">취소</button>
+      <button class="btn btn-primary" onclick="applyState('default')">CSV 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"        data-key="1">1 기본</span>
+  <span class="state-debug-key" data-state-key="filtered"       data-key="2">2 필터</span>
+  <span class="state-debug-key" data-state-key="detail_drawer"  data-key="3">3 상세</span>
+  <span class="state-debug-key" data-state-key="export_modal"   data-key="4">4 CSV</span>
+  <span class="state-debug-key" data-state-key="empty"          data-key="5">5 빈</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'filtered', '3': 'detail_drawer', '4': 'export_modal', '5': 'empty' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>
