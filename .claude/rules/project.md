@@ -47,3 +47,41 @@
 - matrix.json entities/roles 구조 변경 시
 - 디바이스 매트릭스 (웹/PWA/네이티브) 범위 변경 시
 - 외부 비용 발생 시 (Supabase 유료 플랜 / Vercel Pro / EAS Build / Codex 대량 호출)
+
+## 6. PR 머지 + 정리 자동화 체계 (Phase 5+)
+
+### 6-1. 정책
+- main branch protection 활성화 (gh api `/repos/:owner/:repo/branches/main/protection`)
+- 모든 PR은 `gh pr merge --auto --squash --delete-branch` 로 활성화 — CI PASS 시 자동 머지 + 로컬+원격 브랜치 자동 삭제 + main 자동 전환
+- 사용자 검토 없이 즉시 머지 (2026-05-16 사용자 결정)
+- CI 게이트: `.github/workflows/pr-checks.yml` 5 job (commit-msg, encoding, html-syntax, design-system-ssot, version-format)
+
+### 6-2. PR 머지 직후 표준 시퀀스 (Claude 자동 수행 의무)
+
+```bash
+# 1. main 동기화 (auto-merge가 자동 전환했어도 명시 보장)
+git checkout main
+git pull --ff-only origin main
+git fetch --prune
+
+# 2. (그룹 종료 PR인 경우) tag 부여
+git tag -a wf-vX.Y.0 <merge-commit-sha> -m "..."
+git push origin wf-vX.Y.0
+
+# 3. 머지된 로컬 브랜치 정리 (가드 — --delete-branch 못 미친 경우 대비)
+git branch --merged main | grep -v "^\*\|main$" | xargs -r git branch -d
+
+# 4. 다음 작업 브랜치 시작 (해당되면)
+git checkout -b feature/WI-<next>-...
+```
+
+### 6-3. 다음 작업 브랜치 생성 시 보장
+
+- 항상 최신 main 기준으로 분기 (`git checkout main && git pull --ff-only && git checkout -b ...`)
+- 직전 그룹 머지가 main에 반영된 후에만 다음 그룹 시작 — 머지 대기 중 다음 그룹 작업 금지
+
+### 6-4. 자동화 실패 시 fallback
+
+- gh pr merge --auto 후 CI fail 시 → 사용자에게 즉시 보고 + 수정 push (auto-merge 유지)
+- branch protection이 admin 우회 허용 (`enforce_admins: false`) — 비상 시 사용자가 직접 머지 가능
+- 원격 브랜치 삭제 누락 시 → `git push origin --delete <branch>` + `git fetch --prune`
