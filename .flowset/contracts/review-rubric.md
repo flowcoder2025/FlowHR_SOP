@@ -139,3 +139,58 @@ evaluator는 채점표만 반환, 마커는 호출자(Claude 본체)가 생성.
 evaluator가 식별한 NON_BLOCKING 결함은 호출자(Claude 본체)가 `.flowset/known-issues/INDEX.md`에 등록 — 등급 매핑은 review-system.md §5/§6 참조.
 
 codex가 동일 결함을 더 높은 등급으로 지적한 경우 **상위 등급 채택 + `source: both` 병합** (review-system.md §6).
+
+## 10. Phase 5 와이어프레임 5번째 축 — 디자인 시스템 사용 충실도 (v3, 2026-05-16)
+
+Codex 협의 합의안 반영 (`review-system.md §17` + `review-system-v3-draft.md §6`).
+G2 운영 후 사용자 검수에서 발견된 검증 누락(아이콘 미표시 / native control / showcase 분리) 대응.
+
+### 10-1. 적용 범위
+
+- **Phase 5 와이어프레임 doc 모드 한정** (다른 Phase 4축 그대로)
+- 적용 시점: 2026-05-16 이후 G1 hotfix + G2 hotfix + G3/G4/전체 evaluator
+
+### 10-2. 가중치 재조정
+
+| 축 | v2 (기존) | **v3 (Phase 5)** |
+|---|---:|---:|
+| 완성도 | 30% | **25%** |
+| 정합성 | 25% | **25%** |
+| 구체성 | 25% | **20%** |
+| 실행가능성 | 20% | **20%** |
+| **DS 사용 충실도** (신규) | — | **10%** |
+| 합계 | 100% | 100% |
+
+### 10-3. DS 사용 충실도 채점 기준 (Codex 안 그대로)
+
+평가 목적: 화면 HTML이 디자인 시스템을 단순 참조하는 수준을 넘어, **실제 렌더링 결과**와 컴포넌트 계약까지 일관되게 따르는지 평가.
+
+| 점수 | 기준 |
+|---:|---|
+| 10 | 모든 화면이 DS token/component/shell 사용, 외부 sprite 없이 `file://` 아이콘 렌더링, native control은 DS 패턴으로 wrap, showcase·spec·React mapping 일치 |
+| 8 | 주요 화면 일관, 경미한 showcase 누락 또는 보조 상태 누락만. file:// 렌더링 결함 없음 |
+| 6 | DS 클래스 대체로 사용, 일부 화면에 bare native control / inline 재정의 / showcase 불일치. 시각 불일치 일부 체감 |
+| 4 | 공통 컴포넌트 화면별 분기, native/browser 기본 UI 반복 노출. DS SSOT 신뢰도 낮음 |
+| 2 | showcase와 실제 화면 구조적 분리, 아이콘/입력/상태 다수 깨짐 |
+| 0 | DS 사용 근거 없음 또는 `file://` 주요 UI 미렌더링 |
+
+### 10-4. Hard gate (Codex 안 그대로)
+
+다음 경우 자동 적용:
+
+- **`file://` 아이콘 미표시 2 화면 이상** → 5번째 축 **최대 4점**, 전체 verdict **최소 WARNING**
+- **외부 sprite 참조** 검수 대상 화면에 잔존 → **P1**
+- **bare `input[type=file]`** → **P1**
+- **bare `select` / `date` / `datetime-local`** 반복 사용 → **P2 이상**
+- **신규 컴포넌트가 components.css / _showcase.html / 03-components.md 중 하나라도 빠짐** → **DS SSOT 결함**
+
+### 10-5. 검수 의무
+
+evaluator는 정적 코드 분석만 가능 — 다음을 호출자(Claude 본체)가 보장:
+
+- **외부 sprite 검색**: `grep "icons.svg#" wireframes/html/*.html` → 인라인 sprite 없는 화면 카운트
+- **native control 검색**: `grep -E "<select|<input[^>]+type=\"(file|date|datetime)" wireframes/html/*.html`
+- **showcase 매핑 확인**: `component-usage-matrix.json` 매핑 존재
+- **Playwright smoke** (`.github/workflows/pr-checks.yml` `playwright-smoke` job): file:// 렌더링 + console error + svg use bbox + native appearance
+
+evaluator는 위 정적 결과를 **채점 시 반영 의무**. 채점 결과에 명시.

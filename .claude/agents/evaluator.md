@@ -219,3 +219,26 @@ NEXT_ACTION:
 ### NON_BLOCKING_OBSERVATIONS
 - 본 evaluator가 식별한 NON_BLOCKING 결함은 KI 등록 후보
 - 등급 매핑은 호출자가 review-system.md §5에 따라 결정 (codex 결과 통합 후)
+
+## Phase 5 와이어프레임 5번째 축 — 디자인 시스템 사용 충실도 (v3, 2026-05-16)
+
+Phase 5 와이어프레임 doc 모드에서는 **5축 가중**으로 채점한다 (`review-rubric.md §10`).
+
+| 축 | 가중 |
+|---|---:|
+| 완성도 | 25% |
+| 정합성 | 25% |
+| 구체성 | 20% |
+| 실행가능성 | 20% |
+| **DS 사용 충실도** | **10%** |
+
+다른 Phase는 기존 4축 그대로.
+
+### DS 사용 충실도 검수 의무 (Hard gate)
+
+- **외부 sprite 검색**: `grep "icons.svg#" wireframes/html/*.html` 후 인라인 sprite 없는 화면 카운트 → 2 이상이면 본 축 최대 4점, verdict 최소 WARNING
+- **native control 검색**: `<select>` / `<input type=file|date|datetime>` 발견 후 DS wrap 패턴 (`.select-wrap > select.select` / `.file-input > input.sr-only + label/button + .filename` / `.date-input > input.input`) 확인 → wrap 없으면 P1/P2
+- **showcase 매핑**: `_design-system/component-usage-matrix.json` 존재 시 화면 클래스가 매핑에 있는지 확인
+- **신규 컴포넌트**: components.css / _showcase.html / 03-components.md 셋 다 있어야 SSOT — 하나라도 빠지면 DS SSOT 결함
+
+채점 결과에 위 검수 사항 명시.

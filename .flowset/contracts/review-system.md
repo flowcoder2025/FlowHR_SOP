@@ -181,8 +181,109 @@ Agent(subagent_type=general-purpose, run_in_background=true, prompt="mcp__codex_
 
 ## 16. 관련 문서
 
-- `.flowset/contracts/review-rubric.md` — evaluator 4축 가중 + 안티패턴 (본 시스템의 evaluator 룰)
+- `.flowset/contracts/review-rubric.md` — evaluator 4(5)축 가중 + 안티패턴 (본 시스템의 evaluator 룰)
 - `.flowset/known-issues/triggers.md` — KI 트리거 임계 + Phase 게이트 (변경 없음)
 - `.flowset/known-issues/INDEX.md` — 활성 KI SSOT
 - `.claude/agents/evaluator.md` — evaluator sub-agent 정의
 - `.claude/rules/project.md §6-7` — 자동화 시퀀스 + 사용자 개입 시점
+
+## 17. v3 강화 (2026-05-16) — file:// 호환 + 렌더링 검수 + DS 충실도
+
+G2 운영 후 사용자 검수에서 발견된 검증 누락(아이콘 미표시 / native control / showcase-실사용 분리)에 대응. Codex 협의 합의안 반영(`review-system-v3-draft.md`).
+
+### 17-1. file:// 호환 산출물 계약 (Codex §2-1)
+
+Phase 5 와이어프레임 HTML은 **`file://` 프로토콜 직접 열기** 가 사용자 검수의 기본 환경이다. 다음을 의무화:
+
+- **외부 SVG `<use>` 참조 금지** — Chrome/Safari가 file:// CORS로 차단. 모든 화면 HTML 시작부에 인라인 svg sprite 보유 의무
+- **외부 font/image/script 절대 경로 금지** — `/route` 또는 `http://` 절대 URL 금지 (상대 경로만)
+- **fetch 의존 금지** — file://에서 차단되는 동적 로딩 금지 (와이어프레임 한정)
+
+### 17-2. native control DS 패턴 명시 (Codex §2-3)
+
+`<select>` `<input type=file|date|datetime-local>` **자체는 허용**, 그러나 다음 구조 패턴 의무:
+
+- `.select-wrap > select.select` — appearance: none + 커스텀 chevron + wrap이 disabled/focus/error 상태 표현
+- `.file-input > input[type=file].sr-only + label + .filename` — 시각 버튼 + 파일명 표시
+- `.date-input > input[type=date].input` — appearance: none + 커스텀 calendar 아이콘 (실제 picker는 Phase 7 react-day-picker)
+
+**bare appearance 금지** = OS 기본 chevron / "파일 선택" 버튼 / native calendar 노출 시 P1/P2.
+
+### 17-3. 렌더링 검수 자동화 — Playwright smoke (Codex §4)
+
+**지금 도입** (Phase 7로 미루지 않음):
+
+CI 또는 사전 hook으로 Playwright headless Chrome 실행:
+1. 모든 wireframes/html/*.html을 `file://`로 open
+2. `console` / `pageerror` 수집 → 0건 의무
+3. `svg.ico use` element의 `getBBox()` width/height > 0 의무 (아이콘 표시 검증)
+4. `<select>`, `input[type=file|date|datetime-local]`의 computed style — appearance != "auto" 의무 (DS wrap 적용 검증)
+5. 화면별 screenshot artifact 저장 (PR에 첨부, 사용자 빠른 검수)
+
+**pixelmatch baseline regression은 Phase 7**로 유보. smoke만 즉시.
+
+### 17-4. showcase 사용 매트릭스 (Codex §2-4)
+
+`_design-system/component-usage-matrix.json` 신설:
+
+```json
+{
+  "patterns": [
+    {
+      "prd_pattern": "List + Side Filter",
+      "components": ["table", "filter-panel", "page-action-bar", "badge"],
+      "showcase_anchor": "_showcase.html#section-table",
+      "allowed_classes": ["table", "table-row-active", "badge-success", ...],
+      "react_mapping": "shadcn/ui DataTable + react-hook-form filter"
+    },
+    ...
+  ]
+}
+```
+
+화면 작성 시 PRD 패턴 매핑 의무. CI `showcase-coverage-check`가 검증.
+
+### 17-5. CI 신규 4 job (Codex §1 + §5)
+
+| Job | 검사 |
+|-----|------|
+| `inline-svg-sprite-check` | 화면 HTML이 외부 `icons.svg#` 참조 시 자기 자신에 sprite 보유 — 외부 참조만 보이면 fail |
+| `native-element-wrap-check` | `<select>` `<input type=file/date>` 발견 시 `.select-wrap` / `.file-input` / `.date-input` wrap 패턴 확인 — wrap 없으면 fail |
+| `showcase-coverage-check` | 화면이 사용한 DS 클래스가 `component-usage-matrix.json`에 매핑 — 매핑 없으면 fail |
+| `playwright-smoke` | Playwright headless로 모든 화면 file:// 렌더링 + console error 0 + svg use bbox > 0 + native appearance != auto |
+
+### 17-6. evaluator 5번째 축 추가 (Codex §6)
+
+`review-rubric.md §10` "**디자인 시스템 사용 충실도** (10% 가중)" 신설. 기존 4축 가중치 재조정:
+
+| 축 | v2 | **v3 (Phase 5 와이어프레임 한정)** |
+|---|---:|---:|
+| 완성도 | 30% | **25%** |
+| 정합성 | 25% | **25%** |
+| 구체성 | 25% | **20%** |
+| 실행가능성 | 20% | **20%** |
+| **DS 사용 충실도** (신규) | — | **10%** |
+| 합계 | 100% | 100% |
+
+**Hard gate** (Codex §6):
+- `file://` 아이콘 미표시 2 화면 이상 재현 → 5번째 축 최대 4점, 전체 verdict 최소 WARNING
+- 외부 sprite 참조 잔존 → P1
+- bare `input[type=file]` → P1
+- bare `select/date/datetime-local` 반복 사용 → P2 이상
+- 새 컴포넌트가 components.css/_showcase.html/03-components.md 중 하나라도 빠지면 DS SSOT 결함
+
+### 17-7. codex 프롬프트 강화 5항목 (Codex §5)
+
+모든 codex 호출 prompt에 다음 의무 체크리스트 포함:
+
+1. **file:// asset compatibility** — 외부 sprite/font/script 검색, 발견 시 P1
+2. **native control visual compliance** — `<select>` `<input type=file/date>` 전수 검색, DS wrap 없으면 P1/P2
+3. **showcase-to-usage consistency** — 신규 DS class가 showcase/components.css/03-components.md/react mapping 모두 있는지
+4. **rendered evidence requirement** — 아이콘/form/modal/dropdown은 정적 검토만으로 PASS 금지, file:// screenshot 또는 Playwright smoke 결과 필수
+5. **cross-screen pattern drift** — 동일 패턴이 화면별 inline CSS로 재정의되는 경우 P1 (DS SSOT 위반)
+
+### 17-8. v3 적용 범위
+
+- Phase 5 와이어프레임 (G1 + G2 + G3 + G4 + 전체 evaluator) — **즉시 적용**
+- Phase 7 개발 — Playwright smoke 그대로 사용 + pixelmatch baseline 추가
+- 다른 Phase doc 모드는 4축 그대로 (DS 충실도 미적용)
