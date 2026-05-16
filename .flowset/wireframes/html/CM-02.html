@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!--
+  CM-02 비밀번호 찾기 (`/forgot-password` + `/reset-password?token=`) — 2단계 통합.
+  PRD: prd/domains/common.md §CM-02
+  레이아웃: _design-system/_layout-auth.html
+  상태 (5): 1 step1 입력 / 2 step1 발송 안내 / 3 step2 재설정 입력 / 4 step2 토큰 만료 / 5 step2 완료
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 비밀번호 찾기</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="step1"]   .state-step1,
+  body[data-state="sent"]    .state-sent,
+  body[data-state="step2"]   .state-step2,
+  body[data-state="expired"] .state-expired,
+  body[data-state="done"]    .state-done { display: flex; }
+
+  .reset-fields { display: flex; flex-direction: column; gap: 14px; }
+  .reset-aux { display: flex; align-items: center; justify-content: center; font-size: 13px; gap: 8px; flex-wrap: wrap; }
+  .reset-aux a { color: var(--color-accent); text-decoration: none; }
+  .reset-aux a:hover { text-decoration: underline; }
+
+  /* 비밀번호 정책 미리 보기 */
+  .password-policy { background: var(--color-surface-2); border-radius: var(--r-md); padding: 12px 14px; font-size: 12px; color: var(--color-text-muted); }
+  .password-policy ul { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; }
+  .password-policy li { display: flex; align-items: center; gap: 6px; }
+  .password-policy li.met { color: var(--color-success); }
+  .password-policy li > svg.ico { width: 12px !important; height: 12px !important; }
+
+  /* state debug bar */
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="step1">
+
+<div class="auth-shell">
+
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card">
+
+      <div class="auth-brand">
+        <div class="logo-fallback" style="width: 48px; height: 48px; font-size: 22px;">F</div>
+        <div class="auth-brand-title">비밀번호 찾기</div>
+        <div class="auth-brand-subtitle">가입 시 사용한 이메일로 재설정 링크를 보내드립니다.</div>
+      </div>
+
+      <!-- ============ STEP 1 — 이메일 입력 ============ -->
+      <div class="form-section state-only state-step1">
+        <div class="form-section-header">
+          <h2>1단계: 이메일 입력</h2>
+          <p>가입 이메일을 입력하시면 재설정 링크를 보내드립니다.</p>
+        </div>
+        <div class="reset-fields" style="margin-top: 16px;">
+          <div class="form-row-stacked" style="padding: 0; border: 0;">
+            <label class="label label-required" for="fp-email">이메일</label>
+            <input class="input" id="fp-email" type="email" placeholder="name@company.com" autocomplete="email" value="hr@flowhr.kr">
+          </div>
+          <button class="btn btn-primary btn-block reset-submit" type="submit">재설정 링크 받기</button>
+        </div>
+      </div>
+
+      <!-- ============ STEP 1 success — 발송 안내 ============ -->
+      <div class="form-section state-only state-sent">
+        <div class="auth-alert auth-alert-info" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-mail"/></svg>
+          <div>
+            <strong>재설정 링크를 보냈습니다.</strong>
+            <span class="auth-alert-meta">입력하신 이메일이 등록되어 있으면 안내 메일을 받게 됩니다. 받은 편지함을 확인해 주세요. (60분 후 링크 만료)</span>
+          </div>
+        </div>
+        <div class="reset-aux" style="margin-top: 16px;">
+          <span class="muted">메일이 도착하지 않나요?</span>
+          <a href="?state=step1">다른 이메일로 다시 시도</a>
+        </div>
+      </div>
+
+      <!-- ============ STEP 2 — 새 비밀번호 입력 (토큰 OK) ============ -->
+      <div class="form-section state-only state-step2">
+        <div class="form-section-header">
+          <h2>2단계: 새 비밀번호 설정</h2>
+          <p>이메일: <strong>hr@flowhr.kr</strong> · 토큰 유효 (남은 시간 <span style="font-family: var(--font-mono);">52분</span>)</p>
+        </div>
+        <div class="reset-fields" style="margin-top: 16px;">
+          <div class="form-row-stacked" style="padding: 0; border: 0;">
+            <label class="label label-required" for="rp-pw1">새 비밀번호</label>
+            <div class="password-field">
+              <input class="input" id="rp-pw1" type="password" placeholder="새 비밀번호" autocomplete="new-password">
+              <button class="password-toggle" type="button" aria-label="비밀번호 보이기/숨기기">
+                <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-row-stacked" style="padding: 0; border: 0;">
+            <label class="label label-required" for="rp-pw2">새 비밀번호 확인</label>
+            <div class="password-field">
+              <input class="input" id="rp-pw2" type="password" placeholder="새 비밀번호 확인" autocomplete="new-password">
+              <button class="password-toggle" type="button" aria-label="비밀번호 보이기/숨기기">
+                <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="password-policy">
+            <strong>비밀번호 정책</strong>
+            <ul>
+              <li class="met"><svg class="ico"><use href="../_design-system/icons.svg#i-check"/></svg> 8자 이상 (운영사 12자 이상)</li>
+              <li><svg class="ico"><use href="../_design-system/icons.svg#i-x"/></svg> 영문 대문자 + 소문자 + 숫자 + 특수문자 3종 이상</li>
+              <li><svg class="ico"><use href="../_design-system/icons.svg#i-x"/></svg> 직전 5회 사용 이력과 다름</li>
+            </ul>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">비밀번호 재설정</button>
+        </div>
+        <div class="auth-alert auth-alert-warning" role="status" style="margin-top: 16px;">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-shield"/></svg>
+          <div>
+            <strong>주의:</strong>
+            <span class="auth-alert-meta">재설정 완료 시 모든 활성 세션이 무효화됩니다. 모든 디바이스에서 다시 로그인하셔야 합니다.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ STEP 2 error — 토큰 만료 ============ -->
+      <div class="form-section state-only state-expired">
+        <div class="auth-alert auth-alert-error" role="alert">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-c"/></svg>
+          <div>
+            <strong>재설정 링크가 만료되었습니다.</strong>
+            <span class="auth-alert-meta">코드: AUTH_RESET_TOKEN_EXPIRED · 토큰은 발송 후 60분 동안만 유효합니다. 다시 요청해 주세요.</span>
+          </div>
+        </div>
+        <div class="reset-aux" style="margin-top: 16px;">
+          <a href="?state=step1" class="btn btn-primary">재설정 링크 다시 받기</a>
+        </div>
+      </div>
+
+      <!-- ============ STEP 2 success — 재설정 완료 ============ -->
+      <div class="form-section state-only state-done">
+        <div class="auth-alert auth-alert-success" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-check-circle"/></svg>
+          <div>
+            <strong>비밀번호가 재설정되었습니다.</strong>
+            <span class="auth-alert-meta">모든 활성 세션이 종료되었습니다. 새 비밀번호로 다시 로그인해 주세요.</span>
+          </div>
+        </div>
+        <div class="reset-aux" style="margin-top: 16px;">
+          <a href="/login" class="btn btn-primary">로그인 페이지로 이동</a>
+        </div>
+      </div>
+
+      <div class="auth-aux">
+        <a href="/login">← 로그인으로 돌아가기</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="step1"   data-key="1">1 입력</span>
+  <span class="state-debug-key" data-state-key="sent"    data-key="2">2 발송</span>
+  <span class="state-debug-key" data-state-key="step2"   data-key="3">3 재설정</span>
+  <span class="state-debug-key" data-state-key="expired" data-key="4">4 만료</span>
+  <span class="state-debug-key" data-state-key="done"    data-key="5">5 완료</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'step1');
+
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'step1', '2': 'sent', '3': 'step2', '4': 'expired', '5': 'done' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+
+  // 비밀번호 토글
+  document.querySelectorAll('.password-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = btn.parentElement.querySelector('.input');
+      if (!input) return;
+      var hidden = input.type === 'password';
+      input.type = hidden ? 'text' : 'password';
+      var use = btn.querySelector('use');
+      if (use) use.setAttribute('href', hidden
+        ? '../_design-system/icons.svg#i-eye-off'
+        : '../_design-system/icons.svg#i-eye');
+    });
+  });
+
+  // 언어 토글
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) langBtn.addEventListener('click', function () {
+    var cur = langBtn.querySelector('.auth-lang-current');
+    var muted = langBtn.querySelector('.muted');
+    if (!cur || !muted) return;
+    var tmp = cur.textContent; cur.textContent = muted.textContent; muted.textContent = tmp;
+    document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+  });
+
+  // step1 submit → sent (시뮬레이션)
+  var submitBtn = document.querySelector('.reset-submit');
+  if (submitBtn) submitBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    setTimeout(function () { applyState('sent'); }, 700);
+  });
+})();
+</script>
+
+</body>
+</html>

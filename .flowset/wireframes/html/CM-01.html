@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<!--
+  CM-01 로그인 (`/login`) — 비인증 영역, 모든 역할 공통 진입점.
+  PRD: .flowset/prd/domains/common.md §CM-01
+  라우팅: .flowset/prd/09-routing.md §3 (역할별 대시보드 분기)
+  레이아웃: _design-system/_layout-auth.html
+
+  상태 (4 + 1):
+    default — 빈 폼 (?state=default 또는 진입 시)
+    loading — 로그인 진행 중 (?state=loading 또는 폼 제출)
+    error   — AUTH_INVALID_CREDENTIALS (?state=error)
+    locked  — AUTH_LOCKED 5회 실패 5분 잠금 + 캡차 노출 (?state=locked)
+    success — AUTH_2FA_REQUIRED → CM-04 진입 안내 (?state=success)
+  키보드 단축키: 1=default, 2=loading, 3=error, 4=locked, 5=success.
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 로그인</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  /* CM-01 페이지 한정 — 상태 토글 + 페이지 고유 변형 (디자인 시스템 SSOT 위반 X) */
+  .state-only { display: none; }
+  body[data-state="default"] .state-default,
+  body[data-state="loading"] .state-loading,
+  body[data-state="error"]   .state-error,
+  body[data-state="locked"]  .state-locked,
+  body[data-state="success"] .state-success { display: flex; }
+
+  /* 로그인 버튼 상태별 시각 — inline 모디파이어 (컴포넌트 정의 아님) */
+  body[data-state="loading"] .login-submit { opacity: 0.85; pointer-events: none; cursor: progress; }
+  body[data-state="loading"] .login-submit-label { display: none; }
+  body[data-state="loading"] .login-submit-spinner { display: inline-flex; }
+  body[data-state="locked"]  .login-submit { opacity: 0.5; pointer-events: none; }
+  body[data-state="locked"]  .login-email,
+  body[data-state="locked"]  .login-password { opacity: 0.7; pointer-events: none; }
+
+  .login-submit-spinner { display: none; align-items: center; gap: 8px; }
+  .login-submit-spinner > svg.ico { width: 16px !important; height: 16px !important; animation: spin 0.9s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .login-row-options { display: flex; align-items: center; justify-content: space-between; font-size: 13px; gap: 8px; }
+  .login-row-options label { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text); cursor: pointer; }
+  .login-row-options a { color: var(--color-accent); text-decoration: none; }
+  .login-row-options a:hover { text-decoration: underline; }
+
+  /* 캡차 placeholder (locked 5회 실패 후 노출) */
+  .captcha-box { border: 1px dashed var(--color-border); background: var(--color-surface-2); padding: 16px; text-align: center; font-size: 12px; color: var(--color-text-muted); border-radius: var(--r-md); font-family: var(--font-mono); }
+
+  /* 잠금 카운트다운 표시 */
+  .lock-countdown { font-family: var(--font-mono); font-weight: 700; }
+
+  /* 카드 안 폼 행 간격 */
+  .login-fields { display: flex; flex-direction: column; gap: 14px; }
+
+  /* state debug bar — 개발자 패널 (Phase 7에서 제거) */
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<div class="auth-shell">
+
+  <!-- ========================================================================
+       글로벌 헤더 (비인증) — _layout-auth 표준
+       ======================================================================== -->
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language" aria-label="언어 전환">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       메인 — 중앙 정렬 카드
+       ======================================================================== -->
+  <main class="auth-main">
+    <div class="auth-card">
+
+      <div class="auth-brand">
+        <div class="logo" style="gap: 12px;">
+          <div class="logo-fallback" style="width: 48px; height: 48px; font-size: 22px;">F</div>
+        </div>
+        <div class="auth-brand-title">FlowHR</div>
+        <div class="auth-brand-subtitle">직원 · 운영자 통합 로그인</div>
+      </div>
+
+      <div class="form-section">
+
+        <div class="form-section-header">
+          <h2>로그인</h2>
+          <p>이메일과 비밀번호를 입력해 주세요.</p>
+        </div>
+
+        <!-- 상태별 알림 박스 -->
+        <div class="auth-alert auth-alert-error state-only state-error" role="alert">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-c"/></svg>
+          <div>
+            <strong>이메일 또는 비밀번호가 올바르지 않습니다.</strong>
+            <span class="auth-alert-meta">코드: <span class="lock-countdown">AUTH_INVALID_CREDENTIALS</span> · 남은 시도 <strong>2회</strong></span>
+          </div>
+        </div>
+
+        <div class="auth-alert auth-alert-warning state-only state-locked" role="alert">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-lock"/></svg>
+          <div>
+            <strong>5회 연속 잘못된 시도</strong>로 일시적으로 잠겼습니다.
+            <span class="auth-alert-meta">코드: AUTH_LOCKED · <span class="lock-countdown">04:32</span> 후 다시 시도 가능 (같은 IP에서 같은 이메일 차단)</span>
+          </div>
+        </div>
+
+        <div class="auth-alert auth-alert-success state-only state-success" role="alert">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-shield"/></svg>
+          <div>
+            <strong>1단계 인증 완료.</strong> 2단계 인증 코드를 입력해 주세요.
+            <span class="auth-alert-meta">코드: AUTH_2FA_REQUIRED → <a href="/2fa">CM-04 2단계 인증</a>로 이동합니다…</span>
+          </div>
+        </div>
+
+        <div class="login-fields" style="margin-top: 16px;">
+          <div class="form-row-stacked" style="padding: 0; border: 0;">
+            <label class="label label-required" for="login-email">이메일</label>
+            <input class="input login-email" id="login-email" type="email" placeholder="name@company.com" autocomplete="username" value="hr@flowhr.kr">
+          </div>
+
+          <div class="form-row-stacked" style="padding: 0; border: 0;">
+            <label class="label label-required" for="login-password">비밀번호</label>
+            <div class="password-field">
+              <input class="input login-password" id="login-password" type="password" placeholder="비밀번호" autocomplete="current-password" value="••••••••">
+              <button class="password-toggle" type="button" aria-label="비밀번호 보이기/숨기기" data-tooltip="비밀번호 표시">
+                <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 캡차 (locked 5회 실패 시만 노출) -->
+          <div class="state-only state-locked">
+            <div class="captcha-box">
+              [ 캡차 위젯 — reCAPTCHA v3 / Cloudflare Turnstile<br>
+              5회 실패 후 자동 노출 ]
+            </div>
+          </div>
+
+          <div class="login-row-options">
+            <label>
+              <input class="checkbox" type="checkbox" checked>
+              로그인 유지 (30일)
+            </label>
+            <a href="/forgot-password">비밀번호를 잊으셨나요?</a>
+          </div>
+
+          <button class="btn btn-primary btn-block login-submit" type="submit" data-tooltip="로그인 (Enter)">
+            <span class="login-submit-label">로그인</span>
+            <span class="login-submit-spinner">
+              <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-loader"/></svg>
+              로그인 중…
+            </span>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="auth-aux">
+        <span class="muted">회사 초대를 받으셨나요?</span>
+        <a href="/activate">계정 활성화 안내 (CM-03)</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       글로벌 푸터
+       ======================================================================== -->
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<!-- ========================================================================
+     상태 디버그 패널 (Phase 5 시각 검수 보조 — Phase 7 제거)
+     ======================================================================== -->
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default" data-key="1">1 default</span>
+  <span class="state-debug-key" data-state-key="loading" data-key="2">2 loading</span>
+  <span class="state-debug-key" data-state-key="error"   data-key="3">3 error</span>
+  <span class="state-debug-key" data-state-key="locked"  data-key="4">4 locked</span>
+  <span class="state-debug-key" data-state-key="success" data-key="5">5 2fa</span>
+</div>
+
+<!-- ========================================================================
+     상태 토글 + 비밀번호 토글 + 언어 토글 — _layout-auth 공통 JS
+     ======================================================================== -->
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+
+  // URL ?state= 초기 동기화
+  var initial = new URLSearchParams(location.search).get('state') || 'default';
+  applyState(initial);
+
+  // 디버그 패널 클릭으로 상태 토글
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+
+  // 키보드 단축키 1~5
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'default', '2': 'loading', '3': 'error', '4': 'locked', '5': 'success' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+
+  // 비밀번호 보이기/숨기기 토글
+  document.querySelectorAll('.password-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = btn.parentElement.querySelector('.input');
+      if (!input) return;
+      var hidden = input.type === 'password';
+      input.type = hidden ? 'text' : 'password';
+      var use = btn.querySelector('use');
+      if (use) use.setAttribute('href', hidden
+        ? '../_design-system/icons.svg#i-eye-off'
+        : '../_design-system/icons.svg#i-eye');
+    });
+  });
+
+  // 언어 토글 (시각 토글만 — 실제 i18n은 Phase 7 next-intl)
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) {
+    langBtn.addEventListener('click', function () {
+      var cur = langBtn.querySelector('.auth-lang-current');
+      var muted = langBtn.querySelector('.muted');
+      if (!cur || !muted) return;
+      var tmp = cur.textContent;
+      cur.textContent = muted.textContent;
+      muted.textContent = tmp;
+      document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+    });
+  }
+
+  // 로그인 버튼 클릭 → loading 시뮬레이션 (1.4s 후 error로 전환)
+  var loginBtn = document.querySelector('.login-submit');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (document.body.getAttribute('data-state') === 'locked') return;
+      applyState('loading');
+      setTimeout(function () { applyState('error'); }, 1400);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

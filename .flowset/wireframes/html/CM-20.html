@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<!--
+  CM-20 PWA 설치 가이드 (`/install`).
+  PRD: prd/domains/common.md §CM-20 + 02-device-matrix.md
+  디바이스 분기: iOS Safari 16.4+ / Android Chrome / Desktop(Tauri).
+  상태 (5): 1 ios / 2 android / 3 desktop / 4 ios_old(16.4 미만) / 5 already_installed
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 앱 설치 가이드</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="ios"]              .state-ios,
+  body[data-state="android"]          .state-android,
+  body[data-state="desktop"]          .state-desktop,
+  body[data-state="ios_old"]          .state-ios_old,
+  body[data-state="already_installed"] .state-already_installed { display: flex; }
+
+  /* 활성 디바이스 카드 강조 — install-grid 안 분기 */
+  .install-card-iOS, .install-card-Android, .install-card-Desktop { opacity: 0.5; }
+  body[data-state="ios"]     .install-card-iOS,
+  body[data-state="android"] .install-card-Android,
+  body[data-state="desktop"] .install-card-Desktop { opacity: 1; border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-bg); }
+
+  .device-detection { font-size: 12px; color: var(--color-text-muted); text-align: center; font-family: var(--font-mono); padding: 8px; background: var(--color-surface-2); border-radius: var(--r-md); }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="ios">
+
+<div class="auth-shell">
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card auth-card-wide" style="gap: 16px;">
+
+      <div class="auth-brand">
+        <svg class="ico" width="48" height="48" style="color: var(--color-accent);"><use href="../_design-system/icons.svg#i-smartphone-share"/></svg>
+        <div class="auth-brand-title">FlowHR 앱 설치</div>
+        <div class="auth-brand-subtitle">홈 화면에 설치하면 푸시 알림을 받고 더 빠르게 사용할 수 있습니다.</div>
+      </div>
+
+      <div class="device-detection">감지된 디바이스: <strong id="device-label">iOS Safari 17.2</strong></div>
+
+      <!-- ============ 3 디바이스 카드 (항상 노출, 활성만 강조) ============ -->
+      <div class="install-grid">
+        <div class="install-card install-card-iOS">
+          <div class="install-card-header">
+            <svg class="ico"><use href="../_design-system/icons.svg#i-smartphone"/></svg>
+            <h3>iOS Safari</h3>
+          </div>
+          <ol class="install-steps">
+            <li>하단의 <strong>공유 버튼</strong> ⬆️ 탭</li>
+            <li>"홈 화면에 추가" 선택</li>
+            <li>홈 화면 아이콘 탭 → FlowHR 실행</li>
+          </ol>
+          <div style="font-size: 11px; color: var(--color-text-muted);">iOS 16.4+ 필요 · 푸시 알림 가능</div>
+        </div>
+
+        <div class="install-card install-card-Android">
+          <div class="install-card-header">
+            <svg class="ico"><use href="../_design-system/icons.svg#i-smartphone"/></svg>
+            <h3>Android Chrome</h3>
+          </div>
+          <ol class="install-steps">
+            <li>우측 상단 <strong>⋮ 메뉴</strong></li>
+            <li>"앱 설치" 또는 자동 배너 탭</li>
+            <li>홈 화면 아이콘으로 진입</li>
+          </ol>
+          <div style="font-size: 11px; color: var(--color-text-muted);">Chrome 80+ · 푸시 + 배지 지원</div>
+        </div>
+
+        <div class="install-card install-card-Desktop">
+          <div class="install-card-header">
+            <svg class="ico"><use href="../_design-system/icons.svg#i-monitor"/></svg>
+            <h3>Desktop (Tauri 권장)</h3>
+          </div>
+          <ol class="install-steps">
+            <li>네이티브 데스크톱 앱 다운로드</li>
+            <li>Windows/macOS/Linux 설치 파일</li>
+            <li>자동 업데이트 + 시스템 트레이</li>
+          </ol>
+          <a href="https://github.com/flowcoder2025/FlowHR-desktop/releases" class="btn btn-primary btn-block" style="margin-top: 8px;">다운로드 (GitHub Releases)</a>
+        </div>
+      </div>
+
+      <!-- ============ iOS 16.4 미만 ============ -->
+      <div class="form-section state-only state-ios_old">
+        <div class="auth-alert auth-alert-warning" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-t"/></svg>
+          <div>
+            <strong>iOS 16.4 이상이 필요합니다</strong>
+            <span class="auth-alert-meta">감지된 버전: iOS 15.7 · iOS 16.4부터 PWA 푸시 알림이 지원됩니다. iOS 업데이트 또는 데스크톱 앱 사용을 권장합니다.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 이미 PWA 모드로 진입 — 자동 dismiss 안내 ============ -->
+      <div class="form-section state-only state-already_installed">
+        <div class="auth-alert auth-alert-success" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-check-circle"/></svg>
+          <div>
+            <strong>이미 설치된 앱으로 진입하셨습니다.</strong>
+            <span class="auth-alert-meta">매번 표시되지 않도록 자동으로 다음 진입 시 안내가 숨겨집니다 (localStorage `pwa_install_dismissed`).</span>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: center; margin-top: 16px;">
+          <a href="/" class="btn btn-primary">홈으로</a>
+        </div>
+      </div>
+
+      <div class="auth-aux" style="margin-top: 8px;">
+        <button type="button" class="btn btn-ghost" onclick="alert('localStorage.setItem(\'pwa_install_dismissed\', Date.now())')">30일간 보지 않기</button>
+        <a href="/">건너뛰기 (홈으로)</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="ios"               data-key="1">1 iOS</span>
+  <span class="state-debug-key" data-state-key="android"           data-key="2">2 Android</span>
+  <span class="state-debug-key" data-state-key="desktop"           data-key="3">3 Desktop</span>
+  <span class="state-debug-key" data-state-key="ios_old"           data-key="4">4 iOS 구버전</span>
+  <span class="state-debug-key" data-state-key="already_installed" data-key="5">5 설치됨</span>
+</div>
+
+<script>
+(function () {
+  var labels = {
+    ios: 'iOS Safari 17.2',
+    android: 'Android Chrome 121',
+    desktop: 'macOS Safari 17',
+    ios_old: 'iOS Safari 15.7',
+    already_installed: 'PWA standalone mode'
+  };
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var lbl = document.getElementById('device-label');
+    if (lbl && labels[s]) lbl.textContent = labels[s];
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'ios');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'ios', '2': 'android', '3': 'desktop', '4': 'ios_old', '5': 'already_installed' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) langBtn.addEventListener('click', function () {
+    var cur = langBtn.querySelector('.auth-lang-current');
+    var muted = langBtn.querySelector('.muted');
+    if (!cur || !muted) return;
+    var tmp = cur.textContent; cur.textContent = muted.textContent; muted.textContent = tmp;
+    document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+  });
+})();
+</script>
+
+</body>
+</html>

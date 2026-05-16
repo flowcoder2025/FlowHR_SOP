@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<!--
+  CM-06 오류/점검 화면 — `/404`, `/500`, `/maintenance`, `/503`, 네트워크 오류 통합.
+  PRD: prd/domains/common.md §CM-06
+  상태 (5): 1 not_found(404) / 2 server(500) / 3 maintenance / 4 service_unavailable(503) / 5 network
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 오류 / 점검</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="not_found"]           .state-not_found,
+  body[data-state="server"]              .state-server,
+  body[data-state="maintenance"]         .state-maintenance,
+  body[data-state="service_unavailable"] .state-service_unavailable,
+  body[data-state="network"]             .state-network { display: flex; }
+
+  .maintenance-window { background: var(--color-surface-2); border-radius: var(--r-md); padding: 12px 16px; font-size: 13px; font-family: var(--font-mono); }
+  .maintenance-window strong { color: var(--color-warning); }
+  .error-meta { font-size: 12px; color: var(--color-text-muted); font-family: var(--font-mono); }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="not_found">
+
+<div class="auth-shell">
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card auth-card-wide">
+
+      <!-- 1. 404 페이지 없음 -->
+      <div class="auth-hero state-only state-not_found">
+        <svg class="ico ico-hero" width="56" height="56"><use href="../_design-system/icons.svg#i-x"/></svg>
+        <div class="auth-hero-code">404 — Not Found</div>
+        <div class="auth-hero-title">페이지를 찾을 수 없습니다</div>
+        <div class="auth-hero-desc">
+          요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다.<br>
+          URL을 다시 확인해 주세요.
+        </div>
+        <div class="auth-hero-actions">
+          <a href="javascript:history.back()" class="btn btn-ghost">← 이전 화면</a>
+          <a href="/" class="btn btn-primary">홈으로</a>
+        </div>
+        <div class="error-meta">/operator/tenants/abc123 → 존재하지 않음</div>
+      </div>
+
+      <!-- 2. 500 서버 오류 -->
+      <div class="auth-hero state-only state-server">
+        <svg class="ico ico-hero" width="56" height="56" style="color: var(--color-danger);"><use href="../_design-system/icons.svg#i-alert-t"/></svg>
+        <div class="auth-hero-code">500 — Internal Server Error</div>
+        <div class="auth-hero-title">일시적인 서버 오류가 발생했습니다</div>
+        <div class="auth-hero-desc">
+          잠시 후 다시 시도해 주세요. 동일한 오류가 반복되면 운영팀에 알려주세요.<br>
+          오류는 Sentry에 자동 보고되었습니다.
+        </div>
+        <div class="auth-hero-actions">
+          <a href="javascript:location.reload()" class="btn btn-primary">새로고침</a>
+          <a href="/contact" class="btn btn-ghost">운영팀 문의</a>
+        </div>
+        <div class="error-meta">request_id: req_5f8a3b2c · timestamp: 2026-05-16T14:32:08Z</div>
+      </div>
+
+      <!-- 3. 점검 모드 -->
+      <div class="auth-hero state-only state-maintenance">
+        <svg class="ico ico-hero" width="56" height="56" style="color: var(--color-warning);"><use href="../_design-system/icons.svg#i-tool"/></svg>
+        <div class="auth-hero-code">503 — Maintenance</div>
+        <div class="auth-hero-title">시스템 점검 중입니다</div>
+        <div class="auth-hero-desc">
+          서비스 개선을 위한 정기 점검이 진행 중입니다. 점검 종료 후 자동 복구됩니다.
+        </div>
+        <div class="maintenance-window">
+          <div>점검 시작: <strong>2026-05-20 22:00 KST</strong></div>
+          <div>점검 종료 예정: <strong>2026-05-20 23:00 KST</strong></div>
+          <div>남은 시간: <strong>00:24:15</strong></div>
+          <div style="margin-top: 6px; color: var(--color-text-muted); font-family: var(--font-sans); font-size: 12px;">※ 운영사 super 계정은 우회 가능</div>
+        </div>
+        <div class="auth-hero-actions">
+          <a href="https://status.flowhr.kr" class="btn btn-primary">상태 페이지 보기</a>
+        </div>
+      </div>
+
+      <!-- 4. 503 서비스 일시 중단 -->
+      <div class="auth-hero state-only state-service_unavailable">
+        <svg class="ico ico-hero" width="56" height="56" style="color: var(--color-warning);"><use href="../_design-system/icons.svg#i-zap"/></svg>
+        <div class="auth-hero-code">503 — Service Unavailable</div>
+        <div class="auth-hero-title">일시적으로 서비스를 사용할 수 없습니다</div>
+        <div class="auth-hero-desc">
+          서버에 일시적인 과부하가 발생했습니다. 30초 후 자동 재시도되며, 계속 안 되면 새로고침해 주세요.
+        </div>
+        <div class="auth-hero-actions">
+          <a href="javascript:location.reload()" class="btn btn-primary">재시도</a>
+          <a href="https://status.flowhr.kr" class="btn btn-ghost">상태 페이지</a>
+        </div>
+        <div class="error-meta">retry_after: 30s</div>
+      </div>
+
+      <!-- 5. 네트워크 오류 -->
+      <div class="auth-hero state-only state-network">
+        <svg class="ico ico-hero" width="56" height="56"><use href="../_design-system/icons.svg#i-network"/></svg>
+        <div class="auth-hero-code">NETWORK_ERROR</div>
+        <div class="auth-hero-title">네트워크 연결을 확인해 주세요</div>
+        <div class="auth-hero-desc">
+          서버에 연결할 수 없습니다. 인터넷 연결 상태를 확인하시고 다시 시도해 주세요.
+        </div>
+        <div class="auth-hero-actions">
+          <a href="javascript:location.reload()" class="btn btn-primary">다시 시도</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="not_found"           data-key="1">1 404</span>
+  <span class="state-debug-key" data-state-key="server"              data-key="2">2 500</span>
+  <span class="state-debug-key" data-state-key="maintenance"         data-key="3">3 점검</span>
+  <span class="state-debug-key" data-state-key="service_unavailable" data-key="4">4 503</span>
+  <span class="state-debug-key" data-state-key="network"             data-key="5">5 네트워크</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'not_found');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'not_found', '2': 'server', '3': 'maintenance', '4': 'service_unavailable', '5': 'network' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) langBtn.addEventListener('click', function () {
+    var cur = langBtn.querySelector('.auth-lang-current');
+    var muted = langBtn.querySelector('.muted');
+    if (!cur || !muted) return;
+    var tmp = cur.textContent; cur.textContent = muted.textContent; muted.textContent = tmp;
+    document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+  });
+})();
+</script>
+
+</body>
+</html>

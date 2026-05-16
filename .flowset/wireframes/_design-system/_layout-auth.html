@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!--
+  FlowHR Auth Layout 템플릿 — 비인증 영역 화면이 본 구조를 따른다.
+  사용 화면: CM-01 로그인 / CM-02 비밀번호 찾기 / CM-03 활성화 / CM-04 2FA /
+            CM-05 403 / CM-06 404·500·maintenance / CM-20 PWA 설치 / CM-21 약관·개인정보
+
+  사용법:
+    1. 본 파일 전체를 화면 HTML로 복사 (`.flowset/wireframes/html/CM-XX.html`)
+    2. <title> 변경
+    3. <main class="auth-main"> 안만 화면별 카드/콘텐츠로 교체
+    4. 헤더/푸터 절대 변경 금지
+    5. 상태 토글: <body data-state="empty|loading|error|locked|...">  + URL ?state= 시 JS가 동기화
+
+  AppShell(`_layout-shell.html`)과 다른 점:
+    - 사이드바 없음
+    - 헤더: 로고(좌) + 언어 토글 + 도움말(우) — 검색/알림 종/프로필 X
+    - 푸터: 동일한 .footer 클래스 재사용
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — [CM-XX 화면명]</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+</head>
+<body data-state="default">
+
+<div class="auth-shell">
+
+  <!-- ========================================================================
+       글로벌 헤더 (비인증 — 변경 금지)
+       ======================================================================== -->
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+
+    <div class="auth-header-actions">
+      <!-- 언어 토글 (한국어 / English) — CM-16에서 인증 후 동일 정책 -->
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language" aria-label="언어 전환">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+
+      <!-- CM-19 도움말 (비인증은 단순 도움말 페이지 링크 — 인증 영역 패널과 별개) -->
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       페이지 콘텐츠 (화면별 교체 영역)
+       ======================================================================== -->
+  <main class="auth-main">
+    <div class="auth-card">
+
+      <!-- 브랜드 영역 (선택) -->
+      <div class="auth-brand">
+        <div class="logo" style="gap: 10px;">
+          <div class="logo-fallback" style="width: 40px; height: 40px; font-size: 18px;">F</div>
+        </div>
+        <div class="auth-brand-title">[화면 제목]</div>
+        <div class="auth-brand-subtitle">[화면 부제]</div>
+      </div>
+
+      <!-- 화면별 콘텐츠 시작 -->
+      <div class="form-section">
+        <p style="color: var(--color-text-muted);">콘텐츠 영역 — 화면별로 이 부분만 교체합니다.</p>
+      </div>
+      <!-- 화면별 콘텐츠 끝 -->
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       글로벌 푸터 (변경 금지)
+       ======================================================================== -->
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<!-- ========================================================================
+     상태 토글 + 비밀번호 보이기 토글 + 언어 토글 (공통 비인증 JS)
+     화면별로 추가 인터랙션이 있다면 별도 <script> 삽입.
+     ======================================================================== -->
+<script>
+(function () {
+  // URL ?state=... 동기화 → body data-state
+  var params = new URLSearchParams(location.search);
+  var state = params.get('state');
+  if (state) document.body.setAttribute('data-state', state);
+
+  // 키보드 단축키: 1=default, 2=loading, 3=error, 4=locked (개발자 편의)
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'default', '2': 'loading', '3': 'error', '4': 'locked', '5': 'success' };
+    if (map[e.key]) {
+      document.body.setAttribute('data-state', map[e.key]);
+      params.set('state', map[e.key]);
+      history.replaceState(null, '', '?' + params.toString());
+    }
+  });
+
+  // 비밀번호 보이기/숨기기 토글 — .password-toggle 클릭 시 인접 .input type 전환
+  document.querySelectorAll('.password-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = btn.parentElement.querySelector('.input');
+      if (!input) return;
+      var hidden = input.type === 'password';
+      input.type = hidden ? 'text' : 'password';
+      var icon = btn.querySelector('use');
+      if (icon) icon.setAttribute('href', hidden
+        ? '../_design-system/icons.svg#i-eye-off'
+        : '../_design-system/icons.svg#i-eye');
+    });
+  });
+
+  // 언어 토글 (시각 토글만 — 실제 i18n 전환은 Phase 7 next-intl)
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) {
+    langBtn.addEventListener('click', function () {
+      var cur = langBtn.querySelector('.auth-lang-current');
+      var muted = langBtn.querySelector('.muted');
+      if (!cur || !muted) return;
+      var tmp = cur.textContent;
+      cur.textContent = muted.textContent;
+      muted.textContent = tmp;
+      document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
