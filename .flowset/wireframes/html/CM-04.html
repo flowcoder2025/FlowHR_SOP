@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<!--
+  CM-04 2단계 인증 (`/2fa`) — 로그인 진입 흐름.
+  PRD: prd/domains/common.md §CM-04
+  진입: CM-01 이메일/비밀번호 통과 + AUTH_2FA_REQUIRED 응답.
+  방식: TOTP (Google Authenticator 호환) — 6자리 코드 / 복구 코드(8자) 대체.
+  상태 (5): 1 input(OTP) / 2 loading / 3 error / 4 recovery(복구) / 5 done
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 2단계 인증</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="input"]    .state-input,
+  body[data-state="loading"]  .state-loading,
+  body[data-state="error"]    .state-error,
+  body[data-state="recovery"] .state-recovery,
+  body[data-state="done"]     .state-done { display: flex; }
+
+  body[data-state="loading"] .otp-input { opacity: 0.7; pointer-events: none; }
+  body[data-state="error"]   .otp-input { border-color: var(--color-danger); }
+
+  .twofa-fields { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .recovery-input { width: 100%; text-transform: uppercase; font-family: var(--font-mono); letter-spacing: 0.1em; text-align: center; font-size: 18px; }
+  .twofa-aux { display: flex; flex-direction: column; gap: 8px; align-items: center; font-size: 13px; }
+  .twofa-aux a { color: var(--color-accent); text-decoration: none; }
+  .twofa-aux a:hover { text-decoration: underline; }
+
+  .resend-counter { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-muted); }
+  .spinner-inline { display: inline-flex; align-items: center; gap: 8px; }
+  .spinner-inline > svg.ico { width: 14px !important; height: 14px !important; animation: spin 0.9s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="input">
+
+<div class="auth-shell">
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card auth-card-narrow">
+
+      <div class="auth-brand">
+        <div class="logo-fallback" style="width: 48px; height: 48px; font-size: 22px; background: var(--color-accent);">
+          <svg class="ico" width="24" height="24" style="color: white;"><use href="../_design-system/icons.svg#i-shield"/></svg>
+        </div>
+        <div class="auth-brand-title">2단계 인증</div>
+        <div class="auth-brand-subtitle">인증 앱(Google Authenticator 등)에 표시된 6자리 코드를 입력해 주세요.</div>
+      </div>
+
+      <!-- ============ OTP 입력 (default + loading + error) ============ -->
+      <div class="form-section state-only state-input state-loading state-error" style="display: flex; flex-direction: column;">
+        <div class="state-only state-error">
+          <div class="auth-alert auth-alert-error" role="alert" style="margin-bottom: 14px;">
+            <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-c"/></svg>
+            <div>
+              <strong>코드가 일치하지 않습니다.</strong>
+              <span class="auth-alert-meta">코드: AUTH_2FA_INVALID · 남은 시도 <strong>2회</strong> · 인증 앱에서 새 코드를 받아 다시 입력하세요.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="twofa-fields">
+          <div class="form-row-stacked" style="padding: 0; border: 0; width: 100%;">
+            <label class="label label-required" style="text-align: center;">6자리 코드</label>
+            <div class="otp-group">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="">
+            </div>
+          </div>
+
+          <div class="state-only state-loading">
+            <span class="spinner-inline" style="color: var(--color-text-muted);">
+              <svg class="ico"><use href="../_design-system/icons.svg#i-loader"/></svg>
+              인증 중…
+            </span>
+          </div>
+        </div>
+
+        <div class="twofa-aux" style="margin-top: 16px;">
+          <span class="resend-counter">코드가 자주 바뀝니다 — 30초마다 갱신</span>
+          <a href="?state=recovery">복구 코드로 로그인 (앱에 접근 불가 시)</a>
+        </div>
+      </div>
+
+      <!-- ============ 복구 코드 모드 ============ -->
+      <div class="form-section state-only state-recovery">
+        <div class="form-section-header">
+          <h2>복구 코드로 로그인</h2>
+          <p>인증 앱에 접근할 수 없을 때, 활성화 시 발급받은 복구 코드 1개를 사용하세요.</p>
+        </div>
+        <div class="twofa-fields" style="margin-top: 16px;">
+          <input class="input recovery-input" type="text" placeholder="XXXX-XXXX" maxlength="9" value="9X4K-7M2P">
+          <div class="auth-alert auth-alert-warning" style="width: 100%;">
+            <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-key"/></svg>
+            <div>
+              <strong>복구 코드는 1회용입니다.</strong>
+              <span class="auth-alert-meta">사용 시 자동 무효 처리됩니다. 남은 코드 <strong>7개</strong>. 모두 소진 시 운영사 문의 필요.</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="applyState('done')">복구 코드로 로그인</button>
+        </div>
+        <div class="twofa-aux" style="margin-top: 16px;">
+          <a href="?state=input">← 6자리 코드 입력으로 돌아가기</a>
+        </div>
+      </div>
+
+      <!-- ============ 성공 ============ -->
+      <div class="form-section state-only state-done">
+        <div class="auth-alert auth-alert-success" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-check-circle"/></svg>
+          <div>
+            <strong>2단계 인증 완료.</strong>
+            <span class="auth-alert-meta">대시보드로 이동합니다…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-aux">
+        <a href="/login">← 로그인으로 돌아가기</a>
+        <span class="muted">로그인 사용자: hr@flowhr.kr</span>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="input"    data-key="1">1 입력</span>
+  <span class="state-debug-key" data-state-key="loading"  data-key="2">2 인증중</span>
+  <span class="state-debug-key" data-state-key="error"    data-key="3">3 오류</span>
+  <span class="state-debug-key" data-state-key="recovery" data-key="4">4 복구</span>
+  <span class="state-debug-key" data-state-key="done"     data-key="5">5 완료</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'input');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'input', '2': 'loading', '3': 'error', '4': 'recovery', '5': 'done' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+  // OTP 자동 next focus + 6자리 채워지면 loading → done 시뮬레이션
+  var otps = document.querySelectorAll('.otp-input');
+  otps.forEach(function (el, i) {
+    el.addEventListener('input', function () {
+      if (el.value.length === 1 && otps[i+1]) otps[i+1].focus();
+      // 6자리 다 채워지면 자동 제출
+      var filled = Array.from(otps).every(function (o) { return o.value.length === 1; });
+      if (filled) {
+        applyState('loading');
+        setTimeout(function () { applyState('error'); }, 900);
+      }
+    });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && el.value === '' && otps[i-1]) otps[i-1].focus();
+    });
+  });
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) langBtn.addEventListener('click', function () {
+    var cur = langBtn.querySelector('.auth-lang-current');
+    var muted = langBtn.querySelector('.muted');
+    if (!cur || !muted) return;
+    var tmp = cur.textContent; cur.textContent = muted.textContent; muted.textContent = tmp;
+    document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+  });
+})();
+</script>
+
+</body>
+</html>
