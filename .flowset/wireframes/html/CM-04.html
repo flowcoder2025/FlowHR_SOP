@@ -15,11 +15,16 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
-  body[data-state="input"]    .state-input,
-  body[data-state="loading"]  .state-loading,
-  body[data-state="error"]    .state-error,
+  /* OTP 폼은 input/loading/error 3 상태에서 표시 (recovery/done은 다른 카드) */
+  body[data-state="input"]    .state-otp-form,
+  body[data-state="loading"]  .state-otp-form,
+  body[data-state="error"]    .state-otp-form,
   body[data-state="recovery"] .state-recovery,
   body[data-state="done"]     .state-done { display: flex; }
+  /* error 상태 안 알림 박스만 별도 표시 */
+  body[data-state="error"]   .state-error-alert,
+  /* loading 상태 안 spinner만 별도 표시 */
+  body[data-state="loading"] .state-loading-spinner { display: flex; }
 
   body[data-state="loading"] .otp-input { opacity: 0.7; pointer-events: none; }
   body[data-state="error"]   .otp-input { border-color: var(--color-danger); }
@@ -72,9 +77,9 @@
         <div class="auth-brand-subtitle">인증 앱(Google Authenticator 등)에 표시된 6자리 코드를 입력해 주세요.</div>
       </div>
 
-      <!-- ============ OTP 입력 (default + loading + error) ============ -->
-      <div class="form-section state-only state-input state-loading state-error" style="display: flex; flex-direction: column;">
-        <div class="state-only state-error">
+      <!-- ============ OTP 입력 폼 (input + loading + error 3 상태) ============ -->
+      <div class="form-section state-only state-otp-form" style="flex-direction: column;">
+        <div class="state-only state-error-alert">
           <div class="auth-alert auth-alert-error" role="alert" style="margin-bottom: 14px;">
             <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-c"/></svg>
             <div>
@@ -97,7 +102,7 @@
             </div>
           </div>
 
-          <div class="state-only state-loading">
+          <div class="state-only state-loading-spinner">
             <span class="spinner-inline" style="color: var(--color-text-muted);">
               <svg class="ico"><use href="../_design-system/icons.svg#i-loader"/></svg>
               인증 중…
