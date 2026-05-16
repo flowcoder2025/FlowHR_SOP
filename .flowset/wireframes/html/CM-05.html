@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<!--
+  CM-05 권한 없음 (403) — `/forbidden` 또는 라우트 가드 인라인.
+  PRD: prd/domains/common.md §CM-05
+  트리거: RLS 차단, 권한 매트릭스 위반.
+  상태 (5): 1 default(일반) / 2 role(역할 불일치) / 3 tenant(테넌트 불일치) / 4 session(세션 만료) / 5 contact(운영팀 문의)
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 권한 없음 (403)</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="default"]  .state-default,
+  body[data-state="role"]     .state-role,
+  body[data-state="tenant"]   .state-tenant,
+  body[data-state="session"]  .state-session,
+  body[data-state="contact"]  .state-contact { display: flex; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<div class="auth-shell">
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card auth-card-wide">
+
+      <!-- 1. 일반 403 -->
+      <div class="auth-hero state-only state-default">
+        <svg class="ico ico-hero" width="56" height="56"><use href="../_design-system/icons.svg#i-shield"/></svg>
+        <div class="auth-hero-code">403 — Forbidden</div>
+        <div class="auth-hero-title">접근 권한이 없습니다</div>
+        <div class="auth-hero-desc">요청하신 페이지에 접근할 권한이 없습니다. 자신의 역할에 허용된 페이지로 이동해 주세요. 권한 변경이 필요하면 회사 관리자에게 문의하세요.</div>
+        <div class="auth-hero-actions">
+          <a href="javascript:history.back()" class="btn btn-ghost">← 이전 화면</a>
+          <a href="/me" class="btn btn-primary">내 대시보드로 (EM-01)</a>
+        </div>
+      </div>
+
+      <!-- 2. 역할 불일치 -->
+      <div class="auth-hero state-only state-role">
+        <svg class="ico ico-hero" width="56" height="56"><use href="../_design-system/icons.svg#i-shield"/></svg>
+        <div class="auth-hero-code">403 — ROLE_INSUFFICIENT</div>
+        <div class="auth-hero-title">역할 권한이 부족합니다</div>
+        <div class="auth-hero-desc">
+          현재 역할: <strong>직원 (employee)</strong> · 필요 역할: <strong>HR 관리자 (tenant_hr_admin) 이상</strong><br>
+          접근하려는 화면은 회사 관리자 전용입니다.
+        </div>
+        <div class="auth-hero-actions">
+          <a href="/me" class="btn btn-primary">내 대시보드로</a>
+          <a href="javascript:history.back()" class="btn btn-ghost">← 이전 화면</a>
+        </div>
+      </div>
+
+      <!-- 3. 테넌트 불일치 -->
+      <div class="auth-hero state-only state-tenant">
+        <svg class="ico ico-hero" width="56" height="56"><use href="../_design-system/icons.svg#i-building"/></svg>
+        <div class="auth-hero-code">403 — TENANT_MISMATCH</div>
+        <div class="auth-hero-title">다른 회사 데이터입니다</div>
+        <div class="auth-hero-desc">
+          현재 소속: <strong>플로우상사 (주)</strong> · 요청 리소스: <strong>다른 회사</strong><br>
+          본인이 속한 회사 데이터만 조회할 수 있습니다 (RLS 정책).
+        </div>
+        <div class="auth-hero-actions">
+          <a href="/me" class="btn btn-primary">내 대시보드로</a>
+        </div>
+      </div>
+
+      <!-- 4. 세션 만료 -->
+      <div class="auth-hero state-only state-session">
+        <svg class="ico ico-hero" width="56" height="56"><use href="../_design-system/icons.svg#i-clock"/></svg>
+        <div class="auth-hero-code">403 — SESSION_EXPIRED</div>
+        <div class="auth-hero-title">세션이 만료되었습니다</div>
+        <div class="auth-hero-desc">
+          보안을 위해 일정 시간 후 세션이 자동 만료됩니다. 다시 로그인해 주세요.<br>
+          이전 작업은 자동 저장되었습니다 (sessionStorage).
+        </div>
+        <div class="auth-hero-actions">
+          <a href="/login?return_url=/admin/employees" class="btn btn-primary">다시 로그인</a>
+        </div>
+      </div>
+
+      <!-- 5. 운영팀 문의 -->
+      <div class="auth-hero state-only state-contact">
+        <svg class="ico ico-hero" width="56" height="56"><use href="../_design-system/icons.svg#i-mail"/></svg>
+        <div class="auth-hero-code">403 — CONTACT_OPERATOR</div>
+        <div class="auth-hero-title">권한 변경 요청 필요</div>
+        <div class="auth-hero-desc">
+          역할 변경, 새 회사 등록, 계정 복구 등이 필요한 경우 운영팀에 문의해 주세요. 평일 09:00-18:00 응대.
+        </div>
+        <div class="auth-hero-actions">
+          <a href="/contact" class="btn btn-primary">운영팀 문의 (티켓 생성)</a>
+          <a href="mailto:support@flowhr.kr" class="btn btn-ghost">이메일 문의</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default" data-key="1">1 일반</span>
+  <span class="state-debug-key" data-state-key="role"    data-key="2">2 역할</span>
+  <span class="state-debug-key" data-state-key="tenant"  data-key="3">3 테넌트</span>
+  <span class="state-debug-key" data-state-key="session" data-key="4">4 세션</span>
+  <span class="state-debug-key" data-state-key="contact" data-key="5">5 문의</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'default', '2': 'role', '3': 'tenant', '4': 'session', '5': 'contact' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) langBtn.addEventListener('click', function () {
+    var cur = langBtn.querySelector('.auth-lang-current');
+    var muted = langBtn.querySelector('.muted');
+    if (!cur || !muted) return;
+    var tmp = cur.textContent; cur.textContent = muted.textContent; muted.textContent = tmp;
+    document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+  });
+})();
+</script>
+
+</body>
+</html>
