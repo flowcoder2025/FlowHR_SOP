@@ -15,12 +15,12 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
-  /* OTP 폼은 input/loading/error 3 상태에서 표시 (recovery/done은 다른 카드) */
+  /* OTP 폼 + recovery + done — form-section 컨테이너 column 강제 */
   body[data-state="input"]    .state-otp-form,
   body[data-state="loading"]  .state-otp-form,
   body[data-state="error"]    .state-otp-form,
   body[data-state="recovery"] .state-recovery,
-  body[data-state="done"]     .state-done { display: flex; }
+  body[data-state="done"]     .state-done { display: flex; flex-direction: column; }
   /* error 상태 안 알림 박스만 별도 표시 */
   body[data-state="error"]   .state-error-alert,
   /* loading 상태 안 spinner만 별도 표시 */

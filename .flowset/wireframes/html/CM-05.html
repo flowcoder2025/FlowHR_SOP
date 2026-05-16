@@ -14,11 +14,12 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
+  /* auth-hero 컨테이너 5 상태 토글 — column 강제 (자식 세로 흐름) */
   body[data-state="default"]  .state-default,
   body[data-state="role"]     .state-role,
   body[data-state="tenant"]   .state-tenant,
   body[data-state="session"]  .state-session,
-  body[data-state="contact"]  .state-contact { display: flex; }
+  body[data-state="contact"]  .state-contact { display: flex; flex-direction: column; }
 
   .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
   .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }

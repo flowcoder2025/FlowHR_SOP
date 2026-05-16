@@ -14,11 +14,12 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
+  /* form-section 컨테이너 5 상태 토글 — column 강제 (자식 세로 흐름 + 100% width) */
   body[data-state="step1"]   .state-step1,
   body[data-state="sent"]    .state-sent,
   body[data-state="step2"]   .state-step2,
   body[data-state="expired"] .state-expired,
-  body[data-state="done"]    .state-done { display: flex; }
+  body[data-state="done"]    .state-done { display: flex; flex-direction: column; }
 
   .reset-fields { display: flex; flex-direction: column; gap: 14px; }
   .reset-aux { display: flex; align-items: center; justify-content: center; font-size: 13px; gap: 8px; flex-wrap: wrap; }

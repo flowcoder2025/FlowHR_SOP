@@ -14,12 +14,12 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
-  /* 기본 — 알림 banner / "← FlowHR로 돌아가기" 같은 flex 컨테이너 */
+  /* 기본 — 알림 banner / "← FlowHR로 돌아가기" 같은 flex 컨테이너 (column 강제) */
   body[data-state="terms_ko"]      .state-terms_ko,
   body[data-state="privacy_ko"]    .state-privacy_ko,
   body[data-state="en_reference"]  .state-en_reference,
   body[data-state="force_consent"] .state-force_consent,
-  body[data-state="new_version"]   .state-new_version { display: flex; }
+  body[data-state="new_version"]   .state-new_version { display: flex; flex-direction: column; }
 
   /* legal-meta 안 span — inline 표시 (텍스트 흐름) */
   body[data-state="terms_ko"]      .legal-meta .state-terms_ko,
