@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!--
+  CM-21 약관/개인정보처리방침 (`/legal/terms`, `/legal/privacy`).
+  PRD: prd/domains/common.md §CM-21
+  i18n: ko/en 페어 게시 의무. 법적 효력은 ko, en은 참고 번역 (batch-005).
+  상태 (5): 1 terms_ko / 2 privacy_ko / 3 en_reference(영문) / 4 force_consent / 5 new_version
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 이용약관 / 개인정보처리방침</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="terms_ko"]      .state-terms_ko,
+  body[data-state="privacy_ko"]    .state-privacy_ko,
+  body[data-state="en_reference"]  .state-en_reference,
+  body[data-state="force_consent"] .state-force_consent,
+  body[data-state="new_version"]   .state-new_version { display: flex; }
+  body[data-state="force_consent"] .legal-consent,
+  body[data-state="new_version"]   .legal-consent { display: flex; }
+
+  /* 약관 본문 — 콘텐츠 placeholder */
+  .legal-consent { display: none; flex-direction: column; gap: 12px; padding: 16px; background: var(--color-surface-2); border-radius: var(--r-md); margin-top: 16px; }
+  .legal-consent label { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--color-text); cursor: pointer; line-height: 1.5; }
+  .legal-consent .actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* 신규 버전 변경 highlight */
+  .version-change { background: var(--color-accent-bg); padding: 4px 6px; border-radius: 3px; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="terms_ko">
+
+<div class="auth-shell">
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main" style="align-items: flex-start; padding-top: 32px;">
+    <div style="width: 100%;">
+
+      <!-- 영문 참고 번역 banner — en_reference 상태에서만 -->
+      <div class="state-only state-en_reference" style="margin-bottom: 16px;">
+        <div class="auth-alert auth-alert-info" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-info"/></svg>
+          <div>
+            <strong>This is a reference translation.</strong>
+            <span class="auth-alert-meta">The Korean version (한국어) prevails legally. For binding effect, refer to the Korean original.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 신규 버전 게시 banner -->
+      <div class="state-only state-new_version" style="margin-bottom: 16px;">
+        <div class="auth-alert auth-alert-warning" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg>
+          <div>
+            <strong>새 버전 (v2.0) 게시 — 동의가 필요합니다</strong>
+            <span class="auth-alert-meta">시행일 2026-06-01 · 주요 변경: 데이터 보관 기간 변경 / 마케팅 동의 분리 / 위탁 처리 추가. 변경 부분은 <span class="version-change">하이라이트</span>로 표시됩니다.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="legal-shell">
+        <!-- 좌측 목차 -->
+        <aside class="legal-toc">
+          <div class="legal-toc-title">목차</div>
+          <a href="#sec-1" class="active">제1조 (목적)</a>
+          <a href="#sec-2">제2조 (정의)</a>
+          <a href="#sec-3">제3조 (약관의 효력 및 변경)</a>
+          <a href="#sec-4">제4조 (서비스 제공)</a>
+          <a href="#sec-5">제5조 (회원가입 및 자격)</a>
+          <a href="#sec-6">제6조 (개인정보 보호)</a>
+          <a href="#sec-7">제7조 (이용자의 의무)</a>
+          <a href="#sec-8">제8조 (서비스 중단 및 해지)</a>
+          <a href="#sec-9">제9조 (책임 제한)</a>
+          <a href="#sec-10">제10조 (준거법 및 관할)</a>
+        </aside>
+
+        <!-- 우측 본문 -->
+        <article class="legal-body">
+          <div class="legal-meta">
+            <span class="state-only state-terms_ko"      style="display: inline;">이용약관 · 버전 1.0.0 · 시행일 2026-05-01</span>
+            <span class="state-only state-privacy_ko"    style="display: inline;">개인정보처리방침 · 버전 1.0.0 · 시행일 2026-05-01</span>
+            <span class="state-only state-en_reference"  style="display: inline;">Terms of Service · Version 1.0.0 · Effective 2026-05-01 (Reference translation)</span>
+            <span class="state-only state-force_consent" style="display: inline;">이용약관 · 버전 1.0.0 · 시행일 2026-05-01 · <strong style="color: var(--color-warning);">동의 필요</strong></span>
+            <span class="state-only state-new_version"   style="display: inline;">이용약관 · 버전 <strong>2.0.0</strong> · 시행일 2026-06-01 · 이전 버전: 1.0.0</span>
+          </div>
+
+          <h2 id="sec-1">제1조 (목적)</h2>
+          <p>본 약관은 주식회사 플로우(이하 "회사")가 운영하는 FlowHR 서비스(이하 "서비스")를 이용함에 있어 회사와 이용자의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+
+          <h2 id="sec-2">제2조 (정의)</h2>
+          <p>"이용자"란 본 약관에 동의하고 서비스를 이용하는 회원을 말합니다. "운영사"란 FlowHR 플랫폼을 운영하는 주체를, "테넌트"란 서비스를 사용하는 고객사 단위를 의미합니다.</p>
+
+          <h2 id="sec-3">제3조 (약관의 효력 및 변경)</h2>
+          <p class="state-only state-terms_ko"      style="display: block;">약관은 시행일로부터 효력을 발생합니다. 약관 변경 시 시행일 7일 전(불리한 변경은 30일 전)에 공지하며, 이용자가 거부 의사 표명 없이 서비스를 계속 이용하는 경우 변경된 약관에 동의한 것으로 간주합니다.</p>
+          <p class="state-only state-new_version" style="display: block;">약관은 시행일로부터 효력을 발생합니다. <span class="version-change">[v2.0 변경] 약관 변경 시 시행일 14일 전(불리한 변경은 30일 전)에 공지하며,</span> 이용자가 거부 의사 표명 없이 서비스를 계속 이용하는 경우 변경된 약관에 동의한 것으로 간주합니다.</p>
+
+          <h2 id="sec-6">제6조 (개인정보 보호)</h2>
+          <p>회사는 이용자의 개인정보를 「개인정보 보호법」 및 관련 법령에 따라 보호합니다. 자세한 사항은 <a href="?state=privacy_ko">개인정보처리방침</a>을 참조해 주세요.</p>
+
+          <p style="color: var(--color-text-muted); font-size: 13px; margin-top: 24px;">... (이하 약관 본문 placeholder — Phase 7 React Markdown 렌더링)</p>
+        </article>
+      </div>
+
+      <!-- 강제 동의 영역 (force_consent + new_version) -->
+      <div class="legal-consent" style="max-width: 1024px; margin: 16px auto 0;">
+        <label>
+          <input class="checkbox" type="checkbox" id="consent-terms">
+          <span><strong>(필수)</strong> 위 이용약관에 동의합니다 (버전 <span class="state-only state-force_consent" style="display: inline;">1.0.0</span><span class="state-only state-new_version" style="display: inline;">2.0.0</span>)</span>
+        </label>
+        <div class="actions">
+          <a href="/login" class="btn btn-ghost">로그아웃</a>
+          <button class="btn btn-primary" id="consent-submit" disabled>동의하고 계속</button>
+        </div>
+      </div>
+
+      <!-- 일반 조회 — 푸터 위 returnable link -->
+      <div class="state-only state-terms_ko state-privacy_ko state-en_reference" style="max-width: 1024px; margin: 24px auto 0; text-align: center;">
+        <a href="/" style="color: var(--color-accent); text-decoration: none; font-size: 13px;">← FlowHR로 돌아가기</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="?state=terms_ko">이용약관</a>
+      <a href="?state=privacy_ko">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="terms_ko"      data-key="1">1 이용약관</span>
+  <span class="state-debug-key" data-state-key="privacy_ko"    data-key="2">2 개인정보</span>
+  <span class="state-debug-key" data-state-key="en_reference"  data-key="3">3 영문</span>
+  <span class="state-debug-key" data-state-key="force_consent" data-key="4">4 강제동의</span>
+  <span class="state-debug-key" data-state-key="new_version"   data-key="5">5 v2.0 변경</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'terms_ko');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'terms_ko', '2': 'privacy_ko', '3': 'en_reference', '4': 'force_consent', '5': 'new_version' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+
+  // 동의 체크박스 → 버튼 활성/비활성
+  var cb = document.getElementById('consent-terms');
+  var submit = document.getElementById('consent-submit');
+  if (cb && submit) {
+    cb.addEventListener('change', function () { submit.disabled = !cb.checked; });
+  }
+
+  // 목차 — section nav active
+  document.querySelectorAll('.legal-toc a').forEach(function (a) {
+    a.addEventListener('click', function () {
+      document.querySelectorAll('.legal-toc a').forEach(function (x) { x.classList.remove('active'); });
+      a.classList.add('active');
+    });
+  });
+
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) langBtn.addEventListener('click', function () {
+    var cur = langBtn.querySelector('.auth-lang-current');
+    var muted = langBtn.querySelector('.muted');
+    if (!cur || !muted) return;
+    var tmp = cur.textContent; cur.textContent = muted.textContent; muted.textContent = tmp;
+    document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+  });
+})();
+</script>
+
+</body>
+</html>
