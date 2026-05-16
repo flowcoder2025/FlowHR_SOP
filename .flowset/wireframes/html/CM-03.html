@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<!--
+  CM-03 최초 계정 활성화 (`/activate?token={invitationToken}`).
+  PRD: prd/domains/common.md §CM-03
+  트리거: TA-02 직원 초대 / OP-04 신규 테넌트 관리자 등록
+  토큰: 7일 만료, 1회 사용
+  상태 (5): 1 invite(초대 정보) / 2 setup(비밀번호+약관) / 3 two_fa(2FA 권장) / 4 expired / 5 done
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHR — 계정 활성화</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="invite"]  .state-invite,
+  body[data-state="setup"]   .state-setup,
+  body[data-state="two_fa"]  .state-two_fa,
+  body[data-state="expired"] .state-expired,
+  body[data-state="done"]    .state-done { display: flex; }
+
+  .activate-fields { display: flex; flex-direction: column; gap: 14px; }
+  .invite-info { background: var(--color-surface-2); border-radius: var(--r-md); padding: 14px 16px; font-size: 13px; display: grid; gap: 6px; }
+  .invite-info-row { display: flex; justify-content: space-between; }
+  .invite-info-row .label { color: var(--color-text-muted); font-weight: 500; margin: 0; font-size: 13px; }
+  .invite-info-row .value { color: var(--color-text); font-weight: 600; }
+
+  .terms-check { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--color-surface-2); border-radius: var(--r-md); }
+  .terms-check label { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--color-text); cursor: pointer; line-height: 1.5; }
+  .terms-check label a { color: var(--color-accent); text-decoration: underline; }
+
+  .qr-placeholder { display: flex; justify-content: center; align-items: center; width: 160px; height: 160px; background: var(--color-surface-2); border: 1px dashed var(--color-border); border-radius: var(--r-md); margin: 0 auto; font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono); text-align: center; }
+  .recovery-codes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-family: var(--font-mono); font-size: 12px; background: var(--color-surface-2); padding: 12px 14px; border-radius: var(--r-md); }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="invite">
+
+<div class="auth-shell">
+  <header class="auth-header">
+    <a class="logo" href="/" aria-label="FlowHR 홈">
+      <div class="logo-fallback">F</div>
+      <span class="logo-text">FlowHR</span>
+    </a>
+    <div class="auth-header-actions">
+      <button class="auth-lang-toggle" type="button" data-tooltip="언어 전환 / Switch language">
+        <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-globe"/></svg>
+        <span class="auth-lang-current">한국어</span>
+        <span class="auth-lang-divider">/</span>
+        <span class="muted">English</span>
+      </button>
+      <a class="icon-btn" href="/help" data-tooltip="도움말">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card">
+
+      <div class="auth-brand">
+        <div class="logo-fallback" style="width: 48px; height: 48px; font-size: 22px;">F</div>
+        <div class="auth-brand-title">계정 활성화</div>
+        <div class="auth-brand-subtitle">FlowHR에 오신 것을 환영합니다.</div>
+      </div>
+
+      <!-- ============ 1. 초대 정보 확인 ============ -->
+      <div class="form-section state-only state-invite">
+        <div class="form-section-header">
+          <h2>초대 정보 확인</h2>
+          <p>아래 정보가 맞으면 "계속"을 눌러 비밀번호를 설정해 주세요.</p>
+        </div>
+        <div class="invite-info" style="margin-top: 16px;">
+          <div class="invite-info-row"><span class="label">이메일</span><span class="value">hr@flowhr.kr</span></div>
+          <div class="invite-info-row"><span class="label">이름</span><span class="value">김인사</span></div>
+          <div class="invite-info-row"><span class="label">소속 회사</span><span class="value">플로우상사 (주)</span></div>
+          <div class="invite-info-row"><span class="label">역할</span><span class="value">HR 관리자 (tenant_hr_admin)</span></div>
+          <div class="invite-info-row"><span class="label">초대자</span><span class="value">이대표 (tenant_super)</span></div>
+          <div class="invite-info-row"><span class="label">토큰 만료</span><span class="value" style="font-family: var(--font-mono);">6일 23시간 남음</span></div>
+        </div>
+        <button class="btn btn-primary btn-block" style="margin-top: 16px;" onclick="applyState('setup')">계속</button>
+      </div>
+
+      <!-- ============ 2. 비밀번호 + 약관 동의 ============ -->
+      <div class="form-section state-only state-setup">
+        <div class="form-section-header">
+          <h2>비밀번호 설정 + 약관 동의</h2>
+          <p>FlowHR에서 사용할 비밀번호를 설정하고 약관에 동의해 주세요.</p>
+        </div>
+        <div class="activate-fields" style="margin-top: 16px;">
+          <div class="form-row-stacked" style="padding: 0; border: 0;">
+            <label class="label label-required" for="ac-pw1">새 비밀번호</label>
+            <div class="password-field">
+              <input class="input" id="ac-pw1" type="password" placeholder="8자 이상" autocomplete="new-password">
+              <button class="password-toggle" type="button" aria-label="비밀번호 보이기/숨기기">
+                <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-row-stacked" style="padding: 0; border: 0;">
+            <label class="label label-required" for="ac-pw2">비밀번호 확인</label>
+            <div class="password-field">
+              <input class="input" id="ac-pw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password">
+              <button class="password-toggle" type="button" aria-label="비밀번호 보이기/숨기기">
+                <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="terms-check">
+            <label><input class="checkbox" type="checkbox"> <span><strong>(필수)</strong> <a href="/legal/terms">이용약관</a>에 동의합니다 (v1.0.0)</span></label>
+            <label><input class="checkbox" type="checkbox"> <span><strong>(필수)</strong> <a href="/legal/privacy">개인정보처리방침</a>에 동의합니다 (v1.0.0)</span></label>
+            <label><input class="checkbox" type="checkbox"> <span>(선택) 제품 업데이트 이메일을 받겠습니다</span></label>
+          </div>
+
+          <button class="btn btn-primary btn-block" onclick="applyState('two_fa')">활성화 (다음: 2FA)</button>
+        </div>
+      </div>
+
+      <!-- ============ 3. 2FA 권장 (operator는 강제) ============ -->
+      <div class="form-section state-only state-two_fa">
+        <div class="form-section-header">
+          <h2>2단계 인증 (권장)</h2>
+          <p>Google Authenticator 등 TOTP 앱으로 QR 코드를 스캔하세요. <strong>운영사 계정은 필수</strong>입니다.</p>
+        </div>
+        <div class="activate-fields" style="margin-top: 16px; align-items: center;">
+          <div class="qr-placeholder">
+            [ QR 코드 placeholder<br>otpauth://totp/FlowHR:hr@flowhr.kr ]
+          </div>
+          <div style="font-size: 12px; color: var(--color-text-muted); text-align: center;">또는 시크릿: <code style="font-family: var(--font-mono);">JBSWY3DPEHPK3PXP</code></div>
+
+          <div class="form-row-stacked" style="padding: 0; border: 0; width: 100%;">
+            <label class="label label-required">앱에 표시된 6자리 코드</label>
+            <div class="otp-group">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="1">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="2">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="3">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="4">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="5">
+              <input class="otp-input" type="text" inputmode="numeric" maxlength="1" value="6">
+            </div>
+          </div>
+
+          <div class="auth-alert auth-alert-info" style="width: 100%;">
+            <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-key"/></svg>
+            <div>
+              <strong>복구 코드 8개 발급:</strong>
+              <div class="recovery-codes" style="margin-top: 8px;">
+                <span>9X4K-7M2P</span><span>L8N5-3RW1</span>
+                <span>D2T6-Q9HF</span><span>BC54-EZ8M</span>
+                <span>K3V7-9JNX</span><span>YP41-TQ2W</span>
+                <span>HG87-NF6R</span><span>U5C2-BX9L</span>
+              </div>
+              <span class="auth-alert-meta">한 번 사용 시 무효. 안전한 곳에 보관 (다운로드 / 인쇄 권장).</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <button class="btn btn-ghost" style="flex: 1;" onclick="applyState('done')">건너뛰기 (직원)</button>
+            <button class="btn btn-primary" style="flex: 1;" onclick="applyState('done')">활성화 완료</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 4. 토큰 만료 / 이미 사용 ============ -->
+      <div class="form-section state-only state-expired">
+        <div class="auth-alert auth-alert-error" role="alert">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-alert-c"/></svg>
+          <div>
+            <strong>활성화 링크가 만료되었거나 이미 사용되었습니다.</strong>
+            <span class="auth-alert-meta">코드: INVITATION_EXPIRED · 활성화 링크는 발송 후 7일간 유효하며 1회만 사용할 수 있습니다.</span>
+          </div>
+        </div>
+        <div class="reset-aux" style="margin-top: 16px; display: flex; justify-content: center;">
+          <button class="btn btn-primary">초대 메일 재발송 요청 (관리자에게)</button>
+        </div>
+      </div>
+
+      <!-- ============ 5. 완료 — 자동 로그인 ============ -->
+      <div class="form-section state-only state-done">
+        <div class="auth-alert auth-alert-success" role="status">
+          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-check-circle"/></svg>
+          <div>
+            <strong>계정이 활성화되었습니다.</strong>
+            <span class="auth-alert-meta">자동 로그인 중… 잠시 후 대시보드로 이동합니다 (3초).</span>
+          </div>
+        </div>
+        <div class="reset-aux" style="margin-top: 16px; display: flex; justify-content: center;">
+          <a href="/admin" class="btn btn-primary">대시보드로 이동 (TA-01)</a>
+        </div>
+      </div>
+
+      <div class="auth-aux">
+        <a href="/login">← 로그인으로 돌아가기</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div>© 2026 FlowHR</div>
+    <div class="footer-links">
+      <a href="/legal/terms">이용약관</a>
+      <a href="/legal/privacy">개인정보처리방침</a>
+      <a href="/help">도움말</a>
+      <a href="/contact">운영팀 문의</a>
+    </div>
+    <div class="footer-version">v1.0.0-beta</div>
+  </footer>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="invite"  data-key="1">1 초대</span>
+  <span class="state-debug-key" data-state-key="setup"   data-key="2">2 비번+약관</span>
+  <span class="state-debug-key" data-state-key="two_fa"  data-key="3">3 2FA</span>
+  <span class="state-debug-key" data-state-key="expired" data-key="4">4 만료</span>
+  <span class="state-debug-key" data-state-key="done"    data-key="5">5 완료</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'invite');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var map = { '1': 'invite', '2': 'setup', '3': 'two_fa', '4': 'expired', '5': 'done' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+  document.querySelectorAll('.password-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = btn.parentElement.querySelector('.input');
+      if (!input) return;
+      var hidden = input.type === 'password';
+      input.type = hidden ? 'text' : 'password';
+      var use = btn.querySelector('use');
+      if (use) use.setAttribute('href', hidden ? '../_design-system/icons.svg#i-eye-off' : '../_design-system/icons.svg#i-eye');
+    });
+  });
+  // OTP 자동 next focus
+  document.querySelectorAll('.otp-input').forEach(function (el, i, arr) {
+    el.addEventListener('input', function () {
+      if (el.value.length === 1 && arr[i+1]) arr[i+1].focus();
+    });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && el.value === '' && arr[i-1]) arr[i-1].focus();
+    });
+  });
+  var langBtn = document.querySelector('.auth-lang-toggle');
+  if (langBtn) langBtn.addEventListener('click', function () {
+    var cur = langBtn.querySelector('.auth-lang-current');
+    var muted = langBtn.querySelector('.muted');
+    if (!cur || !muted) return;
+    var tmp = cur.textContent; cur.textContent = muted.textContent; muted.textContent = tmp;
+    document.documentElement.lang = cur.textContent.toLowerCase().includes('english') ? 'en' : 'ko';
+  });
+})();
+</script>
+
+</body>
+</html>
