@@ -116,3 +116,26 @@ evaluator는 채점표만 반환, 마커는 호출자(Claude 본체)가 생성.
 - FAIL 시: 호출자가 ISSUES를 수정 후 같은 phase/WI로 재호출
 - 동일 WI/Phase 최대 3회 재평가
 - 3회 연속 FAIL → 사용자에게 에스컬레이션 (스코프/요구사항 재검토 권고)
+
+## 9. Codex 통합 (Review System v2, 2026-05-16)
+
+본 rubric은 **evaluator 단독 평가 룰**. 통합 평가 시스템은 `.flowset/contracts/review-system.md` 참조.
+
+### 9-1. 두 평가자의 역할 분리
+
+| 평가자 | 본 rubric 적용 | 추가 평가 |
+|--------|--------------|----------|
+| evaluator (Claude sub-agent) | ✅ 본 문서 4축 가중 | — |
+| codex (gpt-5 MCP) | ❌ 별도 verdict 체계 | 구현 전환 리스크 / UX / 접근성 / 모바일 / 라우팅 / cross-link |
+
+### 9-2. 통합 판정 시 evaluator 점수 활용
+
+- evaluator 가중 합계 점수는 통합 판정에서 **doc 완성도 축**으로 활용
+- 머지 게이트는 점수 평균이 아닌 `verdict + severity + trigger + phase gate` 판정 (review-system.md §4)
+- evaluator FAIL은 단독으로 차단 사유 (review-system.md §4 매트릭스)
+
+### 9-3. evaluator NON_BLOCKING_OBSERVATIONS → KI 등록
+
+evaluator가 식별한 NON_BLOCKING 결함은 호출자(Claude 본체)가 `.flowset/known-issues/INDEX.md`에 등록 — 등급 매핑은 review-system.md §5/§6 참조.
+
+codex가 동일 결함을 더 높은 등급으로 지적한 경우 **상위 등급 채택 + `source: both` 병합** (review-system.md §6).
