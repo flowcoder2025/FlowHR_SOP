@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<!--
+  OP-07 기능 플래그 / 모듈 권한 (`/operator/feature-flags`).
+  PRD: prd/domains/operator/OP-07-feature-flags.md
+  Layout: _design-system/_layout-shell.html (active=기능 권한)
+  Pattern: Toggle Table + Filter + Add/Edit Modal + 예외 설정 모달.
+  상태 (5): 1 default / 2 modified / 3 add_modal / 4 override_modal / 5 history
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-07 기능 플래그</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .filter-row { display: flex; gap: 8px; align-items: center; padding: 12px 16px; background: var(--color-surface-2); border-radius: var(--r-md); margin-bottom: 16px; font-size: 13px; }
+  .filter-row .select { width: 130px; }
+
+  .toggle-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .toggle-pill.on { background: var(--color-success-bg); color: var(--color-success); }
+  .toggle-pill.off { background: var(--color-surface-2); color: var(--color-text-muted); }
+  .toggle-pill.beta { background: var(--color-warning-bg); color: var(--color-warning); }
+
+  body[data-state="modified"] .save-bar { display: flex; }
+  .save-bar { display: none; position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--color-text); color: white; padding: 12px 20px; border-radius: var(--r-lg); box-shadow: var(--shadow-lg); gap: 12px; align-items: center; z-index: 50; }
+
+  body[data-state="add_modal"]      .modal-add,
+  body[data-state="override_modal"] .modal-override,
+  body[data-state="history"]        .modal-history { display: flex; }
+  .modal-add, .modal-override, .modal-history { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-box { background: var(--color-bg); border-radius: var(--r-lg); padding: 24px; width: 100%; max-width: 540px; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">기능 플래그 / 모듈 권한</h1>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="page-action-bar">
+        <div class="summary"><strong>24</strong>개 기능 · 18 활성 / 3 베타 / 3 비활성</div>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="applyState('history')"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-history"/></svg> 변경 이력</button>
+          <button class="btn btn-primary" onclick="applyState('add_modal')"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-plus"/></svg> 기능 추가</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">모듈</span>
+        <select class="select input-sm"><option>전체</option><option>근태</option><option>휴가</option><option>결재</option><option>급여</option><option>문서</option><option>외부연동</option><option>시스템</option></select>
+        <span class="filter-label" style="margin-left: 8px;">상태</span>
+        <select class="select input-sm"><option>전체</option><option>활성</option><option>비활성</option><option>베타</option><option>제한</option></select>
+        <label style="margin-left: 8px; display: flex; align-items: center; gap: 4px;"><input class="checkbox" type="checkbox"> 베타만 보기</label>
+      </div>
+
+      <div class="card card-flat">
+        <table class="table">
+          <colgroup><col style="width: 22%"><col style="width: 9%"><col style="width: 12%"><col style="width: 18%"><col style="width: 11%"><col style="width: 8%"><col style="width: 12%"><col style="width: 8%"></colgroup>
+          <thead><tr><th>기능명 ↕</th><th>모듈</th><th>글로벌 상태 ↕</th><th>제공 플랜</th><th>예외 테넌트</th><th>베타</th><th>적용일 ↕</th><th>액션</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>출퇴근 GPS 위치 캡처</strong><div style="font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono);">attendance.gps_capture</div></td>
+              <td>근태</td>
+              <td><span class="toggle-pill on" onclick="applyState('modified')">● ON</span></td>
+              <td><span class="module-chip">기본</span><span class="module-chip">프리미엄</span><span class="module-chip">엔터프라이즈</span></td>
+              <td>2개 OFF <a style="color: var(--color-accent); cursor: pointer;" onclick="applyState('override_modal')">설정</a></td>
+              <td>—</td>
+              <td>2025-08-01</td>
+              <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><strong>전자계약서 (EM-08 v2)</strong><div style="font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono);">document.electronic_contract</div></td>
+              <td>문서</td>
+              <td><span class="toggle-pill beta">⚙ 베타</span></td>
+              <td><span class="module-chip">엔터프라이즈</span></td>
+              <td>5개 ON <a style="color: var(--color-accent); cursor: pointer;" onclick="applyState('override_modal')">설정</a></td>
+              <td><span class="badge badge-warning">베타</span></td>
+              <td>2026-04-15</td>
+              <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><strong>슬랙 연동</strong><div style="font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono);">integration.slack</div></td>
+              <td>외부연동</td>
+              <td><span class="toggle-pill on">● ON</span></td>
+              <td><span class="module-chip">프리미엄</span><span class="module-chip">엔터프라이즈</span></td>
+              <td>0개</td>
+              <td>—</td>
+              <td>2025-09-15</td>
+              <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><strong>야간/연장 자동 계산</strong><div style="font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono);">attendance.auto_overtime_calc</div></td>
+              <td>근태</td>
+              <td><span class="toggle-pill on">● ON</span></td>
+              <td><span class="module-chip">전체</span></td>
+              <td>1개 OFF</td>
+              <td>—</td>
+              <td>2025-08-01</td>
+              <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><strong>카카오 알림톡 발송</strong><div style="font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono);">notification.kakao_alimtalk</div></td>
+              <td>시스템</td>
+              <td><span class="toggle-pill on">● ON</span></td>
+              <td><span class="module-chip">전체</span></td>
+              <td>3개 OFF</td>
+              <td>—</td>
+              <td>2025-08-01</td>
+              <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><strong>i18n 영어 지원 (en)</strong><div style="font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono);">i18n.english_support</div></td>
+              <td>시스템</td>
+              <td><span class="toggle-pill on">● ON</span></td>
+              <td><span class="module-chip">전체</span></td>
+              <td>0개</td>
+              <td>—</td>
+              <td>2026-05-16</td>
+              <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+            </tr>
+            <tr>
+              <td><strong>RPA 자동 채용공고</strong><div style="font-size: 11px; color: var(--color-text-muted); font-family: var(--font-mono);">recruit.rpa_posting</div></td>
+              <td>외부연동</td>
+              <td><span class="toggle-pill off">○ OFF</span></td>
+              <td><span class="muted">—</span></td>
+              <td>0개</td>
+              <td><span class="badge badge-warning">베타</span></td>
+              <td>—</td>
+              <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-more"/></svg></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a><a>운영팀 문의</a></div>
+      <div class="footer-version">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+
+<!-- 변경 미저장 sticky bar -->
+<div class="save-bar">
+  <span><strong>3개</strong> 변경됨 — 저장하지 않으면 손실됩니다.</span>
+  <button class="btn btn-ghost btn-sm" onclick="applyState('default')" style="color: white; border-color: rgba(255,255,255,0.3);">취소</button>
+  <button class="btn btn-primary btn-sm" onclick="applyState('default')">변경 저장</button>
+</div>
+
+<!-- 기능 추가 모달 -->
+<div class="modal-add">
+  <div class="modal-box">
+    <h2 style="margin-top: 0; font-size: 18px;">기능 플래그 추가</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">키 (slug)</label><input class="input" placeholder="electronic_contract" style="font-family: var(--font-mono);"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">한글 라벨</label><input class="input" placeholder="전자계약서"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0; grid-column: 1 / 3;"><label class="label">설명</label><textarea class="textarea" placeholder="기능 설명"></textarea></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">모듈</label><select class="select"><option>근태</option><option>휴가</option><option>결재</option><option>급여</option><option>문서</option><option>외부연동</option><option>시스템</option></select></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">글로벌 기본값</label><select class="select"><option>ON</option><option>OFF</option><option>베타 (선택 테넌트)</option></select></div>
+    </div>
+    <div style="margin-top: 12px;">
+      <div class="label">제공 플랜 (멀티 선택)</div>
+      <div style="display: flex; gap: 8px; margin-top: 4px; font-size: 13px;">
+        <label><input class="checkbox" type="checkbox" checked> 기본</label>
+        <label><input class="checkbox" type="checkbox" checked> 프리미엄</label>
+        <label><input class="checkbox" type="checkbox" checked> 엔터프라이즈</label>
+      </div>
+    </div>
+    <div style="margin-top: 12px; font-size: 13px;"><label><input class="checkbox" type="checkbox"> 베타 표시 (UI에 베타 배지)</label></div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-ghost" onclick="applyState('default')">취소</button>
+      <button class="btn btn-primary" onclick="applyState('default')">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 예외 설정 모달 -->
+<div class="modal-override">
+  <div class="modal-box">
+    <h2 style="margin-top: 0; font-size: 18px;">예외 테넌트 설정 — 출퇴근 GPS 위치 캡처</h2>
+    <p style="font-size: 13px; color: var(--color-text-muted);">글로벌 기본값(ON)과 다르게 설정할 테넌트를 지정합니다. 변경 시 audit_logs 자동 기록.</p>
+    <div style="margin-top: 12px;">
+      <input class="input input-sm" placeholder="회사명 검색...">
+    </div>
+    <div style="margin-top: 12px; max-height: 280px; overflow-y: auto; border: 1px solid var(--color-border-light); border-radius: var(--r-md);">
+      <div style="display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--color-border-light);"><span>플로우상사 (주)</span><span class="toggle-pill on">● ON (기본)</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); background: var(--color-surface-2);"><span>스마트팩토리 (주)</span><span class="toggle-pill off">○ OFF (예외)</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); background: var(--color-surface-2);"><span>서울건설 컨소시엄</span><span class="toggle-pill off">○ OFF (예외)</span></div>
+      <div style="display: flex; justify-content: space-between; padding: 10px 12px;"><span>치킨플러스 코리아</span><span class="toggle-pill on">● ON (기본)</span></div>
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-ghost" onclick="applyState('default')">닫기</button>
+      <button class="btn btn-primary" onclick="applyState('default')">저장 (2개 변경)</button>
+    </div>
+  </div>
+</div>
+
+<!-- 변경 이력 모달 -->
+<div class="modal-history">
+  <div class="modal-box" style="max-width: 720px;">
+    <h2 style="margin-top: 0; font-size: 18px;">기능 플래그 변경 이력</h2>
+    <table class="table" style="margin-top: 12px;">
+      <thead><tr><th>시각</th><th>액터</th><th>기능</th><th>변경</th></tr></thead>
+      <tbody>
+        <tr><td>2026-05-16 11:42</td><td>김운영</td><td>i18n.english_support</td><td>OFF → <strong>ON</strong></td></tr>
+        <tr><td>2026-05-14 14:08</td><td>박오퍼</td><td>document.electronic_contract</td><td>예외 추가: 스마트팩토리 ON</td></tr>
+        <tr><td>2026-04-15 09:00</td><td>김운영</td><td>document.electronic_contract</td><td>신규 추가 (베타)</td></tr>
+        <tr><td>2026-03-22 16:30</td><td>박오퍼</td><td>attendance.gps_capture</td><td>예외 추가: 서울건설 OFF</td></tr>
+      </tbody>
+    </table>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-ghost" onclick="applyState('default')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"        data-key="1">1 기본</span>
+  <span class="state-debug-key" data-state-key="modified"       data-key="2">2 변경됨</span>
+  <span class="state-debug-key" data-state-key="add_modal"      data-key="3">3 추가</span>
+  <span class="state-debug-key" data-state-key="override_modal" data-key="4">4 예외</span>
+  <span class="state-debug-key" data-state-key="history"        data-key="5">5 이력</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'modified', '3': 'add_modal', '4': 'override_modal', '5': 'history' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>
