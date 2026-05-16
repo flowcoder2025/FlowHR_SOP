@@ -85,3 +85,58 @@ git checkout -b feature/WI-<next>-...
 - gh pr merge --auto 후 CI fail 시 → 사용자에게 즉시 보고 + 수정 push (auto-merge 유지)
 - branch protection이 admin 우회 허용 (`enforce_admins: false`) — 비상 시 사용자가 직접 머지 가능
 - 원격 브랜치 삭제 누락 시 → `git push origin --delete <branch>` + `git fetch --prune`
+
+## 7. 평가 시스템 v2 (evaluator + codex 통합, 2026-05-16)
+
+`.flowset/contracts/review-system.md`를 SSOT로 참조. 본 §은 자동화 흐름과 사용자 개입 시점만 요약.
+
+### 7-1. 평가 흐름 표준 (그룹 양산 종료 시)
+
+```
+양산 종료
+  ↓
+VERSION/CHANGELOG 갱신 + commit/push
+  ↓
+PR draft 생성
+  ↓
+evaluator (Agent subagent_type=evaluator, run_in_background=true)
+codex     (Agent subagent_type=general-purpose, run_in_background=true,
+           prompt에 mcp__codex__codex 호출 + 결과 저장 위탁)
+  ↓ (두 통지 대기)
+통합 판정 (review-system.md §4 매트릭스)
+  ├── PASS_BOTH                   → ready → CI → auto-merge → tag
+  ├── CONDITIONAL                 → KI 등록 + 트리거 평가 → hotfix 또는 백업 후 머지
+  ├── BLOCKED_FOR_HOTFIX          → hotfix → 재평가
+  ├── FAIL                        → 정정 → 재호출 (최대 3회)
+  └── USER_INTERVENTION_REQUIRED  → 사용자 결정 대기
+```
+
+### 7-2. 사용자 개입 의무 시점 (review-system.md §10)
+
+다음 경우에만 사용자 결정 요청. 그 외(P2/P3 누적, hotfix 자동 진행, 일반 양산)는 능동 처리.
+
+1. **P0 발생** (즉시)
+2. **P1 threshold 도달** (누적 3건)
+3. **P0/P1 downgrade** 또는 P0/P1 백업 처리 제안
+4. **public contract** / DB schema / 외부 dependency / infra 변경 필요
+5. **evaluator와 codex가 PASS/FAIL 정면 충돌** (`USER_INTERVENTION_REQUIRED`)
+6. **3회 연속 재평가 FAIL** (스코프 재검토)
+
+### 7-3. codex 리뷰 비용 조절
+
+- **G0/G1/G2 (패턴 확립)**: codex full review
+- **G3/G4 (반복 양산)**: changed files + sampled screens (30%) + known-risk checklist
+- **threshold 근접 시**: full review
+- **Phase 5 전체 evaluator (44 화면)**: full review
+
+### 7-4. KI 등록 + 트리거 처리
+
+`.flowset/known-issues/triggers.md` 그대로 유지 (임계 P0=1/P1=3/P2=5/P3=10). codex 결함도 동일 트리거 + 등급 매핑은 review-system.md §5/§6.
+
+### 7-5. CI 정적 체크 (codex 부담 감소)
+
+codex가 반복 지적하는 항목은 `.github/workflows/pr-checks.yml` 정적 체크로 승격:
+- `href-presence-check`
+- `media-query-check`
+- `ds-redefinition-check` (기존 design-system-ssot 확장)
+- `aria-modal-check`
