@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<!--
+  OP-12 운영사 본인 프로필 (`/operator/me`).
+  PRD: prd/domains/operator/OP-12-profile.md
+  Layout: _design-system/_layout-shell.html (사이드바 헤더 메뉴 X — 헤더 CM-16 드롭다운에서 진입)
+  Pattern: Detail + 5 Tabs + 운영사 보안 강화 (2FA 강제, 다른 staff 세션 종료)
+  상태 (5): 1 basic / 2 security / 3 sessions / 4 notifications / 5 force_logout
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-12 내 프로필</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .tabs-row { border-bottom: 1px solid var(--color-border-light); display: flex; gap: 4px; }
+  .tab { padding: 8px 16px; font-size: 13px; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab:hover { color: var(--color-text); }
+  body[data-state="basic"]         .tab[data-t="basic"],
+  body[data-state="security"]      .tab[data-t="security"],
+  body[data-state="sessions"]      .tab[data-t="sessions"],
+  body[data-state="notifications"] .tab[data-t="notifications"],
+  body[data-state="force_logout"]  .tab[data-t="sessions"] { color: var(--color-accent); border-bottom-color: var(--color-accent); font-weight: 700; }
+
+  .tab-pane { display: none; padding-top: 20px; }
+  body[data-state="basic"]         #pane-basic,
+  body[data-state="security"]      #pane-security,
+  body[data-state="sessions"]      #pane-sessions,
+  body[data-state="force_logout"]  #pane-sessions,
+  body[data-state="notifications"] #pane-notifications { display: block; }
+
+  .session-row { display: flex; justify-content: space-between; align-items: center; padding: 14px; border: 1px solid var(--color-border); border-radius: var(--r-md); margin-bottom: 8px; }
+  .session-row.is-current { background: var(--color-accent-bg); border-color: var(--color-accent); }
+  .session-row.is-staff { background: var(--color-warning-bg); border-color: var(--color-warning); }
+  .session-device-info { display: flex; align-items: center; gap: 10px; }
+  .session-device-info > svg.ico { width: 24px !important; height: 24px !important; color: var(--color-text-muted); }
+
+  body[data-state="force_logout"] .modal-force { display: flex; }
+  .modal-force { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-box { background: var(--color-bg); border-radius: var(--r-lg); padding: 24px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg); }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="basic">
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">내 프로필</h1>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- 헤더 영역 -->
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
+        <div class="avatar avatar-lg" style="width: 64px; height: 64px; font-size: 22px;">김운</div>
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; margin: 0;">김운영</h2>
+          <div style="font-size: 13px; color: var(--color-text-muted); display: flex; gap: 8px; align-items: center; margin-top: 2px;">
+            <span class="badge badge-accent">operator_super</span>
+            <span>FlowHR 운영팀 · usr_op_1a2b</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-alert auth-alert-warning" style="margin-bottom: 16px;">
+        <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-shield"/></svg>
+        <div><strong>운영사 계정 보안 정책</strong><span class="auth-alert-meta">2FA 비활성화 불가 · 비밀번호 12자+ 4종 조합 · 90일마다 변경 · 다른 staff 세션 강제 종료 권한.</span></div>
+      </div>
+
+      <!-- 5 Tabs -->
+      <div class="tabs-row">
+        <span class="tab" data-t="basic"         onclick="applyState('basic')">기본정보</span>
+        <span class="tab" data-t="security"      onclick="applyState('security')">보안</span>
+        <span class="tab" data-t="sessions"      onclick="applyState('sessions')">활성 세션</span>
+        <span class="tab" data-t="notifications" onclick="applyState('notifications')">알림</span>
+        <span class="tab" data-t="activity">활동 로그</span>
+      </div>
+
+      <!-- 기본정보 -->
+      <div class="tab-pane" id="pane-basic">
+        <div class="form-section" style="max-width: 640px;">
+          <div class="form-section-header"><h2>기본정보</h2><p>이름 변경은 operator_super 승인 필요 (OP-11 Operators 탭).</p></div>
+          <div class="form-row"><span class="label">프로필 사진</span><div><div class="avatar avatar-lg" style="width: 56px; height: 56px;">김운</div><button class="btn btn-ghost btn-sm" style="margin-top: 8px;">변경</button></div></div>
+          <div class="form-row"><span class="label">이름</span><div>김운영 <span class="muted" style="font-size: 12px;">(변경: OP-11 super)</span></div></div>
+          <div class="form-row"><span class="label">닉네임 (헤더 표시)</span><div><input class="input" value="김운영"></div></div>
+          <div class="form-row"><span class="label">표시 이름 (티켓 응답 시)</span><div><input class="input" value="김운영 (FlowHR 운영팀)"></div></div>
+          <div class="form-row"><span class="label">이메일</span><div><input class="input" value="kim.un@flowhr.kr"><div class="input-help">변경 시 새 메일로 인증 후 적용</div></div></div>
+          <div class="form-row"><span class="label">휴대폰</span><div><input class="input" value="010-1234-5678"><div class="input-help">인증 완료 ✓</div></div></div>
+          <div class="form-row"><span class="label">역할</span><div><span class="badge badge-accent">operator_super</span> <span class="muted" style="font-size: 12px;">(변경 불가)</span></div></div>
+          <div class="form-row"><span class="label">가입일</span><div>2025-07-15 · 10개월 경과</div></div>
+        </div>
+      </div>
+
+      <!-- 보안 -->
+      <div class="tab-pane" id="pane-security">
+        <div class="form-section" style="max-width: 640px;">
+          <div class="form-section-header"><h2>비밀번호</h2><p>운영사 정책: 12자 이상 + 영대소문자 + 숫자 + 특수 4종 + 직전 5회와 다름. 90일마다 변경.</p></div>
+          <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">현재 비밀번호</label><div class="password-field"><input class="input" type="password" placeholder="현재 비밀번호"><button class="password-toggle"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg></button></div></div>
+          <div class="form-row-stacked" style="padding: 12px 0 0; border: 0;"><label class="label">새 비밀번호</label><div class="password-field"><input class="input" type="password" placeholder="12자 이상"><button class="password-toggle"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg></button></div></div>
+          <div class="form-row-stacked" style="padding: 12px 0 0; border: 0;"><label class="label">새 비밀번호 확인</label><div class="password-field"><input class="input" type="password" placeholder="새 비밀번호 확인"><button class="password-toggle"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-eye"/></svg></button></div></div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 16px;"><button class="btn btn-primary">비밀번호 변경</button></div>
+        </div>
+
+        <div class="form-section" style="max-width: 640px; margin-top: 16px;">
+          <div class="form-section-header"><h2>2단계 인증 (2FA) — <strong style="color: var(--color-success);">활성</strong></h2><p>운영사 계정은 2FA를 비활성화할 수 없습니다.</p></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
+            <div><div style="font-weight: 600;">TOTP 인증 앱</div><div style="font-size: 12px; color: var(--color-text-muted);">Google Authenticator · 활성화 2025-07-15</div></div>
+            <button class="btn btn-ghost btn-sm">QR 재발급</button>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--color-border-light);">
+            <div><div style="font-weight: 600;">복구 코드</div><div style="font-size: 12px; color: var(--color-text-muted);">남은 코드 <strong>7개 / 8개</strong> · 1회 사용 시 무효</div></div>
+            <button class="btn btn-ghost btn-sm">코드 재발급 (8개)</button>
+          </div>
+        </div>
+
+        <div class="form-section" style="max-width: 640px; margin-top: 16px;">
+          <div class="form-section-header"><h2>최근 로그인 이력 (30일)</h2></div>
+          <table class="table" style="margin-top: 8px;">
+            <thead><tr><th>일시</th><th>위치 (IP)</th><th>디바이스</th><th>결과</th></tr></thead>
+            <tbody>
+              <tr><td>2026-05-16 08:42</td><td>서울 (211.45.67.89)</td><td>Windows · Chrome 121</td><td><span class="badge badge-success">성공</span></td></tr>
+              <tr><td>2026-05-15 09:14</td><td>서울 (211.45.67.89)</td><td>Windows · Chrome 121</td><td><span class="badge badge-success">성공</span></td></tr>
+              <tr><td>2026-05-14 17:03</td><td>서울 (211.45.67.89)</td><td>iOS · Safari 17.2 (PWA)</td><td><span class="badge badge-success">성공</span></td></tr>
+              <tr><td>2026-05-13 23:08</td><td><strong style="color: var(--color-warning);">베이징 (124.66.89.12)</strong></td><td>Unknown · Chrome</td><td><span class="badge badge-danger">차단 (IP 이상)</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 활성 세션 -->
+      <div class="tab-pane" id="pane-sessions">
+        <div class="form-section" style="max-width: 720px;">
+          <div class="form-section-header"><h2>활성 세션</h2><p>본인 세션 + 다른 운영사 staff 세션 (operator_super 전용).</p></div>
+
+          <h3 style="font-size: 14px; margin-top: 16px;">내 세션 (2)</h3>
+          <div class="session-row is-current">
+            <div class="session-device-info">
+              <svg class="ico"><use href="../_design-system/icons.svg#i-monitor"/></svg>
+              <div>
+                <div style="font-weight: 600;">Windows · Chrome 121 <span class="badge badge-accent" style="font-size: 10px;">현재</span></div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">서울 (211.45.67.89) · 4시간 전 활동</div>
+              </div>
+            </div>
+            <span class="muted">—</span>
+          </div>
+          <div class="session-row">
+            <div class="session-device-info">
+              <svg class="ico"><use href="../_design-system/icons.svg#i-smartphone"/></svg>
+              <div>
+                <div style="font-weight: 600;">iOS · Safari 17.2 (PWA)</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">서울 (211.45.67.89) · 2일 전 활동</div>
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-sm">종료</button>
+          </div>
+
+          <h3 style="font-size: 14px; margin-top: 24px;">다른 운영사 staff 세션 (3) <span class="badge badge-warning">super 전용</span></h3>
+          <div class="session-row is-staff">
+            <div class="session-device-info">
+              <svg class="ico"><use href="../_design-system/icons.svg#i-monitor"/></svg>
+              <div>
+                <div style="font-weight: 600;">박오퍼 (operator_staff) · macOS Chrome</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">서울 (210.32.45.78) · 12분 전 활동</div>
+              </div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="applyState('force_logout')">강제 종료</button>
+          </div>
+          <div class="session-row is-staff">
+            <div class="session-device-info">
+              <svg class="ico"><use href="../_design-system/icons.svg#i-monitor"/></svg>
+              <div>
+                <div style="font-weight: 600;">이지원 (operator_staff) · Windows Edge</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">서울 (118.97.32.41) · 1시간 전 활동</div>
+              </div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="applyState('force_logout')">강제 종료</button>
+          </div>
+          <div class="session-row is-staff">
+            <div class="session-device-info">
+              <svg class="ico"><use href="../_design-system/icons.svg#i-smartphone"/></svg>
+              <div>
+                <div style="font-weight: 600;">이지원 (operator_staff) · Android Chrome</div>
+                <div style="font-size: 12px; color: var(--color-text-muted);">서울 (118.97.32.41) · 3시간 전 활동</div>
+              </div>
+            </div>
+            <button class="btn btn-danger btn-sm">강제 종료</button>
+          </div>
+
+          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border-light); display: flex; gap: 8px;">
+            <button class="btn btn-danger">모든 staff 세션 강제 종료</button>
+            <button class="btn btn-ghost">내 다른 세션 모두 종료</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 알림 -->
+      <div class="tab-pane" id="pane-notifications">
+        <div class="form-section" style="max-width: 640px;">
+          <div class="form-section-header"><h2>알림 채널</h2><p>채널별 활성/비활성 · 운영사 시스템 알림은 OFF 불가.</p></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--color-border-light);">
+            <div><div style="font-weight: 600;">이메일</div><div style="font-size: 12px; color: var(--color-text-muted);">kim.un@flowhr.kr</div></div>
+            <label class="switch on" style="display: inline-block; width: 38px; height: 22px; background: var(--color-accent); border-radius: 11px; position: relative;"><span style="position: absolute; top: 2px; left: 18px; width: 18px; height: 18px; background: white; border-radius: 50%;"></span></label>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--color-border-light);">
+            <div><div style="font-weight: 600;">푸시 (PWA)</div><div style="font-size: 12px; color: var(--color-text-muted);">2 디바이스 등록</div></div>
+            <label class="switch on" style="display: inline-block; width: 38px; height: 22px; background: var(--color-accent); border-radius: 11px; position: relative;"><span style="position: absolute; top: 2px; left: 18px; width: 18px; height: 18px; background: white; border-radius: 50%;"></span></label>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--color-border-light);">
+            <div><div style="font-weight: 600;">카카오 알림톡</div><div style="font-size: 12px; color: var(--color-text-muted);">010-1234-5678 · 비상 채널</div></div>
+            <label class="switch on" style="display: inline-block; width: 38px; height: 22px; background: var(--color-accent); border-radius: 11px; position: relative;"><span style="position: absolute; top: 2px; left: 18px; width: 18px; height: 18px; background: white; border-radius: 50%;"></span></label>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
+            <div><div style="font-weight: 600;">SMS (P0 장애만)</div><div style="font-size: 12px; color: var(--color-text-muted);">2시간 미응답 시 자동 발송</div></div>
+            <label class="switch on" style="display: inline-block; width: 38px; height: 22px; background: var(--color-accent); border-radius: 11px; position: relative;"><span style="position: absolute; top: 2px; left: 18px; width: 18px; height: 18px; background: white; border-radius: 50%;"></span></label>
+          </div>
+        </div>
+
+        <div class="form-section" style="max-width: 640px; margin-top: 16px;">
+          <div class="form-section-header"><h2>알림 카테고리</h2></div>
+          <div style="font-size: 13px; display: grid; gap: 8px;">
+            <label><input class="checkbox" type="checkbox" checked> 시스템 장애 (P0/P1) <span class="muted">— OFF 불가</span></label>
+            <label><input class="checkbox" type="checkbox" checked> 지원 티켓 (담당 배정 + 미응답 24h)</label>
+            <label><input class="checkbox" type="checkbox" checked> 감사 로그 (이상 로그인 + 권한 변경)</label>
+            <label><input class="checkbox" type="checkbox" checked> 청구/정산 (월말 일괄 발행 결과)</label>
+            <label><input class="checkbox" type="checkbox"> 신규 테넌트 가입 (영업)</label>
+            <label><input class="checkbox" type="checkbox"> 기능 플래그 변경</label>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a><a>운영팀 문의</a></div>
+      <div class="footer-version">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+
+<!-- 강제 종료 모달 -->
+<div class="modal-force">
+  <div class="modal-box">
+    <h2 style="margin-top: 0; font-size: 18px;">staff 세션 강제 종료</h2>
+    <p style="font-size: 13px; color: var(--color-text-muted);"><strong>박오퍼</strong>의 macOS Chrome 세션을 즉시 종료합니다. 다음 로그인 시 재인증 필요.</p>
+    <div class="auth-alert auth-alert-error" style="margin-top: 12px;">
+      <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-shield"/></svg>
+      <div><strong>operator_super 전용 권한</strong><span class="auth-alert-meta">audit_logs에 actor + target + 사유 자동 기록. 운영팀 슬랙 알림 발송.</span></div>
+    </div>
+    <div class="form-row-stacked" style="padding: 12px 0 0; border: 0;">
+      <label class="label label-required">사유</label>
+      <textarea class="textarea" placeholder="예: 의심스러운 활동 감지 — 베이징 IP에서 동시 로그인 시도"></textarea>
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-ghost" onclick="applyState('sessions')">취소</button>
+      <button class="btn btn-danger" onclick="applyState('sessions')">강제 종료</button>
+    </div>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="basic"         data-key="1">1 기본</span>
+  <span class="state-debug-key" data-state-key="security"      data-key="2">2 보안</span>
+  <span class="state-debug-key" data-state-key="sessions"      data-key="3">3 세션</span>
+  <span class="state-debug-key" data-state-key="notifications" data-key="4">4 알림</span>
+  <span class="state-debug-key" data-state-key="force_logout"  data-key="5">5 staff 종료</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'basic');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.querySelectorAll('.password-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = btn.parentElement.querySelector('.input');
+      if (!input) return;
+      var hidden = input.type === 'password';
+      input.type = hidden ? 'text' : 'password';
+      var use = btn.querySelector('use');
+      if (use) use.setAttribute('href', hidden ? '../_design-system/icons.svg#i-eye-off' : '../_design-system/icons.svg#i-eye');
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'basic', '2': 'security', '3': 'sessions', '4': 'notifications', '5': 'force_logout' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>
