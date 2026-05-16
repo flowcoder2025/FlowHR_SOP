@@ -15,11 +15,12 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
+  /* form-section 컨테이너 5 상태 토글 — column 강제 (자식 세로 흐름 + 100% width) */
   body[data-state="invite"]  .state-invite,
   body[data-state="setup"]   .state-setup,
   body[data-state="two_fa"]  .state-two_fa,
   body[data-state="expired"] .state-expired,
-  body[data-state="done"]    .state-done { display: flex; }
+  body[data-state="done"]    .state-done { display: flex; flex-direction: column; }
 
   .activate-fields { display: flex; flex-direction: column; gap: 14px; }
   .invite-info { background: var(--color-surface-2); border-radius: var(--r-md); padding: 14px 16px; font-size: 13px; display: grid; gap: 6px; }

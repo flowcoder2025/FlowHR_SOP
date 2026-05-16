@@ -14,11 +14,12 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
+  /* form-section 토글 (ios_old + already_installed) — column 강제 */
   body[data-state="ios"]              .state-ios,
   body[data-state="android"]          .state-android,
   body[data-state="desktop"]          .state-desktop,
   body[data-state="ios_old"]          .state-ios_old,
-  body[data-state="already_installed"] .state-already_installed { display: flex; }
+  body[data-state="already_installed"] .state-already_installed { display: flex; flex-direction: column; }
 
   /* 활성 디바이스 카드 강조 — install-grid 안 분기 */
   .install-card-iOS, .install-card-Android, .install-card-Desktop { opacity: 0.5; }

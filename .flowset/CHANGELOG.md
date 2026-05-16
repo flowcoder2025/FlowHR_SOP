@@ -8,6 +8,35 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.1.1] — 2026-05-16 (G1 hotfix — state 토글 flex-direction)
+
+### Hotfix
+
+사용자 검수 시각 결함 — CM-03 "초대 정보 확인" form-section 안 자식들이 가로 row 배치되어 `.invite-info` 폭이 좁아지면서 라벨/value 텍스트 wrap (예: "소속 회사" → "소속 회/사").
+
+**원인**: form-section.state-X 컨테이너에 `display: flex` 적용 시 `flex-direction` 미지정 → 디폴트 row → 자식(form-section-header / invite-info / button) 가로 배치 + 폭 shrink.
+
+**정정**: CM-02 ~ CM-06 + CM-20/21 7 화면 + CM-04 (이미 단일 클래스 변경분) 모두 `display: flex; flex-direction: column;` 통일.
+
+```css
+/* before */
+body[data-state="invite"] .state-invite { display: flex; }
+/* after */
+body[data-state="invite"] .state-invite { display: flex; flex-direction: column; }
+```
+
+CM-01은 .state-X가 form-section 안 자식 element (.auth-alert)에 붙어 row 배치가 정상 의도 → 변경 없음.
+
+### 영향 화면
+
+- CM-02 비밀번호 찾기 (5 상태 form-section)
+- CM-03 최초 활성화 (5 상태 form-section, **사용자 지적 화면**)
+- CM-04 2단계 인증 (otp-form + recovery + done)
+- CM-05 권한 없음 (5 차단 auth-hero)
+- CM-06 오류/점검 (5 분기 auth-hero)
+- CM-20 PWA 설치 (ios_old + already_installed form-section)
+- CM-21 약관/개인정보 (5 상태 컨테이너)
+
 ## [wf-v0.1.0] — 2026-05-16 (G1 최초 진입점 완료, evaluator PASS 8.86)
 
 ### evaluator 결과

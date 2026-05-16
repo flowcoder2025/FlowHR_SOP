@@ -13,11 +13,12 @@
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
   .state-only { display: none; }
+  /* auth-hero 컨테이너 5 상태 토글 — column 강제 */
   body[data-state="not_found"]           .state-not_found,
   body[data-state="server"]              .state-server,
   body[data-state="maintenance"]         .state-maintenance,
   body[data-state="service_unavailable"] .state-service_unavailable,
-  body[data-state="network"]             .state-network { display: flex; }
+  body[data-state="network"]             .state-network { display: flex; flex-direction: column; }
 
   .maintenance-window { background: var(--color-surface-2); border-radius: var(--r-md); padding: 12px 16px; font-size: 13px; font-family: var(--font-mono); }
   .maintenance-window strong { color: var(--color-warning); }
