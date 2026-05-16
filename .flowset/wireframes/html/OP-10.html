@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<!--
+  OP-10 운영 리포트 (`/operator/reports`).
+  PRD: prd/domains/operator/OP-10-reports.md
+  Layout: _design-system/_layout-shell.html (active=운영 리포트)
+  Pattern: KPI 6 + Charts 4 + Period Selector.
+  상태 (5): 1 default(이번달) / 2 quarter / 3 year / 4 custom_range / 5 empty
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — OP-10 운영 리포트</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
+  .chart-row { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .chart-card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .chart-meta { font-size: 11px; color: var(--color-text-muted); margin-bottom: 12px; }
+  .chart-placeholder { background: var(--color-surface-2); border: 1px dashed var(--color-border); border-radius: var(--r-md); padding: 80px 16px; text-align: center; font-family: var(--font-mono); font-size: 12px; color: var(--color-text-muted); }
+
+  .period-selector { display: flex; gap: 6px; padding: 12px 16px; background: var(--color-surface-2); border-radius: var(--r-md); margin-bottom: 16px; align-items: center; font-size: 13px; }
+  .period-chip { padding: 4px 14px; border-radius: 16px; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer; font-size: 12px; }
+  body[data-state="default"]      .period-chip[data-p="month"],
+  body[data-state="quarter"]      .period-chip[data-p="quarter"],
+  body[data-state="year"]         .period-chip[data-p="year"],
+  body[data-state="custom_range"] .period-chip[data-p="custom"] { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+
+  body[data-state="empty"] .charts-block { display: none; }
+  body[data-state="empty"] .empty-block { display: flex; }
+  .empty-block { display: none; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<div class="app-shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">운영사</div>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
+  </nav>
+
+  <div class="main">
+    <header class="header">
+      <h1 class="page-title">운영 리포트</h1>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="page-action-bar">
+        <div class="summary">기간: <strong>2026-05 (이번달)</strong> · 비교: <strong>2026-04 (전월)</strong></div>
+        <div class="actions">
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-excel"/></svg> Excel</button>
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-pdf"/></svg> PDF</button>
+        </div>
+      </div>
+
+      <div class="period-selector">
+        <span class="muted" style="font-size: 12px;">기간</span>
+        <span class="period-chip" data-p="month"   onclick="applyState('default')">이번달</span>
+        <span class="period-chip" data-p="quarter" onclick="applyState('quarter')">분기</span>
+        <span class="period-chip" data-p="year"    onclick="applyState('year')">연간</span>
+        <span class="period-chip" data-p="custom"  onclick="applyState('custom_range')">커스텀 범위…</span>
+      </div>
+
+      <div class="empty-block empty-state" style="padding: 60px 32px;">
+        <svg class="ico ico-empty" width="48" height="48"><use href="../_design-system/icons.svg#i-chart"/></svg>
+        <div style="font-size: 16px; font-weight: 600;">데이터가 충분하지 않습니다</div>
+        <div style="font-size: 13px; color: var(--color-text-muted);">선택한 기간에 표시할 리포트 데이터가 없습니다. 다른 기간을 선택해 보세요.</div>
+      </div>
+
+      <div class="charts-block">
+
+        <!-- KPI 6 -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트 (활성)</div>
+            <div class="kpi-value">218</div>
+            <div class="kpi-meta"><span class="badge badge-success">▲ 12</span> 전월 206</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-users"/></svg> 활성 사용자 (MAU)</div>
+            <div class="kpi-value">14,328</div>
+            <div class="kpi-meta"><span class="badge badge-success">▲ 8.2%</span> 전월 13,242</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-trending-up"/></svg> MRR</div>
+            <div class="kpi-value">₩142.8M</div>
+            <div class="kpi-meta"><span class="badge badge-success">▲ 8.2%</span> 전월 ₩131.9M</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-x"/></svg> 해지율 (Churn)</div>
+            <div class="kpi-value">1.4%</div>
+            <div class="kpi-meta"><span class="badge badge-success">▼ 0.3pp</span> 전월 1.7%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-ticket"/></svg> 티켓 (해결)</div>
+            <div class="kpi-value">84</div>
+            <div class="kpi-meta">평균 응대 <strong>2.4h</strong> · SLA 충족 <strong>97%</strong></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-zap"/></svg> 시스템 가용성</div>
+            <div class="kpi-value">99.94%</div>
+            <div class="kpi-meta">목표 99.9% 달성</div>
+          </div>
+        </div>
+
+        <!-- Charts 4 -->
+        <div class="chart-row">
+          <div class="chart-card">
+            <div class="chart-title">MRR 추이 (12개월)</div>
+            <div class="chart-meta">신규 가입 + 플랜 업그레이드 - 해지</div>
+            <div class="chart-placeholder">[ Stacked Bar Chart placeholder<br>Phase 7 recharts ]</div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">활성 사용자 (12개월)</div>
+            <div class="chart-meta">DAU / WAU / MAU 추이</div>
+            <div class="chart-placeholder">[ Line Chart placeholder ]</div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">플랜 분포</div>
+            <div class="chart-meta">활성 테넌트 218 기준</div>
+            <div class="chart-placeholder">[ Donut Chart<br>기본 178 / 프리미엄 58 / 엔터프라이즈 11 ]</div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">티켓 응대 시간</div>
+            <div class="chart-meta">우선순위별 평균 (h)</div>
+            <div class="chart-placeholder">[ Bar Chart<br>P0=1.2h / P1=3.8h / P2=12h / P3=48h ]</div>
+          </div>
+        </div>
+
+        <!-- 추가 분석 카드 (Activity Heatmap + 상위 테넌트) -->
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px;">
+          <div class="chart-card">
+            <div class="chart-title">시간대별 활동 (요일 × 시간)</div>
+            <div class="chart-meta">전체 테넌트 사용자 활동 분포</div>
+            <div class="chart-placeholder" style="padding: 60px;">[ Heatmap 7 × 24 placeholder<br>출근 시간(8-10시) + 퇴근(18-20시) hotspot ]</div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">매출 상위 10개 테넌트</div>
+            <div class="chart-meta">이번달 청구액 기준</div>
+            <table class="table" style="margin-top: 8px;">
+              <thead><tr><th>회사</th><th>플랜</th><th style="text-align: right;">청구액</th></tr></thead>
+              <tbody>
+                <tr><td>스마트팩토리 (주)</td><td>커스텀</td><td style="text-align: right; font-variant-numeric: tabular-nums;">₩2,800,000</td></tr>
+                <tr><td>서울건설 컨소시엄</td><td>프리미엄</td><td style="text-align: right; font-variant-numeric: tabular-nums;">₩1,326,000</td></tr>
+                <tr><td>플로우상사 (주)</td><td>프리미엄</td><td style="text-align: right; font-variant-numeric: tabular-nums;">₩1,089,000</td></tr>
+                <tr><td>치킨플러스 코리아</td><td>기본</td><td style="text-align: right; font-variant-numeric: tabular-nums;">₩348,480</td></tr>
+                <tr><td>디자인하우스 코리아</td><td>기본</td><td style="text-align: right; font-variant-numeric: tabular-nums;">₩120,000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a>도움말</a><a>운영팀 문의</a></div>
+      <div class="footer-version">v1.0.0-beta</div>
+    </footer>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"      data-key="1">1 이번달</span>
+  <span class="state-debug-key" data-state-key="quarter"      data-key="2">2 분기</span>
+  <span class="state-debug-key" data-state-key="year"         data-key="3">3 연간</span>
+  <span class="state-debug-key" data-state-key="custom_range" data-key="4">4 커스텀</span>
+  <span class="state-debug-key" data-state-key="empty"        data-key="5">5 빈</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'quarter', '3': 'year', '4': 'custom_range', '5': 'empty' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>
