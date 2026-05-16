@@ -20,7 +20,7 @@
 | wf-v0.4.0 | G4 테넌트 직원 | EM-01~11 (11) | ⏳ 대기 | — |
 | wf-v1.0.0 | Phase 5 전체 | 44 화면 통합 | ⏳ 대기 | — |
 
-**현재 브랜치**: `feature/WI-G2-wireframes-operator` (HEAD: `931539d`)
+**현재 브랜치**: `feature/WI-G2-wireframes-operator` (HEAD: `de2a846` — hotfix2 931539d 이후 codex 결과 + 본 핸드오프 2 commit 포함)
 
 ## 2. 최근 진행 (2026-05-16)
 
@@ -72,32 +72,50 @@ G2 운영 후 사용자 검수에서 아이콘 미표시 + native control + show
 
 ## 3. 신규 세션 첫 작업 (우선순위 순)
 
-### 작업 1 — agent 결과 파일 확인 + hotfix3 즉시 진입
+### 작업 1 — 통합 판정 (두 평가 결과 이미 disk 저장 완료)
 
-**상태 (2026-05-16 컨텍스트 종료 시점)**:
-- ✅ codex hotfix2 결과 통지 받음 → `.flowset/eval-results/WI-G2-codex-review-hotfix2.md` 저장 (Claude 본체가 통지 요약 작성, agent는 read-only sandbox)
-  - **점수 6.5/10 FAIL** — P0 잔존 (JS password toggle 외부참조 재주입) + 신규 P1 (.active vs .is-active drift) + P2 (select-wrap 17건)
-- ❓ evaluator hotfix2 결과 미통지 — `.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.eval.md` 존재 여부 확인 필요:
-  ```bash
-  ls -la .flowset/eval-results/WI-G2-wireframes-operator-hotfix2.* 2>&1
-  ```
+**상태 (2026-05-16/17 컨텍스트 종료 시점)**:
+- ✅ **evaluator hotfix2 PASS 8.735/10** → `.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.eval.md` + `.pass` 마커 생성됨
+  - 5축: 완성도 8.5 / 정합성 9.0 / 구체성 8.8 / 실행가능성 9.0 / DS 8.0 (모두 임계 7.5+)
+  - 9 P0/P1 모두 HEAL 검증 통과. 잔존: P2 1건 (_showcase.html markup) + P3 4건
+- ✅ **codex hotfix2 FAIL 6.5/10** → `.flowset/eval-results/WI-G2-codex-review-hotfix2.md` 저장
+  - P0 잔존: CM-01/02/03/OP-12 password toggle JS가 외부참조 재주입 (정적 use 제거됐으나 JS setAttribute로 외부 재주입)
+  - P1 신규: `.active` vs `.is-active` SSOT drift
+  - P2 신규: select-wrap 17건
 
-**evaluator 결과 없으면**: agent 재호출 (`Agent(subagent_type=evaluator, run_in_background=true, prompt=...본 §6 참조...)`)
+**통합 판정 (review-system.md §4 OR 원칙)**: evaluator PASS + codex FAIL → **BLOCKED_FOR_HOTFIX_3** (3회 중 마지막)
+
+**추가 차단 사유**: PR #5 CI **Playwright Smoke FAIL** (8/9 통과, smoke만 fail) — 머지 시퀀스 차단. hotfix3에서 함께 정정.
 
 ### 작업 2 — hotfix3 즉시 진입 (3회 중 마지막)
 
 codex 결과 FAIL 확정 → review-system.md §4 OR 원칙으로 BLOCKED_FOR_HOTFIX_3.
 
-**hotfix3 정정 사항** (codex 결과 §결함 참조 — `.flowset/eval-results/WI-G2-codex-review-hotfix2.md`):
+**hotfix3 정정 사항** (codex 결과 + PR CI 결과 종합):
 
-**P0 (즉시)**:
-- 4 화면 JS sed (CM-01 / CM-02 / CM-03 / OP-12):
+**P0-A (즉시) — JS 외부참조 재주입**:
+- 4 화면 JS sed (CM-01 / CM-02 / CM-03 / OP-12) — Windows Git Bash 또는 PowerShell:
   ```bash
+  # bash (Git Bash):
   for f in .flowset/wireframes/html/{CM-01,CM-02,CM-03,OP-12}.html; do
-    sed -i "s|'\.\./_design-system/icons\.svg#|'#|g" "$f"
+    sed -i.bak "s|'\.\./_design-system/icons\.svg#|'#|g" "$f" && rm "$f.bak"
   done
   ```
-- 검증: `grep -n "'\.\./_design-system/icons\.svg" .flowset/wireframes/html/*.html` 결과 0건
+  ```powershell
+  # PowerShell 대안:
+  Get-ChildItem .flowset\wireframes\html\CM-01.html,.flowset\wireframes\html\CM-02.html,.flowset\wireframes\html\CM-03.html,.flowset\wireframes\html\OP-12.html | ForEach-Object {
+    (Get-Content $_ -Raw -Encoding utf8) -replace "'\.\./_design-system/icons\.svg#", "'#" | Set-Content $_ -Encoding utf8 -NoNewline
+  }
+  ```
+- 검증: `grep -rn "'\.\./_design-system/icons\.svg" .flowset/wireframes/html/` 결과 0건
+
+**P0-B (즉시) — PR #5 Playwright Smoke CI FAIL 진단**:
+- 실패 로그 확인: `gh run view 25959214509 --log --job 76311504424 2>&1 | tail -50`
+- 가능한 원인:
+  - 화면 HTML이 file:// 열기 시 svg use bbox 0 (JS 외부참조 + 정적 외부참조 모두 차단됨 — P0-A 정정 후 해소 예상)
+  - `<select>` computed appearance가 'auto' 잔존 (.select 클래스 누락 화면)
+  - console error 발생 화면
+- P0-A 정정 후 재실행하여 결과 확인
 
 **P1**:
 - `.active` → `.is-active` 전역 통일 (components.css / _showcase.html / 03-components.md / 화면 inline 모두)
