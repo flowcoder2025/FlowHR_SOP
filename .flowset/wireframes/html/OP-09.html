@@ -20,7 +20,7 @@
   .filter-section .label { font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px; }
   .filter-period { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   .filter-period .chip { padding: 4px 0; text-align: center; font-size: 12px; border: 1px solid var(--color-border); border-radius: var(--r-sm); cursor: pointer; background: var(--color-bg); }
-  .filter-period .chip.active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+  .filter-period .chip.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
 
   .event-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--color-surface-2); font-family: var(--font-mono); font-size: 11px; color: var(--color-text); }
 
@@ -127,7 +127,7 @@
       <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
       <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
       <a class="sidebar-item" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item active" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item is-active" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
       <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
       <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
@@ -161,7 +161,7 @@
           <div class="filter-section">
             <div class="label">기간 (필수)</div>
             <div class="filter-period">
-              <span class="chip active">오늘</span>
+              <span class="chip is-active">오늘</span>
               <span class="chip">7일</span>
               <span class="chip">30일</span>
               <span class="chip">90일</span>

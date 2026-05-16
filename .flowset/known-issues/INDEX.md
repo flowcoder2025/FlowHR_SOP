@@ -8,7 +8,7 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | **P1 High** | **3** | 3 | ✅ **트리거 도달** — G2 통합 평가 결함 3건 (KI-046 DS SSOT both / KI-047 모바일 codex / KI-048 라우팅 codex) → WI-KI-batch-006 G2 hotfix 발동 |
-| P2 Medium | 1 | 5 | ❌ — KI-049 analysis 권한 매트릭스 7화면 누락 (evaluator) |
+| P2 Medium | 3 | 5 | ❌ — KI-049 analysis 권한 매트릭스 7화면 누락 (evaluator) + KI-050 select-wrap 17건 (codex hotfix2) + KI-051 showcase-coverage CI 강화 (codex hotfix2) |
 | P3 Low | **17** | 10 | ✅ 트리거 도달 — 17건 활성 (기존 14 + KI-042/043/044 G1 fix1 NON_BLOCKING 3건) |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
@@ -66,6 +66,8 @@
 | **KI-047** | **P1** | 5 | Wireframe | **모바일 반응형 부재** — OP-02~OP-12 11 화면에 `@media (max-width: 768px)` 없음. 10~11컬럼 테이블 / 240px 사이드 필터 / 220px vert-tabs / 360px master-list 등 고정 grid가 모바일에서 깨질 가능성. PWA 명세 단계 핵심 전환 리스크. | codex | 2026-05-16 | **batch-006 hotfix 진행 중** |
 | **KI-048** | **P1** | 5 | Wireframe | **라우팅 href placeholder / cross-link 부재** — 사이드바·테넌트명 클릭·신규 등록 CTA가 실제 `href` 없이 placeholder. KI-027 routing matrix 누락 전례 P1. 다음 Phase 구현자가 화면간 흐름 확정 불가. | codex | 2026-05-16 | **batch-006 hotfix 진행 중** |
 | KI-049 | P2 | 5 | Wireframe | analysis 권한 매트릭스 11화면 중 7화면 누락 (OP-04/05/06/08/10/11/12) — PRD엔 있으나 analysis 재인용 부재. wf-v0.2.0 hotfix 또는 G3 진행 시 일괄 보강. | evaluator | 2026-05-16 | open (batch-006 hotfix 포함) |
+| KI-050 | P2 | 5 | Wireframe | `.select-wrap` 미적용 17건 — `<select>`는 `.select` 클래스로 chevron 표시되지만 focus/disabled/error 상태 표현이 `.select-wrap` ancestor에 의존. NON_BLOCKING (native control DS 패턴 의무 통과). 다음 batch에서 일괄 적용. | codex hotfix2 §17-7-2 | 2026-05-17 | open (다음 batch) |
+| KI-051 | P2 | 5 | Process | CI `showcase-coverage-check` job이 anchor 존재만 보고 컴포넌트 사용 일관성을 검증하지 못함 — false negative. 화면이 실제 사용하는 DS 클래스가 component-usage-matrix.json의 patterns에 매핑되어 있는지 cross-check 필요. | codex hotfix2 §17-7-4 | 2026-05-17 | open (다음 batch) |
 
 ## 등록 형식
 

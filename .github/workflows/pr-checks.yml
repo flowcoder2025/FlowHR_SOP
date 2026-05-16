@@ -187,13 +187,16 @@ jobs:
           # 모두 인라인 sprite의 fragment-only reference (`<use href="#i-...">`) 사용 의무.
           # WI-RSv3 §1 — Chrome/Safari file:// 차단 우회.
           # hotfix2 (KI-batch-006-fix2): 외부 참조 1건이라도 발견 시 fail (sprite 보유 무관).
+          # hotfix3 (codex 5항목 §17-7-1 확장): JS source의 setAttribute / 동적 외부 ref도 차단
+          #   — 따옴표(["']) + 외부 경로 패턴으로 HTML attribute와 JS literal 모두 잡음
           fail=0
           for f in .flowset/wireframes/html/*.html; do
             [ ! -f "$f" ] && continue
-            has_external=$(grep -c 'href="../_design-system/icons.svg' "$f" || true)
+            has_external=$(grep -cE "['\"]\.\./_design-system/icons\.svg" "$f" || true)
             has_inline=$(grep -c 'xmlns="http://www.w3.org/2000/svg" style="display:none"' "$f" || true)
             if [ "${has_external:-0}" -gt 0 ]; then
-              echo "::error file=$f::외부 svg 참조 ${has_external}건 — 인라인 #i-... reference로 변경 필요 (sed 's|href=\"../_design-system/icons.svg#|href=\"#|g')"
+              echo "::error file=$f::외부 svg 참조 ${has_external}건 (HTML attribute 또는 JS literal) — '#i-...'로 변경 필요"
+              grep -nE "['\"]\.\./_design-system/icons\.svg" "$f" | head -5
               fail=1
             fi
             if [ "${has_inline:-0}" -eq 0 ]; then
@@ -315,29 +318,41 @@ jobs:
               await page.goto(url, { waitUntil: 'load', timeout: 10000 });
               await page.waitForTimeout(300);
 
-              // SVG use bbox 검사 — 모든 svg.ico use가 0이 아닌 size로 렌더링
+              // SVG use bbox 검사 — visible state element만 검사 (hotfix3: hidden state false positive 제거).
+              // state-only / data-state 토글로 의도적으로 display:none된 element는 검사 대상 제외.
               const iconCheck = await page.evaluate(() => {
                 const uses = document.querySelectorAll('svg.ico use, svg.icon use');
                 let invisible = 0;
+                let visibleTotal = 0;
                 uses.forEach(u => {
+                  const svg = u.closest('svg');
+                  if (!svg) return;
+                  // ancestor display:none / visibility:hidden 의도 hidden — skip
+                  if (typeof svg.checkVisibility === 'function') {
+                    if (!svg.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true })) return;
+                  }
+                  visibleTotal++;
                   try {
                     const bbox = u.getBoundingClientRect();
                     if (bbox.width === 0 || bbox.height === 0) invisible++;
                   } catch (e) { invisible++; }
                 });
-                return { total: uses.length, invisible };
+                return { total: visibleTotal, invisible };
               });
 
-              // Native control appearance 검사 — <select> computed appearance != auto
+              // Native control appearance 검사 — visible state element만 검사 (hotfix3 동일 가드)
               const nativeCheck = await page.evaluate(() => {
                 const selects = Array.from(document.querySelectorAll('select'));
                 let bare = 0;
+                let visibleTotal = 0;
                 selects.forEach(s => {
+                  if (typeof s.checkVisibility === 'function' && !s.checkVisibility({ checkVisibilityCSS: true })) return;
+                  visibleTotal++;
                   const cs = window.getComputedStyle(s);
                   // appearance가 'none'이 아니면 bare (OS 기본 chevron 노출)
                   if (cs.appearance !== 'none' && cs.webkitAppearance !== 'none' && cs.MozAppearance !== 'none') bare++;
                 });
-                return { total: selects.length, bare };
+                return { total: visibleTotal, bare };
               });
 
               const screenshotPath = join(SCREENSHOT_DIR, file.replace('.html', '.png'));

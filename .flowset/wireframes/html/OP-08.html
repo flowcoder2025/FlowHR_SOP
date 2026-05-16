@@ -17,7 +17,7 @@
   .ticket-list { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; }
   .ticket-list-filter { padding: 8px 12px; border-bottom: 1px solid var(--color-border-light); display: flex; gap: 6px; font-size: 12px; }
   .ticket-list-filter .chip { padding: 3px 10px; border-radius: 12px; background: var(--color-surface-2); cursor: pointer; }
-  .ticket-list-filter .chip.active { background: var(--color-accent); color: white; }
+  .ticket-list-filter .chip.is-active { background: var(--color-accent); color: white; }
   .ticket-item { padding: 12px 14px; border-bottom: 1px solid var(--color-border-light); cursor: pointer; }
   .ticket-item:hover { background: var(--color-surface-2); }
   .ticket-item.is-active { background: var(--color-accent-bg); border-left: 3px solid var(--color-accent); padding-left: 11px; }
@@ -139,7 +139,7 @@
       <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
       <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
       <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item active" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item is-active" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
       <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
       <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
       <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
@@ -173,7 +173,7 @@
         <!-- 좌측 티켓 목록 -->
         <div class="ticket-list">
           <div class="ticket-list-filter">
-            <span class="chip active">전체 34</span>
+            <span class="chip is-active">전체 34</span>
             <span class="chip">미배정 5</span>
             <span class="chip">내 담당 12</span>
             <span class="chip">P0 1</span>

@@ -474,7 +474,7 @@ type FilterBarProps = {
 ```html
 <div class="filter-bar">
   <span style="font-size:12px;color:var(--color-text-muted);align-self:center;">필터</span>
-  <button class="filter-chip active">
+  <button class="filter-chip is-active">
     <svg class="ico" width="12" height="12"><use href="#i-calendar-days"/></svg>
     이번달
     <svg class="ico" width="12" height="12"><use href="#i-chevron-down"/></svg>
@@ -539,7 +539,7 @@ type TabsProps = {
 
 ```html
 <div class="tabs">
-  <button class="tab active">기본정보</button>
+  <button class="tab is-active">기본정보</button>
   <button class="tab">사용자 / 조직</button>
   <button class="tab">구독</button>
 </div>

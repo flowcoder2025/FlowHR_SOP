@@ -39,6 +39,31 @@
 
 KI-046 (DS SSOT, P1 both) + KI-047 (모바일, P1 codex) + KI-048 (라우팅, P1 codex) → trigger 도달. system-v3 (아래) 적용 후 DS 보강 + 19 화면 patch + CI 4 job 진행.
 
+### Hotfix3 (WI-KI-batch-006-fix3, 2026-05-17)
+
+hotfix2 통합 판정: evaluator PASS 8.735 + codex FAIL 6.5 (OR 원칙 → BLOCKED_FOR_HOTFIX_3) + PR #5 Playwright Smoke CI FAIL 종합 정정.
+
+**P0-A — JS 외부참조 재주입 정정**:
+- CM-01/CM-02/CM-03/OP-12 4 화면 password-toggle JS의 `setAttribute('href', '../_design-system/icons.svg#...')` → `'#i-...'` 인라인 sprite reference로 치환 (codex hotfix2 P0 잔존)
+
+**P0-B — Playwright Smoke false positive 제거**:
+- smoke.mjs `iconCheck` / `nativeCheck` 에 `Element.checkVisibility({ checkVisibilityCSS: true })` 가드 추가 — `.state-only` / data-state 토글로 의도된 hidden state element를 invisible/bare 카운트에서 제외 (PR #5 18/20 FAIL의 진짜 root cause)
+
+**P1 — `.active` → `.is-active` SSOT 통일**:
+- components.css 9건 (sidebar-item / page-btn / tab / vert-tab / filter-chip / step×2 / legal-toc a)
+- _design-tokens.css 3건 (sidebar-item / filter-chip / tab — 레거시 잔존)
+- 03-components.md 코드 예제 2건 (filter-chip / tab)
+- OP-08/09 inline `.chip.active` 2건
+- HTML markup: sidebar-item active 12 + chip active 2 + filter-chip active 1 + legal-toc `<a class="active">` 1 = 16건
+- 검증: literal `.active` / `class="...active..."` 잔존 0건
+
+**CI 보강**:
+- `inline-svg-sprite-check`: 패턴을 `['\"]\.\./_design-system/icons\.svg`로 broad화 — HTML attribute + JS literal 모두 검출 (codex 5항목 §17-7-1 확장)
+
+**KI 신규 등록 (P2, NON_BLOCKING)**:
+- KI-050 select-wrap 17건 (다음 batch)
+- KI-051 showcase-coverage CI 강화 (다음 batch)
+
 ### 다음
 
 G3 테넌트 매니저 (TA-01~14, 14 화면, wf-v0.3.0).
