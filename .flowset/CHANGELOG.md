@@ -8,14 +8,42 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
-## [wf-v0.1.0] — 미배포 (G1 최초 진입점 완료 시)
+## [wf-v0.1.0] — 2026-05-16 (G1 최초 진입점 완료)
 
-### 예정 산출물
-- `_design-system/_layout-auth.html` 신설 (비인증 영역 레이아웃)
-- CM-01 로그인 / CM-02 비밀번호 찾기 / CM-03 최초 활성화 / CM-04 2FA / CM-05 403 / CM-06 오류·점검 / CM-20 PWA 설치 / CM-21 약관·개인정보 (8 화면)
-- 각 화면 `?state=empty|loading|error|full` 토글
-- analysis/{화면ID}.md 8개
-- G1 evaluator PASS
+### 산출물
+
+**디자인 시스템 확장 (비인증 영역)**:
+- `_design-system/_layout-auth.html` 신설 (헤더 + 메인 + 푸터, AppShell과 별개)
+- `components.css` 추가 — auth-shell / auth-header / auth-main / auth-card (+ narrow/wide) / auth-brand / auth-lang-toggle / password-field / password-toggle / auth-alert (info/warning/error/success) / auth-aux / otp-group / otp-input / auth-hero / legal-shell / legal-toc / legal-body / install-grid / install-card
+- `icons.svg` 4종 추가 — i-globe / i-eye-off / i-lock / i-smartphone-share
+- tooltip 헤더 내 자동 bottom 표시 (사용자 검수 피드백)
+
+**8 비인증 화면 (각 5 상태)**:
+- CM-01 로그인 — default/loading/error/locked/success(2FA)
+- CM-02 비밀번호 찾기 — step1(이메일) → sent(발송) → step2(재설정) → expired/done
+- CM-03 최초 계정 활성화 — invite(정보) → setup(비밀번호+약관) → two_fa(QR+OTP+복구8) → expired/done
+- CM-04 2단계 인증 — input(OTP) → loading → error → recovery(복구) → done
+- CM-05 권한 없음 (403) — default / role(역할) / tenant(테넌트) / session(만료) / contact(문의)
+- CM-06 오류/점검 — not_found(404) / server(500) / maintenance / service_unavailable(503) / network
+- CM-20 PWA 설치 가이드 — ios / android / desktop(Tauri) / ios_old / already_installed
+- CM-21 약관/개인정보 — terms_ko / privacy_ko / en_reference / force_consent / new_version
+
+**analysis 8 파일** — PRD 매핑 + 상태 매트릭스 + i18n 키 + API 매핑 + Phase 7 변환 가이드
+
+**자동화 체계 (.claude/rules/project.md §6)**:
+- PR 머지 후 표준 정리 시퀀스 명시 (checkout main + pull + fetch --prune + tag + branch -d)
+- 다음 브랜치 시작 시 항상 최신 main 기준
+- CI fail / admin 우회 / 원격 누락 fallback
+
+### CI 게이트
+
+- 모든 화면 5 게이트 통과 (commit-msg / utf8+lf / html-syntax / design-system-ssot / version-format)
+
+### 다음 단계
+
+- G2 운영 (OP-02~12, 11 화면, OP-01 완료분 활용)
+
+## [wf-v0.0.0] — 2026-05-16 (베이스라인)
 
 ## [wf-v0.0.0] — 2026-05-16 (베이스라인)
 
