@@ -640,3 +640,151 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
   .legal-toc { position: static; max-height: none; }
   .install-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================================
+   G2 정식 등록 컴포넌트 (WI-KI-batch-006, 2026-05-16)
+   기존 G2 화면들이 인라인 재정의했던 패턴을 SSOT로 통합.
+   화면 HTML은 본 클래스만 사용 — 인라인 재정의 금지.
+   ============================================================================ */
+
+/* === Modal (overlay + box) — OP-03/05/06/07/09/12 표준 ============================ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 1000; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-overlay.is-open { display: flex; }
+.modal-box {
+  background: var(--color-bg); border-radius: var(--r-lg); padding: 24px;
+  width: 100%; max-width: 480px; box-shadow: var(--shadow-lg);
+  max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column;
+}
+.modal-box-sm  { max-width: 360px; }
+.modal-box-md  { max-width: 480px; }
+.modal-box-lg  { max-width: 560px; }
+.modal-box-xl  { max-width: 720px; }
+.modal-header  { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.modal-header h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.modal-footer  { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+/* === Drawer (우측 slide-in) — OP-09 감사로그 상세 표준 =========================== */
+.drawer {
+  display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 480px;
+  background: var(--color-bg); border-left: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg); z-index: 1000; flex-direction: column;
+}
+.drawer.is-open { display: flex; }
+.drawer-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border-light); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.drawer-body   { padding: 16px 20px; overflow-y: auto; flex: 1; }
+.drawer-footer { padding: 12px 20px; border-top: 1px solid var(--color-border-light); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
+
+/* === Switch (토글 38×22 round) — OP-11/OP-12 표준 =============================== */
+.switch {
+  width: 38px; height: 22px; background: var(--color-surface-2); border-radius: 11px;
+  position: relative; cursor: pointer; display: inline-block; flex-shrink: 0;
+  border: 0; padding: 0;
+}
+.switch.is-on, .switch[aria-checked="true"] { background: var(--color-accent); }
+.switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+  background: white; border-radius: 50%; transition: left 0.15s; box-shadow: var(--shadow-sm);
+}
+.switch.is-on::after, .switch[aria-checked="true"]::after { left: 18px; }
+
+/* === Stepper (Wizard 좌측, 7-step 등) — OP-04 표준 ============================== */
+.stepper { display: flex; flex-direction: column; gap: 4px; padding: 16px; }
+.step { display: flex; gap: 12px; padding: 10px 12px; border-radius: var(--r-md); cursor: pointer; font-size: 13px; align-items: center; }
+.step:hover { background: var(--color-surface-2); }
+.step .step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--color-surface-2); color: var(--color-text-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.step.is-completed .step-num { background: var(--color-success); color: white; }
+.step.is-completed .step-num::before { content: '✓'; }
+.step.is-completed .step-num-text { display: none; }
+.step.is-active { background: var(--color-accent-bg); }
+.step.is-active .step-num { background: var(--color-accent); color: white; }
+.step.is-active .step-label { color: var(--color-accent); font-weight: 700; }
+
+/* === Toggle Pill (on/off/beta 3 variant) — OP-07 표준 =========================== */
+.toggle-pill {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;
+  border: 0; background: var(--color-surface-2); color: var(--color-text-muted);
+}
+.toggle-pill.is-on   { background: var(--color-success-bg); color: var(--color-success); }
+.toggle-pill.is-off  { background: var(--color-surface-2); color: var(--color-text-muted); }
+.toggle-pill.is-beta { background: var(--color-warning-bg); color: var(--color-warning); }
+
+/* === Period Chip (기간 선택, active variant) — OP-10/일반 표준 ================== */
+.period-chip {
+  padding: 4px 14px; border-radius: 16px; border: 1px solid var(--color-border);
+  background: var(--color-bg); cursor: pointer; font-size: 12px; display: inline-block;
+}
+.period-chip:hover { background: var(--color-surface-2); }
+.period-chip.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+
+/* === Diff highlight (before/after) — OP-09 감사로그 표준 ========================= */
+.diff-before { background: var(--color-danger-bg); padding: 2px 6px; border-radius: 3px; color: var(--color-danger); }
+.diff-after  { background: var(--color-success-bg); padding: 2px 6px; border-radius: 3px; color: var(--color-success); }
+
+/* === Tabs (수평) — OP-03/OP-12 표준 (기존 tab/tabs-row를 표준화) ================= */
+.tabs-row { border-bottom: 1px solid var(--color-border-light); display: flex; gap: 4px; }
+.tab { display: inline-block; padding: 8px 16px; font-size: 13px; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+.tab:hover { color: var(--color-text); }
+.tab.is-active { color: var(--color-accent); border-bottom-color: var(--color-accent); font-weight: 700; }
+
+/* === Vert Tabs (수직) — OP-11 표준 =============================================== */
+.vert-tabs { display: flex; flex-direction: column; gap: 2px; }
+.vert-tab {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border-radius: var(--r-md); font-size: 13px; cursor: pointer;
+  color: var(--color-text-muted); border-left: 3px solid transparent;
+}
+.vert-tab:hover { background: var(--color-surface-2); color: var(--color-text); }
+.vert-tab > svg.ico { width: 16px !important; height: 16px !important; }
+.vert-tab.is-active {
+  background: var(--color-accent-bg); color: var(--color-accent); font-weight: 700;
+  border-left-color: var(--color-accent);
+}
+
+/* === Master-Detail Pattern (OP-08 표준) ========================================= */
+.master-detail-shell { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: stretch; min-height: 600px; }
+.master-list { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; }
+.master-list-filter { padding: 8px 12px; border-bottom: 1px solid var(--color-border-light); display: flex; gap: 6px; font-size: 12px; }
+.master-list-body { overflow-y: auto; flex: 1; }
+.master-item { padding: 12px 14px; border-bottom: 1px solid var(--color-border-light); cursor: pointer; }
+.master-item:hover { background: var(--color-surface-2); }
+.master-item.is-active { background: var(--color-accent-bg); border-left: 3px solid var(--color-accent); padding-left: 11px; }
+.master-detail-pane { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 20px; overflow-y: auto; }
+
+/* === 모바일 반응형 (768px 이하) — WI-KI-batch-006 정식 추가 ====================== */
+@media (max-width: 768px) {
+  /* 모달 — 작은 화면 padding 축소 */
+  .modal-box { max-width: 100%; padding: 16px; max-height: 95vh; }
+
+  /* 드로어 — 전체 너비 */
+  .drawer { width: 100%; }
+
+  /* Master-Detail — 단일 컬럼 (drawer 식 전환) */
+  .master-detail-shell { grid-template-columns: 1fr; min-height: auto; }
+  .master-detail-pane { display: none; }
+  .master-detail-shell.is-detail-active .master-list { display: none; }
+  .master-detail-shell.is-detail-active .master-detail-pane { display: block; }
+
+  /* Vert Tabs — 가로 스크롤 */
+  .vert-tabs { flex-direction: row; overflow-x: auto; padding: 8px; }
+  .vert-tab { border-left: 0; border-bottom: 3px solid transparent; flex-shrink: 0; }
+  .vert-tab.is-active { border-left: 0; border-bottom-color: var(--color-accent); }
+
+  /* Stepper — 가로 스크롤 */
+  .stepper { flex-direction: row; overflow-x: auto; padding: 8px; }
+  .step { flex-shrink: 0; }
+
+  /* 테이블 — 가로 스크롤 */
+  .card-flat { overflow-x: auto; }
+
+  /* Period chip — 가로 스크롤 wrap */
+  .period-chip { flex-shrink: 0; }
+}
