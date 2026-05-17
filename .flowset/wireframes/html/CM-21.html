@@ -249,8 +249,8 @@
   // 목차 — section nav active
   document.querySelectorAll('.legal-toc a').forEach(function (a) {
     a.addEventListener('click', function () {
-      document.querySelectorAll('.legal-toc a').forEach(function (x) { x.classList.remove('active'); });
-      a.classList.add('active');
+      document.querySelectorAll('.legal-toc a').forEach(function (x) { x.classList.remove('is-active'); });
+      a.classList.add('is-active');
     });
   });
 

@@ -49,13 +49,17 @@ hotfix2 통합 판정: evaluator PASS 8.735 + codex FAIL 6.5 (OR 원칙 → BLOC
 **P0-B — Playwright Smoke false positive 제거**:
 - smoke.mjs `iconCheck` / `nativeCheck` 에 `Element.checkVisibility({ checkVisibilityCSS: true })` 가드 추가 — `.state-only` / data-state 토글로 의도된 hidden state element를 invisible/bare 카운트에서 제외 (PR #5 18/20 FAIL의 진짜 root cause)
 
-**P1 — `.active` → `.is-active` SSOT 통일**:
+**P1 — `.active` → `.is-active` SSOT 통일 (rev1 포함)**:
 - components.css 9건 (sidebar-item / page-btn / tab / vert-tab / filter-chip / step×2 / legal-toc a)
 - _design-tokens.css 3건 (sidebar-item / filter-chip / tab — 레거시 잔존)
-- 03-components.md 코드 예제 2건 (filter-chip / tab)
-- OP-08/09 inline `.chip.active` 2건
+- 03-components.md 코드 예제 4건 (filter-chip / tab / step / period-chip)
+- OP-08/09 inline `.chip.active` 4건 (style + markup)
 - HTML markup: sidebar-item active 12 + chip active 2 + filter-chip active 1 + legal-toc `<a class="active">` 1 = 16건
-- 검증: literal `.active` / `class="...active..."` 잔존 0건
+- **rev1 추가 (evaluator FAIL 후 정정)**:
+  - `_showcase.html` 8건 markup (page-btn / tab / vert-tab / filter-chip / step / sidebar-item×3)
+  - `_design-system/_layout-shell.html:111` SSOT 템플릿 sidebar-item 1건
+  - `component-usage-matrix.json:15` allowed_classes 표기 통일 1건
+- 검증: `grep -rnE 'class="[^"]*\bactive\b[^"]*"' .flowset/wireframes/ --exclude-dir=_archive*` literal `.active` 잔존 0건 (총 32 + 10 = 42건 정정)
 
 **CI 보강**:
 - `inline-svg-sprite-check`: 패턴을 `['\"]\.\./_design-system/icons\.svg`로 broad화 — HTML attribute + JS literal 모두 검출 (codex 5항목 §17-7-1 확장)

@@ -12,7 +12,7 @@
       "applicable_screens": ["OP-01~12", "TA-01~14", "EM-01~11"],
       "components": ["app-shell", "sidebar", "sidebar-item", "header", "page-title", "header-search", "icon-btn", "badge-dot", "profile-trigger", "avatar", "content", "footer", "footer-links"],
       "showcase_anchor": "_showcase.html#section-shell",
-      "allowed_classes": ["app-shell", "sidebar", "sidebar-logo", "sidebar-menu", "sidebar-section-label", "sidebar-item", "sidebar-item active", "sidebar-footer", "main", "header", "page-title", "header-search-wrap", "header-search", "header-actions", "icon-btn", "badge-dot", "profile-trigger", "avatar", "content", "footer", "footer-links", "footer-version"],
+      "allowed_classes": ["app-shell", "sidebar", "sidebar-logo", "sidebar-menu", "sidebar-section-label", "sidebar-item", "sidebar-item is-active", "sidebar-footer", "main", "header", "page-title", "header-search-wrap", "header-search", "header-actions", "icon-btn", "badge-dot", "profile-trigger", "avatar", "content", "footer", "footer-links", "footer-version"],
       "react_mapping": "apps/web/app/(operator|admin|me)/layout.tsx — Next.js layout + shadcn/ui Sidebar"
     },
     {
