@@ -1,22 +1,49 @@
 <!DOCTYPE html>
 <!--
-  FlowHR AppShell 템플릿 — 모든 인증 화면이 본 구조를 따른다.
-  사용법:
-    1. 본 파일 전체를 화면 HTML로 복사
-    2. <title> 변경
-    3. 사이드바: 도메인별 메뉴 + active 위치만 변경 (operator/tenant/employee 메뉴는 _design-system/05-layouts.md 참조)
-    4. 페이지 타이틀 (.page-title) 변경
-    5. <main class="content"> 안만 화면별 콘텐츠로 교체
-    6. 헤더/푸터 절대 변경 금지
+  OP-02 테넌트 관리 (`/operator/tenants`).
+  PRD: prd/domains/operator/OP-02-tenants.md
+  Layout: _design-system/_layout-shell.html (AppShell + operator 사이드바)
+  Pattern: List + Side Filter Panel + 10 Cols Table.
+  상태 (5): 1 default / 2 loading / 3 filtered / 4 empty / 5 error
 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>FlowHR — [화면 ID 화면명]</title>
+<title>FlowHR — OP-02 테넌트 관리</title>
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  /* 페이지 한정 — 콘텐츠 grid layout만 */
+  .tenants-shell { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
+
+  .state-only { display: none; }
+  body[data-state="default"]  .state-default,
+  body[data-state="filtered"] .state-filtered,
+  body[data-state="empty"]    .state-empty,
+  body[data-state="error"]    .state-error { display: block; }
+  body[data-state="loading"] .table-body { opacity: 0.4; pointer-events: none; }
+  body[data-state="loading"] .loading-overlay { display: flex; }
+  .loading-overlay { display: none; padding: 32px; align-items: center; justify-content: center; gap: 10px; color: var(--color-text-muted); font-size: 13px; }
+  .loading-overlay > svg.ico { width: 18px !important; height: 18px !important; animation: spin 0.9s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* 결과 카운트 변동 (state별) */
+  body[data-state="default"]  .count-default,
+  body[data-state="filtered"] .count-filtered,
+  body[data-state="empty"]    .count-empty,
+  body[data-state="error"]    .count-error,
+  body[data-state="loading"]  .count-default { display: inline; }
+  .count-default, .count-filtered, .count-empty, .count-error { display: none; }
+
+  /* 행별 액션 메뉴 */
+  .row-action-trigger { position: relative; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
 </head>
-<body>
+<body data-state="default">
 
 <!-- ============================================================================
      인라인 SVG sprite (WI-RSv3, file:// 호환 — 외부 icons.svg <use> 차단 우회)
@@ -91,15 +118,13 @@
   <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
 </svg>
 
+
 <div class="app-shell">
 
   <!-- ========================================================================
-       사이드바 (글로벌, 도메인별)
-       operator: 9 메뉴 / tenant: 8 메뉴 / employee: 8 메뉴
-       _design-system/05-layouts.md §사이드바 메뉴 참조
+       사이드바 (operator 9 메뉴, active = 테넌트)
        ======================================================================== -->
   <nav class="sidebar">
-    <!-- 운영사: <Logo>, 테넌트: <TenantLogo> — 03-components.md §Logo / §TenantLogo 참조 -->
     <div class="sidebar-logo">
       <div class="logo">
         <div class="logo-fallback">F</div>
@@ -108,109 +133,312 @@
     </div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item is-active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item is-active" href="/operator/tenants"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
 
   <div class="main">
 
-    <!-- ========================================================================
-         글로벌 헤더 (CM-16~19 의무 — 변경 금지)
-         ======================================================================== -->
+    <!-- 글로벌 헤더 -->
     <header class="header">
-      <h1 class="page-title">[화면 타이틀]</h1>
-
-      <!-- CM-18 헤더 검색 (MVP △ — disabled + v1.1 배지) -->
+      <h1 class="page-title">테넌트 관리</h1>
       <div class="header-search-wrap">
         <div class="header-search">
-          <svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg>
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
           <input placeholder="검색은 v1.1에서 제공됩니다 (현재 화면별 필터 사용)" disabled />
           <span class="v11-badge">v1.1</span>
         </div>
       </div>
-
       <div class="header-actions">
-        <!-- CM-19 도움말 -->
-        <button class="icon-btn" data-tooltip="도움말 (현재 화면 가이드)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
+        <button class="icon-btn" data-tooltip="도움말">
+          <svg class="ico" width="18" height="18"><use href="#i-help"/></svg>
         </button>
-
-        <!-- CM-17 알림 종 -->
         <button class="icon-btn" data-tooltip="알림 (3건 미읽음)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg>
+          <svg class="ico" width="18" height="18"><use href="#i-bell"/></svg>
           <span class="badge-dot">3</span>
         </button>
-
-        <!-- CM-16 프로필 드롭다운 -->
-        <div style="position:relative;">
-          <button class="profile-trigger">
-            <div class="avatar">[I]</div>
-            <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg>
-          </button>
-          <!-- 드롭다운 펼친 상태 (실제 구현 시 click toggle) -->
-          <!--
-          <div class="dropdown dropdown-right-0" style="width:280px;">
-            <div class="dropdown-header">
-              <div class="dropdown-name">김운영</div>
-              <div class="dropdown-meta">operator_super · FlowHR 운영팀</div>
-            </div>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-user"/></svg>내 프로필 (OP-12)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-bell"/></svg>알림 설정</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-help"/></svg>도움말</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-logout"/></svg>로그아웃</a>
-          </div>
-          -->
-        </div>
+        <button class="profile-trigger">
+          <div class="avatar">[I]</div>
+          <svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg>
+        </button>
       </div>
     </header>
 
-    <!-- ========================================================================
-         점검 사전 공지 배너 (조건부 — maintenance_windows 활성 시만)
-         ========================================================================
-    <div class="maintenance-banner">
-      <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-tool"/></svg>
-      <span>[점검 안내] 2026-05-20 22:00 ~ 23:00 시스템 점검이 예정되어 있습니다. 미리 작업을 저장해 주세요.</span>
-      <span class="close"><svg class="ico ico-sm" width="14" height="14"><use href="../_design-system/icons.svg#i-x"/></svg></span>
-    </div>
-    -->
-
-    <!-- ========================================================================
-         페이지 콘텐츠 (화면별 교체 영역)
-         ======================================================================== -->
+    <!-- 페이지 콘텐츠 -->
     <main class="content">
-      <!-- 화면별 콘텐츠 시작 -->
 
-      <p style="color: var(--color-text-muted);">콘텐츠 영역 — 화면별로 이 부분만 교체합니다.</p>
+      <!-- 페이지 액션 바 — 검색 + CTA + 내보내기 -->
+      <div class="page-action-bar">
+        <div class="summary">
+          <span class="count-default">전체 <strong>247</strong>개 테넌트</span>
+          <span class="count-filtered"><strong>23</strong>개 필터 결과 (전체 247)</span>
+          <span class="count-empty">검색 결과 없음 (전체 247)</span>
+          <span class="count-error">조회 실패</span>
+          · 활성 218 · 미납 12 · 만료예정 17
+        </div>
+        <div class="actions">
+          <div style="position: relative;">
+            <input class="input input-sm" type="search" placeholder="회사명 / 사업자번호 / 도메인 검색" style="width: 280px; padding-left: 32px;">
+            <svg class="ico" width="14" height="14" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted);"><use href="#i-search"/></svg>
+          </div>
+          <button class="btn btn-ghost" data-tooltip="현재 필터/검색 결과 xlsx 내보내기 (CM-12)">
+            <svg class="ico" width="14" height="14"><use href="#i-excel"/></svg> 내보내기
+          </button>
+          <button class="btn btn-primary">
+            <svg class="ico" width="14" height="14"><use href="#i-plus"/></svg> 신규 테넌트 등록
+          </button>
+        </div>
+      </div>
 
-      <!-- 화면별 콘텐츠 끝 -->
+      <!-- 본문 — 좌측 필터 + 우측 테이블 -->
+      <div class="tenants-shell">
+
+        <!-- ============ 좌측 필터 패널 ============ -->
+        <aside class="card" style="padding: 16px;">
+          <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>필터</span>
+            <a style="font-size: 12px; color: var(--color-accent); cursor: pointer;" href="#">초기화</a>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 12px;">
+            <div>
+              <div class="label" style="margin-bottom: 6px;">상태</div>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+                <label><input class="checkbox" type="checkbox" checked> 활성 <span class="muted">(218)</span></label>
+                <label><input class="checkbox" type="checkbox"> 비활성 <span class="muted">(12)</span></label>
+                <label><input class="checkbox" type="checkbox"> 미납 <span class="muted">(12)</span></label>
+                <label><input class="checkbox" type="checkbox"> 만료예정 (30일) <span class="muted">(17)</span></label>
+                <label><input class="checkbox" type="checkbox"> 만료 <span class="muted">(5)</span></label>
+                <label><input class="checkbox" type="checkbox"> 보관 <span class="muted">(8)</span></label>
+              </div>
+            </div>
+
+            <div>
+              <div class="label" style="margin-bottom: 6px;">요금제</div>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+                <label><input class="checkbox" type="checkbox"> 기본 <span class="muted">(178)</span></label>
+                <label><input class="checkbox" type="checkbox"> 프리미엄 <span class="muted">(58)</span></label>
+                <label><input class="checkbox" type="checkbox"> 커스텀 <span class="muted">(11)</span></label>
+              </div>
+            </div>
+
+            <div>
+              <div class="label" style="margin-bottom: 6px;">결제상태</div>
+              <select class="select input-sm">
+                <option>전체</option>
+                <option>정상</option>
+                <option>미납</option>
+                <option>결제실패</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="label" style="margin-bottom: 6px;">계약 만료</div>
+              <select class="select input-sm">
+                <option>전체</option>
+                <option>이번달</option>
+                <option>다음달</option>
+                <option>3개월 내</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="label" style="margin-bottom: 6px;">최근 활동</div>
+              <select class="select input-sm">
+                <option>전체</option>
+                <option>7일 이내</option>
+                <option>30일 이내</option>
+                <option>90일 이내</option>
+                <option>비활성 (90일+)</option>
+              </select>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ============ 우측 테이블 ============ -->
+        <div class="card card-flat">
+
+          <div class="loading-overlay">
+            <svg class="ico"><use href="#i-loader"/></svg>
+            테넌트 목록을 불러오는 중…
+          </div>
+
+          <!-- empty 상태 -->
+          <div class="empty-state state-only state-empty" style="padding: 60px 32px;">
+            <svg class="ico ico-empty" width="48" height="48"><use href="#i-search"/></svg>
+            <div style="font-size: 16px; font-weight: 600; color: var(--color-text);">검색 결과가 없습니다</div>
+            <div style="font-size: 13px; color: var(--color-text-muted);">다른 검색어를 시도하거나 필터를 초기화해 주세요.</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top: 12px;">필터 초기화</button>
+          </div>
+
+          <!-- error 상태 -->
+          <div class="state-only state-error" style="padding: 32px;">
+            <div class="auth-alert auth-alert-error" role="alert">
+              <svg class="ico" width="18" height="18"><use href="#i-alert-c"/></svg>
+              <div>
+                <strong>테넌트 목록 조회에 실패했습니다.</strong>
+                <span class="auth-alert-meta">코드: TENANTS_FETCH_FAILED · request_id: req_8a3f2b1c · 잠시 후 다시 시도하거나 운영팀에 문의해 주세요.</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+              <button class="btn btn-primary">재시도</button>
+              <button class="btn btn-ghost">운영팀 문의</button>
+            </div>
+          </div>
+
+          <!-- 정상 테이블 -->
+          <div class="table-body state-only state-default state-filtered">
+            <table class="table">
+              <colgroup>
+                <col style="width: 18%"><col style="width: 14%"><col style="width: 7%"><col style="width: 9%">
+                <col style="width: 9%"><col style="width: 10%"><col style="width: 9%"><col style="width: 14%">
+                <col style="width: 8%"><col style="width: 2%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>회사명 ↕</th><th>도메인</th><th>상태 ↕</th><th>요금제 ↕</th>
+                  <th>활성/계약 ↕</th><th>월요금 ↕</th><th>결제 ↕</th><th>대표관리자</th>
+                  <th>최근활동 ↕</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a style="color: var(--color-accent); cursor: pointer; font-weight: 600;" href="#">플로우상사 (주)</a></td>
+                  <td><code style="font-size: 12px;">flowtrading.flowhr.kr</code></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td>프리미엄</td>
+                  <td>47 / 50</td>
+                  <td style="text-align: right; font-variant-numeric: tabular-nums;">990,000</td>
+                  <td><span class="badge badge-success">정상</span></td>
+                  <td><div>이대표</div><div style="font-size: 11px; color: var(--color-text-muted);">ceo@flowtrading.kr</div></td>
+                  <td>3시간 전</td>
+                  <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                </tr>
+                <tr>
+                  <td><a style="color: var(--color-accent); cursor: pointer; font-weight: 600;" href="#">치킨플러스 코리아</a></td>
+                  <td><code style="font-size: 12px;">chickenplus.flowhr.kr</code></td>
+                  <td><span class="badge badge-warning">미납</span></td>
+                  <td>기본</td>
+                  <td>32 / 35</td>
+                  <td style="text-align: right; font-variant-numeric: tabular-nums;">350,000</td>
+                  <td><span class="badge badge-warning">미납 (3일)</span></td>
+                  <td><div>박사장</div><div style="font-size: 11px; color: var(--color-text-muted);">admin@chickenplus.kr</div></td>
+                  <td>1일 전</td>
+                  <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                </tr>
+                <tr>
+                  <td><a style="color: var(--color-accent); cursor: pointer; font-weight: 600;" href="#">스마트팩토리 (주)</a></td>
+                  <td><code style="font-size: 12px;">smartfactory.flowhr.kr</code></td>
+                  <td><span class="badge badge-success">활성</span></td>
+                  <td>커스텀</td>
+                  <td>128 / 150</td>
+                  <td style="text-align: right; font-variant-numeric: tabular-nums;">2,800,000</td>
+                  <td><span class="badge badge-success">정상</span></td>
+                  <td><div>김CTO</div><div style="font-size: 11px; color: var(--color-text-muted);">cto@smartfactory.kr</div></td>
+                  <td>1시간 전</td>
+                  <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                </tr>
+                <tr>
+                  <td><a style="color: var(--color-accent); cursor: pointer; font-weight: 600;" href="#">서울건설 컨소시엄</a></td>
+                  <td><code style="font-size: 12px;">seoulconst.flowhr.kr</code></td>
+                  <td><span class="badge badge-warning">만료예정</span></td>
+                  <td>프리미엄</td>
+                  <td>67 / 80</td>
+                  <td style="text-align: right; font-variant-numeric: tabular-nums;">1,200,000</td>
+                  <td><span class="badge badge-success">정상</span></td>
+                  <td><div>최부장</div><div style="font-size: 11px; color: var(--color-text-muted);">choi@seoulconst.kr</div></td>
+                  <td>5시간 전</td>
+                  <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                </tr>
+                <tr>
+                  <td><a style="color: var(--color-accent); cursor: pointer; font-weight: 600;" href="#">디자인하우스 코리아</a></td>
+                  <td><code style="font-size: 12px;">designhouse.flowhr.kr</code></td>
+                  <td><span class="badge badge-muted">비활성</span></td>
+                  <td>기본</td>
+                  <td>0 / 12</td>
+                  <td style="text-align: right; font-variant-numeric: tabular-nums;">120,000</td>
+                  <td><span class="badge badge-danger">결제실패</span></td>
+                  <td><div>한실장</div><div style="font-size: 11px; color: var(--color-text-muted);">han@designhouse.kr</div></td>
+                  <td>27일 전</td>
+                  <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- 페이지네이션 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--color-border-light); font-size: 13px; color: var(--color-text-muted);">
+              <span>1-5 / 247 (페이지당 20)</span>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn btn-ghost btn-sm" disabled><svg class="ico" width="14" height="14"><use href="#i-chevron-left"/></svg></button>
+                <button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">1</button>
+                <button class="btn btn-ghost btn-sm">2</button>
+                <button class="btn btn-ghost btn-sm">3</button>
+                <span style="padding: 0 6px;">…</span>
+                <button class="btn btn-ghost btn-sm">13</button>
+                <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="#i-chevron-right"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </main>
 
-    <!-- ========================================================================
-         글로벌 푸터 (변경 금지)
-         ======================================================================== -->
+    <!-- 글로벌 푸터 -->
     <footer class="footer">
       <div>© 2026 FlowHR</div>
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a>도움말</a>
-        <a>운영팀 문의</a>
+        <a href="#">도움말</a>
+        <a href="#">운영팀 문의</a>
       </div>
       <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
     </footer>
   </div>
 </div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"  data-key="1">1 전체</span>
+  <span class="state-debug-key" data-state-key="loading"  data-key="2">2 조회중</span>
+  <span class="state-debug-key" data-state-key="filtered" data-key="3">3 필터</span>
+  <span class="state-debug-key" data-state-key="empty"    data-key="4">4 빈</span>
+  <span class="state-debug-key" data-state-key="error"    data-key="5">5 오류</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'loading', '3': 'filtered', '4': 'empty', '5': 'error' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
 
 </body>
 </html>

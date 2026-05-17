@@ -1,22 +1,59 @@
 <!DOCTYPE html>
 <!--
-  FlowHR AppShell 템플릿 — 모든 인증 화면이 본 구조를 따른다.
-  사용법:
-    1. 본 파일 전체를 화면 HTML로 복사
-    2. <title> 변경
-    3. 사이드바: 도메인별 메뉴 + active 위치만 변경 (operator/tenant/employee 메뉴는 _design-system/05-layouts.md 참조)
-    4. 페이지 타이틀 (.page-title) 변경
-    5. <main class="content"> 안만 화면별 콘텐츠로 교체
-    6. 헤더/푸터 절대 변경 금지
+  OP-08 지원 티켓 (`/operator/tickets`).
+  PRD: prd/domains/operator/OP-08-tickets.md
+  Layout: _design-system/_layout-shell.html (active=지원 티켓)
+  Pattern: Master-Detail (좌측 목록 + 우측 상세 + 답변 스레드).
+  상태 (5): 1 list / 2 detail / 3 reply / 4 internal_memo / 5 closed
 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>FlowHR — [화면 ID 화면명]</title>
+<title>FlowHR — OP-08 지원 티켓</title>
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .ticket-shell { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: stretch; min-height: 600px; }
+  .ticket-list { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); overflow: hidden; display: flex; flex-direction: column; }
+  .ticket-list-filter { padding: 8px 12px; border-bottom: 1px solid var(--color-border-light); display: flex; gap: 6px; font-size: 12px; }
+  .ticket-list-filter .chip { padding: 3px 10px; border-radius: 12px; background: var(--color-surface-2); cursor: pointer; }
+  .ticket-list-filter .chip.is-active { background: var(--color-accent); color: white; }
+  .ticket-item { padding: 12px 14px; border-bottom: 1px solid var(--color-border-light); cursor: pointer; }
+  .ticket-item:hover { background: var(--color-surface-2); }
+  .ticket-item.is-active { background: var(--color-accent-bg); border-left: 3px solid var(--color-accent); padding-left: 11px; }
+  .ticket-item-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; font-family: var(--font-mono); }
+  .ticket-item-title { font-size: 13px; font-weight: 600; line-height: 1.4; }
+  .ticket-item-meta { display: flex; gap: 6px; margin-top: 4px; font-size: 11px; color: var(--color-text-muted); }
+
+  .ticket-detail { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 20px; overflow-y: auto; }
+  .ticket-thread-msg { padding: 14px; border-radius: var(--r-md); margin-bottom: 10px; }
+  .ticket-thread-msg.from-tenant { background: var(--color-surface-2); }
+  .ticket-thread-msg.from-operator { background: var(--color-accent-bg); margin-left: 32px; }
+  .ticket-thread-msg.internal { background: var(--color-warning-bg); border-left: 3px solid var(--color-warning); }
+  .ticket-thread-meta { font-size: 11px; color: var(--color-text-muted); display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+
+  body[data-state="list"]          .ticket-detail-default { display: none; }
+  body[data-state="list"]          .ticket-detail-empty { display: flex; }
+  body[data-state="reply"]         .reply-form { display: block; }
+  body[data-state="internal_memo"] .reply-form { display: block; }
+  body[data-state="internal_memo"] .reply-form { background: var(--color-warning-bg); }
+  body[data-state="internal_memo"] .reply-internal-toggle .checkbox { accent-color: var(--color-warning); }
+  body[data-state="closed"]        .ticket-status-current { background: var(--color-surface-2); color: var(--color-text-muted); }
+  body[data-state="closed"]        .reply-form { display: none; }
+  body[data-state="closed"]        .ticket-closed-banner { display: flex; }
+  .ticket-closed-banner { display: none; }
+  .reply-form { display: none; padding: 16px; background: var(--color-surface-2); border-radius: var(--r-md); margin-top: 16px; }
+  .ticket-detail-empty { display: none; flex-direction: column; align-items: center; padding: 60px; text-align: center; gap: 8px; color: var(--color-text-muted); }
+
+  body[data-state="list"] .ticket-item.is-active { border-left-color: transparent; background: transparent; padding-left: 14px; }
+  body[data-state="list"] .ticket-item.is-active:hover { background: var(--color-surface-2); }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
 </head>
-<body>
+<body data-state="detail">
 
 <!-- ============================================================================
      인라인 SVG sprite (WI-RSv3, file:// 호환 — 외부 icons.svg <use> 차단 우회)
@@ -91,126 +128,218 @@
   <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
 </svg>
 
-<div class="app-shell">
 
-  <!-- ========================================================================
-       사이드바 (글로벌, 도메인별)
-       operator: 9 메뉴 / tenant: 8 메뉴 / employee: 8 메뉴
-       _design-system/05-layouts.md §사이드바 메뉴 참조
-       ======================================================================== -->
+<div class="app-shell">
   <nav class="sidebar">
-    <!-- 운영사: <Logo>, 테넌트: <TenantLogo> — 03-components.md §Logo / §TenantLogo 참조 -->
-    <div class="sidebar-logo">
-      <div class="logo">
-        <div class="logo-fallback">F</div>
-        <span class="logo-text">FlowHR</span>
-      </div>
-    </div>
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item is-active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/operator/tenants"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item is-active" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
 
   <div class="main">
-
-    <!-- ========================================================================
-         글로벌 헤더 (CM-16~19 의무 — 변경 금지)
-         ======================================================================== -->
     <header class="header">
-      <h1 class="page-title">[화면 타이틀]</h1>
-
-      <!-- CM-18 헤더 검색 (MVP △ — disabled + v1.1 배지) -->
-      <div class="header-search-wrap">
-        <div class="header-search">
-          <svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg>
-          <input placeholder="검색은 v1.1에서 제공됩니다 (현재 화면별 필터 사용)" disabled />
-          <span class="v11-badge">v1.1</span>
-        </div>
-      </div>
-
+      <h1 class="page-title">지원 티켓</h1>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
       <div class="header-actions">
-        <!-- CM-19 도움말 -->
-        <button class="icon-btn" data-tooltip="도움말 (현재 화면 가이드)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
-        </button>
-
-        <!-- CM-17 알림 종 -->
-        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg>
-          <span class="badge-dot">3</span>
-        </button>
-
-        <!-- CM-16 프로필 드롭다운 -->
-        <div style="position:relative;">
-          <button class="profile-trigger">
-            <div class="avatar">[I]</div>
-            <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg>
-          </button>
-          <!-- 드롭다운 펼친 상태 (실제 구현 시 click toggle) -->
-          <!--
-          <div class="dropdown dropdown-right-0" style="width:280px;">
-            <div class="dropdown-header">
-              <div class="dropdown-name">김운영</div>
-              <div class="dropdown-meta">operator_super · FlowHR 운영팀</div>
-            </div>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-user"/></svg>내 프로필 (OP-12)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-bell"/></svg>알림 설정</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-help"/></svg>도움말</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-logout"/></svg>로그아웃</a>
-          </div>
-          -->
-        </div>
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
       </div>
     </header>
 
-    <!-- ========================================================================
-         점검 사전 공지 배너 (조건부 — maintenance_windows 활성 시만)
-         ========================================================================
-    <div class="maintenance-banner">
-      <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-tool"/></svg>
-      <span>[점검 안내] 2026-05-20 22:00 ~ 23:00 시스템 점검이 예정되어 있습니다. 미리 작업을 저장해 주세요.</span>
-      <span class="close"><svg class="ico ico-sm" width="14" height="14"><use href="../_design-system/icons.svg#i-x"/></svg></span>
-    </div>
-    -->
-
-    <!-- ========================================================================
-         페이지 콘텐츠 (화면별 교체 영역)
-         ======================================================================== -->
     <main class="content">
-      <!-- 화면별 콘텐츠 시작 -->
 
-      <p style="color: var(--color-text-muted);">콘텐츠 영역 — 화면별로 이 부분만 교체합니다.</p>
+      <div class="page-action-bar">
+        <div class="summary"><strong>34</strong>건 미해결 · P0 1 / P1 8 / P2 17 / P3 8</div>
+        <div class="actions">
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-excel"/></svg> 내보내기</button>
+          <button class="btn btn-ghost" onclick="applyState('list')">목록으로</button>
+        </div>
+      </div>
 
-      <!-- 화면별 콘텐츠 끝 -->
+      <div class="ticket-shell">
+
+        <!-- 좌측 티켓 목록 -->
+        <div class="ticket-list">
+          <div class="ticket-list-filter">
+            <span class="chip is-active">전체 34</span>
+            <span class="chip">미배정 5</span>
+            <span class="chip">내 담당 12</span>
+            <span class="chip">P0 1</span>
+          </div>
+
+          <div style="overflow-y: auto; flex: 1;">
+            <div class="ticket-item is-active">
+              <div class="ticket-item-header"><span>TK-2026-0142</span><span><span class="badge badge-danger">P0</span></span></div>
+              <div class="ticket-item-title">서버 응답 느림 — 오전 9시 이후 5초 이상 지연</div>
+              <div class="ticket-item-meta"><span>플로우상사</span><span>·</span><span>이대표</span><span>·</span><span style="color: var(--color-danger); font-weight: 600;">SLA D-0 4h</span></div>
+            </div>
+            <div class="ticket-item">
+              <div class="ticket-item-header"><span>TK-2026-0141</span><span><span class="badge badge-warning">P1</span></span></div>
+              <div class="ticket-item-title">엑셀 가져오기 — 부서명 매칭 실패</div>
+              <div class="ticket-item-meta"><span>치킨플러스</span><span>·</span><span>박사장</span><span>·</span><span>SLA 1d</span></div>
+            </div>
+            <div class="ticket-item">
+              <div class="ticket-item-header"><span>TK-2026-0140</span><span><span class="badge badge-warning">P1</span></span></div>
+              <div class="ticket-item-title">PDF 다운로드 — 한글 깨짐</div>
+              <div class="ticket-item-meta"><span>스마트팩토리</span><span>·</span><span>김CTO</span><span>·</span><span>SLA 2d</span></div>
+            </div>
+            <div class="ticket-item">
+              <div class="ticket-item-header"><span>TK-2026-0139</span><span><span class="badge badge-muted">P2</span></span></div>
+              <div class="ticket-item-title">기능 요청 — 슬랙 알림</div>
+              <div class="ticket-item-meta"><span>서울건설</span><span>·</span><span>최부장</span><span>·</span><span>SLA 5d</span></div>
+            </div>
+            <div class="ticket-item">
+              <div class="ticket-item-header"><span>TK-2026-0138</span><span><span class="badge badge-muted">P3</span></span></div>
+              <div class="ticket-item-title">문의 — 영문 약관 시행일</div>
+              <div class="ticket-item-meta"><span>플로우상사</span><span>·</span><span>이대표</span><span>·</span><span>SLA 7d</span></div>
+            </div>
+            <div class="ticket-item">
+              <div class="ticket-item-header"><span>TK-2026-0137</span><span><span class="badge badge-success">해결</span></span></div>
+              <div class="ticket-item-title">2FA 활성화 안 됨</div>
+              <div class="ticket-item-meta"><span>디자인하우스</span><span>·</span><span>한실장</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우측 상세 -->
+        <div class="ticket-detail">
+
+          <div class="ticket-detail-empty">
+            <svg class="ico" width="48" height="48"><use href="#i-ticket"/></svg>
+            <div style="font-size: 14px; font-weight: 600; color: var(--color-text);">티켓을 선택하세요</div>
+            <div style="font-size: 13px;">좌측 목록에서 티켓을 클릭하면 상세 내용과 응답 스레드가 표시됩니다.</div>
+          </div>
+
+          <div class="ticket-detail-default">
+            <!-- 상세 헤더 -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
+              <div>
+                <div style="font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); margin-bottom: 4px;">TK-2026-0142 · 플로우상사 (주)</div>
+                <h2 style="font-size: 18px; font-weight: 700; margin: 0;">서버 응답 느림 — 오전 9시 이후 5초 이상 지연</h2>
+                <div style="display: flex; gap: 6px; margin-top: 6px; font-size: 12px;">
+                  <span class="badge badge-danger">P0</span>
+                  <span class="badge badge-warning">장애</span>
+                  <span class="badge ticket-status-current" style="background: var(--color-accent-bg); color: var(--color-accent);">처리 중</span>
+                  <span class="muted">담당: 김운영 · 생성 4h 전</span>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm">담당자 변경</button>
+            </div>
+
+            <div class="ticket-closed-banner" style="margin-bottom: 16px;">
+              <div class="auth-alert auth-alert-success" style="width: 100%;">
+                <svg class="ico" width="18" height="18"><use href="#i-check-circle"/></svg>
+                <div><strong>이 티켓은 해결되었습니다.</strong><span class="auth-alert-meta">해결자: 김운영 · 2026-05-16 13:42 · 새 응답이 필요하면 재오픈하세요.</span></div>
+              </div>
+            </div>
+
+            <!-- 응답 스레드 -->
+            <div class="ticket-thread">
+
+              <div class="ticket-thread-msg from-tenant">
+                <div class="ticket-thread-meta"><strong>이대표</strong> · tenant_super · 플로우상사 · 4h 전</div>
+                <div style="font-size: 13px; line-height: 1.6;">출근 시간대(오전 9시 ~ 10시)에 대시보드 진입이 5초 이상 걸립니다. 평소 1초 이내였는데 오늘부터 갑자기 느려졌습니다.<br><br>스크린샷 첨부합니다.</div>
+                <div style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted);"><svg class="ico" width="14" height="14"><use href="#i-paperclip"/></svg> screenshot-2026-05-16.png (824 KB)</div>
+              </div>
+
+              <div class="ticket-thread-msg from-operator">
+                <div class="ticket-thread-meta"><strong>김운영</strong> <span class="badge badge-accent" style="font-size: 10px;">운영사</span> · 2h 전</div>
+                <div style="font-size: 13px; line-height: 1.6;">안녕하세요. 확인 중입니다. 출근 시간대 인덱스 미스가 의심됩니다. 30분 내 회신드리겠습니다.</div>
+              </div>
+
+              <div class="ticket-thread-msg internal">
+                <div class="ticket-thread-meta"><svg class="ico" width="12" height="12"><use href="#i-eye"/></svg> 내부 메모 · <strong>박오퍼</strong> · 1h 전 <span class="muted">(테넌트에게 보이지 않음)</span></div>
+                <div style="font-size: 13px; line-height: 1.6;">PG 슬로우 쿼리 확인. attendance.user_id 인덱스에 created_at_idx 추가 검토. 김운영 확인 부탁.</div>
+              </div>
+
+              <div class="ticket-thread-msg from-operator">
+                <div class="ticket-thread-meta"><strong>김운영</strong> <span class="badge badge-accent" style="font-size: 10px;">운영사</span> · 30m 전</div>
+                <div style="font-size: 13px; line-height: 1.6;">attendance 테이블 인덱스 추가 마이그레이션 진행 중입니다. 14:00 점검 윈도우(5분 예상) 후 정상화 예정입니다.</div>
+              </div>
+
+            </div>
+
+            <!-- 응답 폼 -->
+            <div class="reply-form">
+              <div class="form-row-stacked" style="padding: 0; border: 0;">
+                <label class="label">응답</label>
+                <textarea class="textarea" placeholder="답변을 입력하세요..."></textarea>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 13px;">
+                <label class="reply-internal-toggle"><input class="checkbox" type="checkbox" id="internal-toggle" onchange="applyState(this.checked ? 'internal_memo' : 'reply')"> 내부 메모 (테넌트에게 안 보임)</label>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-paperclip"/></svg></button>
+                  <button class="btn btn-primary"><svg class="ico" width="14" height="14"><use href="#i-send"/></svg> 답변 보내기</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 액션 버튼 행 -->
+            <div style="display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border-light);">
+              <button class="btn btn-primary btn-sm" onclick="applyState('reply')">답변 작성</button>
+              <button class="btn btn-ghost btn-sm" onclick="applyState('closed')">해결로 변경</button>
+              <button class="btn btn-ghost btn-sm">우선순위 변경</button>
+              <button class="btn btn-ghost btn-sm">감사 로그 보기</button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
     </main>
 
-    <!-- ========================================================================
-         글로벌 푸터 (변경 금지)
-         ======================================================================== -->
     <footer class="footer">
       <div>© 2026 FlowHR</div>
-      <div class="footer-links">
-        <a href="/legal/terms">이용약관</a>
-        <a href="/legal/privacy">개인정보처리방침</a>
-        <a>도움말</a>
-        <a>운영팀 문의</a>
-      </div>
-      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a href="#">도움말</a><a href="#">운영팀 문의</a></div>
+      <div class="footer-version">v1.0.0-beta</div>
     </footer>
   </div>
 </div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="list"          data-key="1">1 목록</span>
+  <span class="state-debug-key" data-state-key="detail"        data-key="2">2 상세</span>
+  <span class="state-debug-key" data-state-key="reply"         data-key="3">3 답변</span>
+  <span class="state-debug-key" data-state-key="internal_memo" data-key="4">4 내부메모</span>
+  <span class="state-debug-key" data-state-key="closed"        data-key="5">5 해결</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'detail');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'list', '2': 'detail', '3': 'reply', '4': 'internal_memo', '5': 'closed' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
 
 </body>
 </html>

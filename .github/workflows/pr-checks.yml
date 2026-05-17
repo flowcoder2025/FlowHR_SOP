@@ -134,14 +134,18 @@ jobs:
             fi
           done
 
-          # 2. html/ 화면 <style> 안에서 컴포넌트 클래스 정의 금지
+          # 2. html/ 화면 <style> 안에서 컴포넌트 클래스 "정의" 금지
           #    (페이지 grid layout만 inline <style> 허용)
-          banned_classes='\.(btn|btn-primary|btn-secondary|btn-ghost|btn-danger|card|dropdown|dropdown-item|sidebar|sidebar-item|sidebar-logo|icon-btn|avatar|avatar-sm|avatar-lg|badge|badge-dot|chip|table|kpi-card|empty-state|profile-trigger|header-search|maintenance-banner|tooltip|popover|breadcrumb|form-row|form-section|info-row|session-row|footer|header|app-shell|logo|tenant-logo)[[:space:]]*\{'
+          # hotfix2 (KI-batch-006-fix2):
+          #   - G2 신규 9 컴포넌트 추가 — modal-overlay/modal-box/drawer/stepper/switch/toggle-pill/period-chip/diff-before/diff-after
+          #   - state binding (body[data-state="X"] .class { ... }) 허용 — 라인 시작이 . 또는 ,이면 정의로 간주
+          banned_classes='^[[:space:]]*[.,][[:space:]]*\.(btn|btn-primary|btn-secondary|btn-ghost|btn-danger|card|dropdown|dropdown-item|sidebar|sidebar-item|sidebar-logo|icon-btn|avatar|avatar-sm|avatar-lg|badge|badge-dot|chip|table|kpi-card|empty-state|profile-trigger|header-search|maintenance-banner|tooltip|popover|breadcrumb|form-row|form-section|info-row|session-row|footer|header|app-shell|logo|tenant-logo|modal-overlay|modal-box|drawer|stepper|switch|toggle-pill|period-chip|diff-before|diff-after)[[:space:],]*[{,]'
+          banned_classes_start='^[[:space:]]*\.(btn|btn-primary|btn-secondary|btn-ghost|btn-danger|card|dropdown|dropdown-item|sidebar|sidebar-item|sidebar-logo|icon-btn|avatar|avatar-sm|avatar-lg|badge|badge-dot|chip|table|kpi-card|empty-state|profile-trigger|header-search|maintenance-banner|tooltip|popover|breadcrumb|form-row|form-section|info-row|session-row|footer|header|app-shell|logo|tenant-logo|modal-overlay|modal-box|drawer|stepper|switch|toggle-pill|period-chip|diff-before|diff-after)[[:space:].:,#\[]*[{,]'
           for f in .flowset/wireframes/html/*.html; do
             [ ! -f "$f" ] && continue
             inline=$(awk 'BEGIN{p=0} /<style/{p=1} p{print} /<\/style>/{p=0}' "$f")
-            if echo "$inline" | grep -qE "$banned_classes"; then
-              offending=$(echo "$inline" | grep -nE "$banned_classes" | head -5)
+            if echo "$inline" | grep -qE "$banned_classes_start"; then
+              offending=$(echo "$inline" | grep -nE "$banned_classes_start" | head -5)
               echo "::error file=$f::Inline component definition (SSOT violation):"
               echo "$offending"
               fail=1
@@ -170,3 +174,221 @@ jobs:
           fi
 
           echo "VERSION: $version"
+
+  inline-svg-sprite-check:
+    name: Inline SVG Sprite (file:// 호환)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify inline svg sprite in wireframe HTML (file:// 호환)
+        shell: bash
+        run: |
+          # 화면 HTML은 외부 svg `<use href="../_design-system/icons.svg#...">` 참조 금지.
+          # 모두 인라인 sprite의 fragment-only reference (`<use href="#i-...">`) 사용 의무.
+          # WI-RSv3 §1 — Chrome/Safari file:// 차단 우회.
+          # hotfix2 (KI-batch-006-fix2): 외부 참조 1건이라도 발견 시 fail (sprite 보유 무관).
+          # hotfix3 (codex 5항목 §17-7-1 확장): JS source의 setAttribute / 동적 외부 ref도 차단
+          #   — 따옴표(["']) + 외부 경로 패턴으로 HTML attribute와 JS literal 모두 잡음
+          fail=0
+          for f in .flowset/wireframes/html/*.html; do
+            [ ! -f "$f" ] && continue
+            has_external=$(grep -cE "['\"]\.\./_design-system/icons\.svg" "$f" || true)
+            has_inline=$(grep -c 'xmlns="http://www.w3.org/2000/svg" style="display:none"' "$f" || true)
+            if [ "${has_external:-0}" -gt 0 ]; then
+              echo "::error file=$f::외부 svg 참조 ${has_external}건 (HTML attribute 또는 JS literal) — '#i-...'로 변경 필요"
+              grep -nE "['\"]\.\./_design-system/icons\.svg" "$f" | head -5
+              fail=1
+            fi
+            if [ "${has_inline:-0}" -eq 0 ]; then
+              echo "::error file=$f::인라인 sprite 없음 (file:// 차단). <svg xmlns=... style=\"display:none\"><symbol id=\"i-...\">…</symbol></svg> 추가 필요."
+              fail=1
+            fi
+          done
+          exit $fail
+
+  native-element-wrap-check:
+    name: Native Element DS Wrap (select/file/date)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify bare native control wrap (WI-RSv3 §17-2)
+        shell: bash
+        run: |
+          # bare <select>, <input type=file/date/datetime-local>는 OS 기본 UI 노출 → DS wrap 의무.
+          # 허용: .select / .select-wrap (select), .file-input wrapper (file), .date-input wrapper (date)
+          fail=0
+          for f in .flowset/wireframes/html/*.html; do
+            [ ! -f "$f" ] && continue
+            # <select>가 class="select" 또는 class="...select..." 없으면 fail
+            while IFS= read -r line; do
+              echo "::error file=$f::bare <select> (class에 'select' 없음): ${line:0:120}"
+              fail=1
+            done < <(grep -nE '<select(\s|>)' "$f" | grep -vE 'class="[^"]*\bselect\b[^"]*"' || true)
+            # <input type="file"> — 부모에 .file-input wrap 있어야 (단순 검사: 이전 5줄 안 .file-input)
+            while IFS= read -r line; do
+              # awk로 input 라인 + 이전 5줄 중 .file-input 있는지
+              line_num=$(echo "$line" | cut -d: -f1)
+              if ! awk -v n="$line_num" 'NR >= n-5 && NR <= n' "$f" | grep -q 'class="[^"]*file-input'; then
+                echo "::error file=$f:$line_num::bare <input type=file> wrap 없음 (.file-input wrapper 필요)"
+                fail=1
+              fi
+            done < <(grep -nE '<input[^>]+type="file"' "$f" || true)
+            # <input type="date|datetime-local"> — 부모에 .date-input wrap 있어야
+            while IFS= read -r line; do
+              line_num=$(echo "$line" | cut -d: -f1)
+              if ! awk -v n="$line_num" 'NR >= n-5 && NR <= n' "$f" | grep -q 'class="[^"]*date-input'; then
+                echo "::error file=$f:$line_num::bare <input type=date> wrap 없음 (.date-input wrapper 필요)"
+                fail=1
+              fi
+            done < <(grep -nE '<input[^>]+type="(date|datetime-local)"' "$f" || true)
+          done
+          exit $fail
+
+  showcase-coverage-check:
+    name: Showcase Coverage (component-usage-matrix.json)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify component-usage-matrix.json + showcase 매핑 존재
+        shell: bash
+        run: |
+          # matrix 파일 존재
+          matrix=".flowset/wireframes/_design-system/component-usage-matrix.json"
+          if [ ! -f "$matrix" ]; then
+            echo "::error::component-usage-matrix.json 없음 — WI-RSv3 §17-4 의무"
+            exit 1
+          fi
+          # _showcase.html 존재
+          showcase=".flowset/wireframes/_showcase.html"
+          if [ ! -f "$showcase" ]; then
+            echo "::error::_showcase.html 없음"
+            exit 1
+          fi
+          # 추가: matrix.json 형식 검증 (jq parse)
+          if ! jq empty "$matrix" 2>/dev/null; then
+            echo "::error::component-usage-matrix.json JSON 형식 오류"
+            exit 1
+          fi
+          # 추가 룰 (advisory, 차후 강화): matrix.patterns 중 forbidden_global 패턴이 실제 화면에 있는지 검사
+          forbidden_count=$(jq '.forbidden_global | length' "$matrix")
+          echo "✓ matrix.json valid · patterns: $(jq '.patterns | length' "$matrix") · forbidden_global: $forbidden_count"
+
+  playwright-smoke:
+    name: Playwright Smoke (file:// 렌더링 + console + svg use bbox)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright + chromium only
+        run: |
+          npm init -y > /dev/null 2>&1
+          npm install --save-dev playwright@1.49.0 > /dev/null
+          npx playwright install chromium --with-deps > /dev/null 2>&1
+      - name: Run smoke (모든 화면 file:// open + console/error/svg-bbox)
+        shell: bash
+        run: |
+          cat > smoke.mjs << 'EOF'
+          import { chromium } from 'playwright';
+          import { readdirSync, mkdirSync } from 'fs';
+          import { join, resolve, basename } from 'path';
+
+          const HTML_DIR = '.flowset/wireframes/html';
+          const SCREENSHOT_DIR = '.flowset/eval-results/screenshots';
+          mkdirSync(SCREENSHOT_DIR, { recursive: true });
+
+          const files = readdirSync(HTML_DIR).filter(f => f.endsWith('.html'));
+          const browser = await chromium.launch();
+          const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+
+          let totalErrors = 0;
+          const results = [];
+
+          for (const file of files) {
+            const url = 'file://' + resolve(join(HTML_DIR, file));
+            const page = await ctx.newPage();
+            const consoleErrors = [];
+            const pageErrors = [];
+
+            page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+            page.on('pageerror', err => pageErrors.push(err.message));
+
+            try {
+              await page.goto(url, { waitUntil: 'load', timeout: 10000 });
+              await page.waitForTimeout(300);
+
+              // SVG use bbox 검사 — visible state element만 검사 (hotfix3: hidden state false positive 제거).
+              // state-only / data-state 토글로 의도적으로 display:none된 element는 검사 대상 제외.
+              const iconCheck = await page.evaluate(() => {
+                const uses = document.querySelectorAll('svg.ico use, svg.icon use');
+                let invisible = 0;
+                let visibleTotal = 0;
+                uses.forEach(u => {
+                  const svg = u.closest('svg');
+                  if (!svg) return;
+                  // ancestor display:none / visibility:hidden 의도 hidden — skip
+                  if (typeof svg.checkVisibility === 'function') {
+                    if (!svg.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true })) return;
+                  }
+                  visibleTotal++;
+                  try {
+                    const bbox = u.getBoundingClientRect();
+                    if (bbox.width === 0 || bbox.height === 0) invisible++;
+                  } catch (e) { invisible++; }
+                });
+                return { total: visibleTotal, invisible };
+              });
+
+              // Native control appearance 검사 — visible state element만 검사 (hotfix3 동일 가드)
+              const nativeCheck = await page.evaluate(() => {
+                const selects = Array.from(document.querySelectorAll('select'));
+                let bare = 0;
+                let visibleTotal = 0;
+                selects.forEach(s => {
+                  if (typeof s.checkVisibility === 'function' && !s.checkVisibility({ checkVisibilityCSS: true })) return;
+                  visibleTotal++;
+                  const cs = window.getComputedStyle(s);
+                  // appearance가 'none'이 아니면 bare (OS 기본 chevron 노출)
+                  if (cs.appearance !== 'none' && cs.webkitAppearance !== 'none' && cs.MozAppearance !== 'none') bare++;
+                });
+                return { total: visibleTotal, bare };
+              });
+
+              const screenshotPath = join(SCREENSHOT_DIR, file.replace('.html', '.png'));
+              await page.screenshot({ path: screenshotPath, fullPage: false });
+
+              const errors = consoleErrors.length + pageErrors.length + iconCheck.invisible + nativeCheck.bare;
+              totalErrors += errors;
+
+              results.push({ file, console: consoleErrors.length, pageError: pageErrors.length, iconInvisible: iconCheck.invisible, iconTotal: iconCheck.total, bareSelects: nativeCheck.bare, status: errors === 0 ? 'PASS' : 'FAIL' });
+            } catch (e) {
+              results.push({ file, error: e.message, status: 'ERROR' });
+              totalErrors++;
+            } finally {
+              await page.close();
+            }
+          }
+
+          await browser.close();
+
+          // 결과 출력
+          console.log('\n=== Playwright Smoke Result ===');
+          console.log(`Total: ${results.length} | PASS: ${results.filter(r => r.status === 'PASS').length} | FAIL/ERROR: ${results.filter(r => r.status !== 'PASS').length}`);
+          for (const r of results) {
+            const mark = r.status === 'PASS' ? '✓' : '✗';
+            const detail = r.status === 'ERROR' ? r.error : `console=${r.console} pageError=${r.pageError} iconInvisible=${r.iconInvisible}/${r.iconTotal} bareSelects=${r.bareSelects}`;
+            console.log(`${mark} ${r.file} — ${r.status} (${detail})`);
+          }
+
+          if (totalErrors > 0) process.exit(1);
+          EOF
+          node smoke.mjs
+
+      - name: Upload screenshots as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: .flowset/eval-results/screenshots/
+          retention-days: 14

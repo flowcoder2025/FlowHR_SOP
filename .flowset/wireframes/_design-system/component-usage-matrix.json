@@ -1,0 +1,179 @@
+{
+  "$schema": "./component-usage-matrix.schema.json",
+  "version": "1.0.0",
+  "updated_at": "2026-05-16",
+  "source_of_truth": ".flowset/wireframes/_design-system/component-usage-matrix.json",
+  "spec_ref": ".flowset/contracts/review-system.md §17-4 (Codex 합의안)",
+  "description": "PRD 패턴 → 디자인 시스템 컴포넌트 → showcase 앵커 → React 매핑. 화면 작성 시 본 매트릭스 매핑 의무 (CI showcase-coverage-check 검증).",
+
+  "patterns": [
+    {
+      "prd_pattern": "AppShell (사이드바 + 헤더 + 콘텐츠 + 푸터)",
+      "applicable_screens": ["OP-01~12", "TA-01~14", "EM-01~11"],
+      "components": ["app-shell", "sidebar", "sidebar-item", "header", "page-title", "header-search", "icon-btn", "badge-dot", "profile-trigger", "avatar", "content", "footer", "footer-links"],
+      "showcase_anchor": "_showcase.html#section-shell",
+      "allowed_classes": ["app-shell", "sidebar", "sidebar-logo", "sidebar-menu", "sidebar-section-label", "sidebar-item", "sidebar-item is-active", "sidebar-footer", "main", "header", "page-title", "header-search-wrap", "header-search", "header-actions", "icon-btn", "badge-dot", "profile-trigger", "avatar", "content", "footer", "footer-links", "footer-version"],
+      "react_mapping": "apps/web/app/(operator|admin|me)/layout.tsx — Next.js layout + shadcn/ui Sidebar"
+    },
+    {
+      "prd_pattern": "Auth Layout (비인증 영역)",
+      "applicable_screens": ["CM-01~06", "CM-20", "CM-21"],
+      "components": ["auth-shell", "auth-header", "auth-lang-toggle", "auth-main", "auth-card", "auth-brand", "auth-alert", "auth-aux", "auth-hero", "password-field", "password-toggle", "otp-group", "otp-input"],
+      "showcase_anchor": "_showcase.html#section-auth-layout",
+      "allowed_classes": ["auth-shell", "auth-header", "auth-header-actions", "auth-lang-toggle", "auth-lang-current", "auth-lang-divider", "auth-main", "auth-card", "auth-card-narrow", "auth-card-wide", "auth-brand", "auth-brand-title", "auth-brand-subtitle", "auth-alert", "auth-alert-error", "auth-alert-warning", "auth-alert-info", "auth-alert-success", "auth-alert-meta", "auth-aux", "auth-hero", "auth-hero-code", "auth-hero-title", "auth-hero-desc", "auth-hero-actions", "password-field", "password-toggle", "otp-group", "otp-input"],
+      "react_mapping": "apps/web/app/(auth)/layout.tsx"
+    },
+    {
+      "prd_pattern": "List + Side Filter + Table",
+      "applicable_screens": ["OP-02", "OP-05", "TA-02", "TA-07", "TA-09"],
+      "components": ["page-action-bar", "filter-panel (.card)", "table", "badge", "icon-btn (i-more 액션)", "pagination"],
+      "showcase_anchor": "_showcase.html#section-list-pattern",
+      "allowed_classes": ["page-action-bar", "summary", "actions", "card", "card-flat", "label", "checkbox", "select", "select-wrap", "select-sm", "input", "input-sm", "table", "badge", "badge-success", "badge-warning", "badge-danger", "badge-muted", "badge-accent", "icon-btn", "icon-btn-sm", "empty-state", "ico-empty"],
+      "react_mapping": "shadcn/ui DataTable + react-hook-form filter sidebar + TanStack Query"
+    },
+    {
+      "prd_pattern": "Detail + Header Cards + Tabs",
+      "applicable_screens": ["OP-03", "OP-12", "TA-03", "EM-09"],
+      "components": ["header-cards", "header-card", "tabs-row", "tab", "tab-pane", "form-section", "form-row", "modal-overlay", "modal-box", "btn-danger"],
+      "showcase_anchor": "_showcase.html#section-detail-tabs",
+      "allowed_classes": ["tabs-row", "tab", "tab is-active", "form-section", "form-section-header", "form-row", "form-row-stacked", "label", "label-required", "input", "select", "select-wrap", "textarea", "modal-overlay", "modal-box", "modal-header", "modal-footer", "btn", "btn-primary", "btn-ghost", "btn-danger", "badge"],
+      "react_mapping": "shadcn/ui Tabs + Dialog + react-hook-form"
+    },
+    {
+      "prd_pattern": "Wizard Stepper (Multi-step Form)",
+      "applicable_screens": ["OP-04", "CM-03"],
+      "components": ["wizard-shell", "stepper", "step", "form-section", "module-toggle", "review-table", "auth-alert"],
+      "showcase_anchor": "_showcase.html#section-wizard",
+      "allowed_classes": ["stepper", "step", "step is-active", "step is-completed", "step-num", "step-num-text", "step-label", "form-section", "input", "select", "select-wrap", "checkbox", "file-input", "date-input", "auth-alert", "auth-alert-info", "auth-alert-warning", "btn-primary", "btn-ghost"],
+      "react_mapping": "shadcn/ui Form + custom useStepWizard hook"
+    },
+    {
+      "prd_pattern": "KPI Cards + Charts (Dashboard)",
+      "applicable_screens": ["OP-01", "OP-10", "TA-01", "TA-12", "EM-01"],
+      "components": ["kpi-row", "kpi-card", "kpi-label", "kpi-value", "kpi-meta", "chart-card", "chart-placeholder", "period-chip"],
+      "showcase_anchor": "_showcase.html#section-dashboard",
+      "allowed_classes": ["kpi-row", "kpi-card", "kpi-label", "kpi-value", "kpi-meta", "kpi-delta", "card", "card-title", "chart-card", "badge-success", "badge-warning", "badge-danger", "period-chip", "period-chip is-active"],
+      "react_mapping": "recharts/visx (LineChart/BarChart/Donut/Heatmap) + custom KPI card"
+    },
+    {
+      "prd_pattern": "Master-Detail (Inbox + Detail)",
+      "applicable_screens": ["OP-08", "TA-09", "EM-05", "EM-11"],
+      "components": ["master-detail-shell", "master-list", "master-list-filter", "master-item", "master-detail-pane"],
+      "showcase_anchor": "_showcase.html#section-master-detail",
+      "allowed_classes": ["master-detail-shell", "master-list", "master-list-filter", "master-list-body", "master-item", "master-item is-active", "master-detail-pane"],
+      "react_mapping": "shadcn/ui ResizablePanel + Sheet (모바일 drawer 전환)"
+    },
+    {
+      "prd_pattern": "Toggle Table (Feature Flags)",
+      "applicable_screens": ["OP-07"],
+      "components": ["table", "toggle-pill", "switch", "module-chip"],
+      "showcase_anchor": "_showcase.html#section-toggle-table",
+      "allowed_classes": ["table", "toggle-pill", "toggle-pill is-on", "toggle-pill is-off", "toggle-pill is-beta", "switch", "switch is-on"],
+      "react_mapping": "shadcn/ui Switch + DataTable"
+    },
+    {
+      "prd_pattern": "Filter Panel + Drawer (Audit Logs)",
+      "applicable_screens": ["OP-09"],
+      "components": ["filter-section", "filter-period", "filter-period chip", "drawer", "drawer-header", "drawer-body", "drawer-footer", "diff-before", "diff-after"],
+      "showcase_anchor": "_showcase.html#section-audit-pattern",
+      "allowed_classes": ["card", "filter-section", "filter-period", "chip", "select", "select-wrap", "checkbox", "table", "event-chip", "drawer", "drawer-header", "drawer-body", "drawer-footer", "diff-before", "diff-after"],
+      "react_mapping": "shadcn/ui Sheet + DataTable + TanStack Virtual"
+    },
+    {
+      "prd_pattern": "Vertical Tabs Settings",
+      "applicable_screens": ["OP-11", "TA-13"],
+      "components": ["vert-tabs", "vert-tab", "switch", "form-section", "form-row"],
+      "showcase_anchor": "_showcase.html#section-vert-tabs",
+      "allowed_classes": ["vert-tabs", "vert-tab", "vert-tab is-active", "form-section", "form-row", "input", "select", "select-wrap", "switch", "auth-alert"],
+      "react_mapping": "shadcn/ui Tabs orientation=vertical"
+    },
+    {
+      "prd_pattern": "Legal Document (약관 / 개인정보)",
+      "applicable_screens": ["CM-21"],
+      "components": ["legal-shell", "legal-toc", "legal-body", "legal-meta", "legal-consent"],
+      "showcase_anchor": "_showcase.html#section-legal",
+      "allowed_classes": ["legal-shell", "legal-toc", "legal-toc-title", "legal-body", "legal-meta", "legal-consent", "auth-alert-info", "version-change"],
+      "react_mapping": "react-markdown + remark-toc + react-hook-form 동의 폼"
+    },
+    {
+      "prd_pattern": "PWA Install Guide",
+      "applicable_screens": ["CM-20"],
+      "components": ["install-grid", "install-card", "auth-alert-warning"],
+      "showcase_anchor": "_showcase.html#section-install",
+      "allowed_classes": ["install-grid", "install-card", "install-card-header", "install-steps", "auth-alert-warning", "auth-alert-success"],
+      "react_mapping": "beforeinstallprompt + iOS Safari manual guide"
+    },
+    {
+      "prd_pattern": "File Input (DS wrap, native 차단)",
+      "applicable_screens": ["OP-04", "TA-02", "TA-10", "TA-13"],
+      "components": ["file-input", "file-input-btn", "file-input-filename"],
+      "showcase_anchor": "_showcase.html#section-file-input",
+      "allowed_classes": ["file-input", "file-input-btn", "file-input-filename", "sr-only"],
+      "forbidden_patterns": ["bare <input type=\"file\"> without .file-input wrapper"],
+      "react_mapping": "react-dropzone + custom UploadButton"
+    },
+    {
+      "prd_pattern": "Date Input (DS wrap, native calendar 차단)",
+      "applicable_screens": ["OP-04", "OP-06", "OP-11", "TA-05", "TA-07", "EM-03"],
+      "components": ["date-input"],
+      "showcase_anchor": "_showcase.html#section-date-input",
+      "allowed_classes": ["date-input", "date-input is-error"],
+      "forbidden_patterns": ["bare <input type=\"date|datetime-local\"> without .date-input wrapper"],
+      "react_mapping": "react-day-picker (Phase 7) — wireframe은 native + 커스텀 chevron"
+    },
+    {
+      "prd_pattern": "Select (DS wrap, native chevron 차단)",
+      "applicable_screens": ["전 화면"],
+      "components": ["select", "select-wrap", "select-sm"],
+      "showcase_anchor": "_showcase.html#section-select",
+      "allowed_classes": ["select", "select-wrap", "select-wrap is-error", "select-wrap is-disabled", "select-sm"],
+      "forbidden_patterns": ["<select> 클래스 .select 누락 (bare native chevron 노출)"],
+      "react_mapping": "shadcn/ui Select"
+    }
+  ],
+
+  "forbidden_global": [
+    {
+      "pattern": "외부 SVG <use href=\"../_design-system/icons.svg#...\">",
+      "reason": "Chrome/Safari가 file:// 프로토콜에서 차단",
+      "fix": "화면 HTML에 인라인 svg sprite 추가 또는 _layout-{shell,auth}.html 복사 (sprite 포함)",
+      "ci_check": "inline-svg-sprite-check"
+    },
+    {
+      "pattern": "<select> without .select class",
+      "reason": "OS 기본 chevron + 옵션 패널 노출 → 디자인 시스템 시각 불일치",
+      "fix": "<select class=\"select\"> + 옵션 .select-wrap 추가",
+      "ci_check": "native-element-wrap-check"
+    },
+    {
+      "pattern": "<input type=\"file\"> without .file-input wrapper",
+      "reason": "OS 기본 \"파일 선택\" 버튼 노출",
+      "fix": "<label class=\"file-input\"><input type=\"file\" class=\"sr-only\">+<.file-input-btn>+<.file-input-filename></label>",
+      "ci_check": "native-element-wrap-check"
+    },
+    {
+      "pattern": "<input type=\"date|datetime-local\"> without .date-input wrapper",
+      "reason": "OS 기본 calendar 아이콘 + native datepicker",
+      "fix": "<div class=\"date-input\"><input class=\"input\" type=\"date\"></div>",
+      "ci_check": "native-element-wrap-check"
+    },
+    {
+      "pattern": "화면 inline <style>에서 .modal / .switch / .stepper / .toggle-pill 등 컴포넌트 재정의",
+      "reason": "DS SSOT 위반 — components.css 단일 source 정책",
+      "fix": "components.css에 등록 후 화면은 클래스만 사용",
+      "ci_check": "ds-redefinition-check (기존 design-system-ssot 확장)"
+    }
+  ],
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-05-16",
+      "wi": "WI-RSv3 + WI-KI-batch-006",
+      "changes": [
+        "신규 매트릭스 — 14 PRD 패턴 + 5 forbidden_global 패턴 정의",
+        "Codex 협의 합의안 §2-4 반영"
+      ]
+    }
+  ]
+}

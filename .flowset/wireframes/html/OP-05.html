@@ -1,22 +1,41 @@
 <!DOCTYPE html>
 <!--
-  FlowHR AppShell 템플릿 — 모든 인증 화면이 본 구조를 따른다.
-  사용법:
-    1. 본 파일 전체를 화면 HTML로 복사
-    2. <title> 변경
-    3. 사이드바: 도메인별 메뉴 + active 위치만 변경 (operator/tenant/employee 메뉴는 _design-system/05-layouts.md 참조)
-    4. 페이지 타이틀 (.page-title) 변경
-    5. <main class="content"> 안만 화면별 콘텐츠로 교체
-    6. 헤더/푸터 절대 변경 금지
+  OP-05 구독/요금제 관리 (`/operator/plans`).
+  PRD: prd/domains/operator/OP-05-subscriptions.md
+  Layout: _design-system/_layout-shell.html (active=구독/요금제)
+  Pattern: List + Top Filter + Create/Edit Modal.
+  상태 (5): 1 default / 2 create_modal / 3 edit_modal / 4 inactive_view / 5 empty
 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>FlowHR — [화면 ID 화면명]</title>
+<title>FlowHR — OP-05 구독/요금제</title>
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .filter-row { display: flex; gap: 8px; align-items: center; padding: 12px 16px; background: var(--color-surface-2); border-radius: var(--r-md); margin-bottom: 16px; font-size: 13px; }
+  .filter-row .select { width: 140px; }
+  .filter-row .filter-label { color: var(--color-text-muted); font-weight: 500; }
+
+  /* .modal-overlay/.modal-box는 components.css SSOT — page state binding만 인라인 */
+  body[data-state="create_modal"] .modal-overlay.modal-create,
+  body[data-state="edit_modal"]   .modal-overlay.modal-edit { display: flex; }
+
+  body[data-state="empty"] .table-body { display: none; }
+  body[data-state="empty"] .empty-state-block { display: flex; }
+  .empty-state-block { display: none; }
+
+  body[data-state="inactive_view"] .row-inactive { opacity: 1; }
+  .row-inactive { opacity: 0.45; }
+
+  .module-chip { display: inline-block; padding: 2px 8px; border-radius: 12px; background: var(--color-surface-2); font-size: 11px; color: var(--color-text-muted); margin-right: 2px; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
 </head>
-<body>
+<body data-state="default">
 
 <!-- ============================================================================
      인라인 SVG sprite (WI-RSv3, file:// 호환 — 외부 icons.svg <use> 차단 우회)
@@ -91,126 +110,227 @@
   <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
 </svg>
 
-<div class="app-shell">
 
-  <!-- ========================================================================
-       사이드바 (글로벌, 도메인별)
-       operator: 9 메뉴 / tenant: 8 메뉴 / employee: 8 메뉴
-       _design-system/05-layouts.md §사이드바 메뉴 참조
-       ======================================================================== -->
+<div class="app-shell">
   <nav class="sidebar">
-    <!-- 운영사: <Logo>, 테넌트: <TenantLogo> — 03-components.md §Logo / §TenantLogo 참조 -->
-    <div class="sidebar-logo">
-      <div class="logo">
-        <div class="logo-fallback">F</div>
-        <span class="logo-text">FlowHR</span>
-      </div>
-    </div>
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item is-active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/operator/tenants"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item is-active" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
 
   <div class="main">
-
-    <!-- ========================================================================
-         글로벌 헤더 (CM-16~19 의무 — 변경 금지)
-         ======================================================================== -->
     <header class="header">
-      <h1 class="page-title">[화면 타이틀]</h1>
-
-      <!-- CM-18 헤더 검색 (MVP △ — disabled + v1.1 배지) -->
-      <div class="header-search-wrap">
-        <div class="header-search">
-          <svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg>
-          <input placeholder="검색은 v1.1에서 제공됩니다 (현재 화면별 필터 사용)" disabled />
-          <span class="v11-badge">v1.1</span>
-        </div>
-      </div>
-
+      <h1 class="page-title">구독 / 요금제 관리</h1>
+      <div class="header-search-wrap"><div class="header-search"><svg class="icon" width="16" height="16"><use href="#i-search"/></svg><input placeholder="검색 v1.1" disabled /><span class="v11-badge">v1.1</span></div></div>
       <div class="header-actions">
-        <!-- CM-19 도움말 -->
-        <button class="icon-btn" data-tooltip="도움말 (현재 화면 가이드)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
-        </button>
-
-        <!-- CM-17 알림 종 -->
-        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg>
-          <span class="badge-dot">3</span>
-        </button>
-
-        <!-- CM-16 프로필 드롭다운 -->
-        <div style="position:relative;">
-          <button class="profile-trigger">
-            <div class="avatar">[I]</div>
-            <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg>
-          </button>
-          <!-- 드롭다운 펼친 상태 (실제 구현 시 click toggle) -->
-          <!--
-          <div class="dropdown dropdown-right-0" style="width:280px;">
-            <div class="dropdown-header">
-              <div class="dropdown-name">김운영</div>
-              <div class="dropdown-meta">operator_super · FlowHR 운영팀</div>
-            </div>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-user"/></svg>내 프로필 (OP-12)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-bell"/></svg>알림 설정</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-help"/></svg>도움말</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-logout"/></svg>로그아웃</a>
-          </div>
-          -->
-        </div>
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
       </div>
     </header>
 
-    <!-- ========================================================================
-         점검 사전 공지 배너 (조건부 — maintenance_windows 활성 시만)
-         ========================================================================
-    <div class="maintenance-banner">
-      <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-tool"/></svg>
-      <span>[점검 안내] 2026-05-20 22:00 ~ 23:00 시스템 점검이 예정되어 있습니다. 미리 작업을 저장해 주세요.</span>
-      <span class="close"><svg class="ico ico-sm" width="14" height="14"><use href="../_design-system/icons.svg#i-x"/></svg></span>
-    </div>
-    -->
-
-    <!-- ========================================================================
-         페이지 콘텐츠 (화면별 교체 영역)
-         ======================================================================== -->
     <main class="content">
-      <!-- 화면별 콘텐츠 시작 -->
 
-      <p style="color: var(--color-text-muted);">콘텐츠 영역 — 화면별로 이 부분만 교체합니다.</p>
+      <div class="page-action-bar">
+        <div class="summary"><strong>5</strong>개 활성 플랜 · 247 테넌트가 구독 중</div>
+        <div class="actions">
+          <a class="btn btn-ghost" href="/operator/feature-flags"><svg class="ico" width="14" height="14"><use href="#i-flag"/></svg> 모듈 권한 설정</a>
+          <button class="btn btn-primary" onclick="applyState('create_modal')"><svg class="ico" width="14" height="14"><use href="#i-plus"/></svg> 요금제 생성</button>
+        </div>
+      </div>
 
-      <!-- 화면별 콘텐츠 끝 -->
+      <!-- Top Filter -->
+      <div class="filter-row">
+        <span class="filter-label">상태</span>
+        <select class="select input-sm"><option>활성</option><option>비활성</option><option>판매중지</option><option>커스텀</option></select>
+        <span class="filter-label" style="margin-left: 8px;">공개</span>
+        <select class="select input-sm"><option>전체</option><option>일반 공개</option><option>비공개 (영업)</option></select>
+        <span class="filter-label" style="margin-left: 8px;">유형</span>
+        <select class="select input-sm"><option>전체</option><option>표준</option><option>커스텀</option></select>
+        <a style="margin-left: auto; color: var(--color-accent); cursor: pointer;" href="#">초기화</a>
+      </div>
+
+      <div class="card card-flat">
+
+        <div class="empty-state-block empty-state" style="padding: 60px 32px;">
+          <svg class="ico ico-empty" width="48" height="48"><use href="#i-credit-card"/></svg>
+          <div style="font-size: 16px; font-weight: 600;">생성된 요금제가 없습니다</div>
+          <div style="font-size: 13px; color: var(--color-text-muted);">첫 요금제를 생성하여 신규 테넌트가 구독할 수 있도록 하세요.</div>
+          <button class="btn btn-primary" style="margin-top: 12px;" onclick="applyState('create_modal')"><svg class="ico" width="14" height="14"><use href="#i-plus"/></svg> 요금제 생성</button>
+        </div>
+
+        <div class="table-body">
+          <table class="table">
+            <colgroup><col style="width: 16%"><col style="width: 11%"><col style="width: 10%"><col style="width: 9%"><col style="width: 24%"><col style="width: 9%"><col style="width: 9%"><col style="width: 12%"></colgroup>
+            <thead><tr><th>요금제명 ↕</th><th>기본요금/월 ↕</th><th>인당/월 ↕</th><th>포함 인원</th><th>제공 모듈</th><th>구독 ↕</th><th>상태 ↕</th><th>액션</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>기본</strong><div style="font-size: 11px; color: var(--color-text-muted);">basic · v1.0</div></td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩0</td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩9,900</td>
+                <td>0</td>
+                <td><span class="module-chip">근태</span><span class="module-chip">휴가</span><span class="module-chip">결재</span></td>
+                <td style="text-align: right;">178</td>
+                <td><span class="badge badge-success">활성</span></td>
+                <td><a style="color: var(--color-accent); cursor: pointer;" onclick="applyState('edit_modal')" href="#">수정</a> · <a style="color: var(--color-accent); cursor: pointer;" href="#">복제</a></td>
+              </tr>
+              <tr>
+                <td><strong>프리미엄</strong><div style="font-size: 11px; color: var(--color-text-muted);">premium · v1.0</div></td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩0</td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩19,800</td>
+                <td>0</td>
+                <td><span class="module-chip">근태</span><span class="module-chip">휴가</span><span class="module-chip">결재</span><span class="module-chip">급여</span><span class="module-chip">문서</span><span class="module-chip">리포트</span></td>
+                <td style="text-align: right;">58</td>
+                <td><span class="badge badge-success">활성</span></td>
+                <td><a style="color: var(--color-accent); cursor: pointer;" onclick="applyState('edit_modal')" href="#">수정</a> · <a style="color: var(--color-accent); cursor: pointer;" href="#">복제</a></td>
+              </tr>
+              <tr>
+                <td><strong>엔터프라이즈</strong><div style="font-size: 11px; color: var(--color-text-muted);">enterprise · v2.0</div></td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩500,000</td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩29,800</td>
+                <td>10</td>
+                <td><span class="module-chip">전체</span><span class="module-chip">SLA</span><span class="module-chip">감사로그</span></td>
+                <td style="text-align: right;">11</td>
+                <td><span class="badge badge-success">활성</span></td>
+                <td><a style="color: var(--color-accent); cursor: pointer;" onclick="applyState('edit_modal')" href="#">수정</a> · <a style="color: var(--color-accent); cursor: pointer;" href="#">복제</a></td>
+              </tr>
+              <tr class="row-inactive">
+                <td><strong>기본 v0.9</strong><div style="font-size: 11px; color: var(--color-text-muted);">basic-legacy</div></td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩0</td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩7,900</td>
+                <td>0</td>
+                <td><span class="module-chip">근태</span><span class="module-chip">휴가</span></td>
+                <td style="text-align: right;">12</td>
+                <td><span class="badge badge-muted">비활성</span></td>
+                <td><a style="color: var(--color-accent); cursor: pointer;" href="#">복제</a></td>
+              </tr>
+              <tr class="row-inactive">
+                <td><strong>스마트팩토리 커스텀</strong><div style="font-size: 11px; color: var(--color-text-muted);">custom-smartfactory</div></td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩1,500,000</td>
+                <td style="text-align: right; font-variant-numeric: tabular-nums;">₩9,900</td>
+                <td>50</td>
+                <td><span class="module-chip">전체</span><span class="module-chip">전담</span></td>
+                <td style="text-align: right;">1</td>
+                <td><span class="badge badge-accent">커스텀</span></td>
+                <td><a style="color: var(--color-accent); cursor: pointer;" onclick="applyState('edit_modal')" href="#">수정</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </main>
 
-    <!-- ========================================================================
-         글로벌 푸터 (변경 금지)
-         ======================================================================== -->
     <footer class="footer">
       <div>© 2026 FlowHR</div>
-      <div class="footer-links">
-        <a href="/legal/terms">이용약관</a>
-        <a href="/legal/privacy">개인정보처리방침</a>
-        <a>도움말</a>
-        <a>운영팀 문의</a>
-      </div>
-      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+      <div class="footer-links"><a href="/legal/terms">이용약관</a><a href="/legal/privacy">개인정보처리방침</a><a href="#">도움말</a><a href="#">운영팀 문의</a></div>
+      <div class="footer-version">v1.0.0-beta</div>
     </footer>
   </div>
 </div>
+
+<!-- 요금제 생성 모달 -->
+<div class="modal-overlay modal-create" role="dialog" aria-modal="true" aria-labelledby="modal-title-op05-create">
+  <div class="modal-box">
+    <h2 id="modal-title-op05-create" style="margin-top: 0; font-size: 18px;">새 요금제 생성</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">요금제명</label><input class="input" placeholder="예: 비즈니스"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">슬러그</label><input class="input" placeholder="business"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">기본요금/월</label><input class="input" type="number" value="0"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">인당요금/월</label><input class="input" type="number" value="14800"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">포함 인원</label><input class="input" type="number" value="0"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">정렬 순서</label><input class="input" type="number" value="2"></div>
+    </div>
+    <div style="margin-top: 16px;">
+      <div class="label">제공 모듈</div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; font-size: 13px;">
+        <label><input class="checkbox" type="checkbox" checked> 근태</label>
+        <label><input class="checkbox" type="checkbox" checked> 휴가</label>
+        <label><input class="checkbox" type="checkbox" checked> 결재</label>
+        <label><input class="checkbox" type="checkbox" checked> 급여</label>
+        <label><input class="checkbox" type="checkbox"> 문서</label>
+        <label><input class="checkbox" type="checkbox"> 외부연동</label>
+        <label><input class="checkbox" type="checkbox" checked> 리포트</label>
+        <label><input class="checkbox" type="checkbox"> 감사로그</label>
+      </div>
+    </div>
+    <div style="margin-top: 16px; display: flex; align-items: center; gap: 14px; font-size: 13px;">
+      <label><input class="checkbox" type="checkbox" checked> 일반 공개</label>
+      <label><input class="checkbox" type="checkbox"> 영업 전용 (비공개)</label>
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+      <button class="btn btn-ghost" onclick="applyState('default')">취소</button>
+      <button class="btn btn-primary" onclick="applyState('default')">생성</button>
+    </div>
+  </div>
+</div>
+
+<!-- 요금제 수정 모달 -->
+<div class="modal-overlay modal-edit" role="dialog" aria-modal="true" aria-labelledby="modal-title-op05-edit">
+  <div class="modal-box">
+    <h2 id="modal-title-op05-edit" style="margin-top: 0; font-size: 18px;">요금제 수정 — 프리미엄</h2>
+    <div class="auth-alert auth-alert-warning" style="margin-top: 12px;">
+      <svg class="ico" width="18" height="18"><use href="#i-alert-t"/></svg>
+      <div><strong>이 플랜은 현재 58개 테넌트가 구독 중입니다.</strong><span class="auth-alert-meta">가격 변경은 다음 청구일부터 적용되며, 모듈 변경은 즉시 적용됩니다.</span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">요금제명</label><input class="input" value="프리미엄"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">슬러그</label><input class="input" value="premium" disabled><div class="input-help">슬러그는 변경 불가</div></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">인당요금/월</label><input class="input" type="number" value="19800"></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">포함 인원</label><input class="input" type="number" value="0"></div>
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 20px;">
+      <button class="btn btn-danger">비활성화</button>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-ghost" onclick="applyState('default')">취소</button>
+        <button class="btn btn-primary" onclick="applyState('default')">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"        data-key="1">1 목록</span>
+  <span class="state-debug-key" data-state-key="create_modal"   data-key="2">2 생성</span>
+  <span class="state-debug-key" data-state-key="edit_modal"     data-key="3">3 수정</span>
+  <span class="state-debug-key" data-state-key="inactive_view"  data-key="4">4 비활성 포함</span>
+  <span class="state-debug-key" data-state-key="empty"          data-key="5">5 빈</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'create_modal', '3': 'edit_modal', '4': 'inactive_view', '5': 'empty' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
 
 </body>
 </html>

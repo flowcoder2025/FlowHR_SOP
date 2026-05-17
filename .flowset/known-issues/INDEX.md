@@ -7,8 +7,8 @@
 | 심각도 | 활성 건수 | 트리거 임계 | 트리거 도달 |
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
-| P1 High | 0 | 3 | ✅ 모두 해소 (KI-037 → batch-004 evaluator PASS 8.61, archive 예정) |
-| P2 Medium | 0 | 5 | ✅ 모두 해소 (batch-004 evaluator P2 2건 즉시 처리: 정책 표기 통일 + _layout-shell svg attribute) |
+| **P1 High** | **3** | 3 | ✅ **트리거 도달** — G2 통합 평가 결함 3건 (KI-046 DS SSOT both / KI-047 모바일 codex / KI-048 라우팅 codex) → WI-KI-batch-006 G2 hotfix 발동 |
+| P2 Medium | 3 | 5 | ❌ — KI-049 analysis 권한 매트릭스 7화면 누락 (evaluator) + KI-050 select-wrap 17건 (codex hotfix2) + KI-051 showcase-coverage CI 강화 (codex hotfix2) |
 | P3 Low | **17** | 10 | ✅ 트리거 도달 — 17건 활성 (기존 14 + KI-042/043/044 G1 fix1 NON_BLOCKING 3건) |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
@@ -62,6 +62,12 @@
 | KI-043 | P3 | 5 | Wireframe | CM-21.html L97 `<span class="version-change">하이라이트</span>` i18n 매핑 누락 — `legal.terms.version_change_label` 키 추가 권장 | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1 hotfix) |
 | KI-044 | P3 | 5 | Wireframe | CM-04.html .state-error-alert / .state-loading-spinner 가 .state-otp-form 자손 → 부모 hidden 시 ancestor 가시성에 의존. CSS selector 명시성 보강 권장 (`body[data-state="error"] .state-otp-form .state-error-alert`) | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1) |
 | KI-045 | P3 | 5 | Wireframe | CM-03.html 운영사 계정 활성화 시 "건너뛰기 (직원)" 버튼 숨김 처리 미명시 — 와이어프레임에서는 두 버튼 항상 표시. Phase 7 React 변환 시 `users.role === 'operator_*'` 조건 분기 명세 | evaluator G1 | 2026-05-16 | open (Phase 7) |
+| **KI-046** | **P1** | 5 | Wireframe | **DS SSOT 위반 — 컴포넌트 components.css 미등록 + 화면별 인라인 재정의**: `.modal-overlay`/`.modal-box` (OP-03/05/06/07/09/12 6화면), `.stepper`/`.step` (OP-04), `.switch` (OP-11/OP-12 비일관 정의), `.toggle-pill` (OP-07), `.period-chip` (OP-10), `.drawer` (OP-09), `.diff-before`/`.diff-after` (OP-09). CHANGELOG wf-v0.2.0 "패턴 도입" 약속 5종 미등록 (병합). G1 KI-037 전례 P1. Phase 7 React 전환 비용 큼. | **both** (evaluator P2 + codex P1, 상위 채택) | 2026-05-16 | **batch-006 hotfix 진행 중** |
+| **KI-047** | **P1** | 5 | Wireframe | **모바일 반응형 부재** — OP-02~OP-12 11 화면에 `@media (max-width: 768px)` 없음. 10~11컬럼 테이블 / 240px 사이드 필터 / 220px vert-tabs / 360px master-list 등 고정 grid가 모바일에서 깨질 가능성. PWA 명세 단계 핵심 전환 리스크. | codex | 2026-05-16 | **batch-006 hotfix 진행 중** |
+| **KI-048** | **P1** | 5 | Wireframe | **라우팅 href placeholder / cross-link 부재** — 사이드바·테넌트명 클릭·신규 등록 CTA가 실제 `href` 없이 placeholder. KI-027 routing matrix 누락 전례 P1. 다음 Phase 구현자가 화면간 흐름 확정 불가. | codex | 2026-05-16 | **batch-006 hotfix 진행 중** |
+| KI-049 | P2 | 5 | Wireframe | analysis 권한 매트릭스 11화면 중 7화면 누락 (OP-04/05/06/08/10/11/12) — PRD엔 있으나 analysis 재인용 부재. wf-v0.2.0 hotfix 또는 G3 진행 시 일괄 보강. | evaluator | 2026-05-16 | open (batch-006 hotfix 포함) |
+| KI-050 | P2 | 5 | Wireframe | `.select-wrap` 미적용 17건 — `<select>`는 `.select` 클래스로 chevron 표시되지만 focus/disabled/error 상태 표현이 `.select-wrap` ancestor에 의존. NON_BLOCKING (native control DS 패턴 의무 통과). 다음 batch에서 일괄 적용. | codex hotfix2 §17-7-2 | 2026-05-17 | open (다음 batch) |
+| KI-051 | P2 | 5 | Process | CI `showcase-coverage-check` job이 anchor 존재만 보고 컴포넌트 사용 일관성을 검증하지 못함 — false negative. 화면이 실제 사용하는 DS 클래스가 component-usage-matrix.json의 patterns에 매핑되어 있는지 cross-check 필요. | codex hotfix2 §17-7-4 | 2026-05-17 | open (다음 batch) |
 
 ## 등록 형식
 

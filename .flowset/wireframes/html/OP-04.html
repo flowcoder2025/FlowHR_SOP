@@ -1,22 +1,40 @@
 <!DOCTYPE html>
 <!--
-  FlowHR AppShell 템플릿 — 모든 인증 화면이 본 구조를 따른다.
-  사용법:
-    1. 본 파일 전체를 화면 HTML로 복사
-    2. <title> 변경
-    3. 사이드바: 도메인별 메뉴 + active 위치만 변경 (operator/tenant/employee 메뉴는 _design-system/05-layouts.md 참조)
-    4. 페이지 타이틀 (.page-title) 변경
-    5. <main class="content"> 안만 화면별 콘텐츠로 교체
-    6. 헤더/푸터 절대 변경 금지
+  OP-04 신규 테넌트 등록 (`/operator/tenants/new`).
+  PRD: prd/domains/operator/OP-04-onboarding.md
+  Layout: _design-system/_layout-shell.html (active=테넌트)
+  Pattern: Wizard Stepper (7 단계).
+  상태 (5): 1 step1(회사정보) / 2 step3(요금제) / 3 step5(모듈) / 4 step7(검토) / 5 invite_failed
 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>FlowHR — [화면 ID 화면명]</title>
+<title>FlowHR — OP-04 신규 테넌트 등록</title>
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .wizard-shell { display: grid; grid-template-columns: 240px 1fr; gap: 24px; align-items: start; }
+
+  /* .stepper/.step/.step-num/.is-completed/.is-active는 components.css SSOT */
+
+  .state-only { display: none; }
+  body[data-state="step1"]         #step-1,
+  body[data-state="step3"]         #step-3,
+  body[data-state="step5"]         #step-5,
+  body[data-state="step7"]         #step-7,
+  body[data-state="invite_failed"] #step-7-failed { display: block; }
+
+  .module-toggle { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--r-md); background: var(--color-bg); }
+  .module-toggle.is-on { border-color: var(--color-accent); background: var(--color-accent-bg); }
+  .review-table th { background: var(--color-surface-2); padding: 6px 10px; font-size: 12px; font-weight: 600; }
+  .review-table td { padding: 6px 10px; font-size: 13px; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
 </head>
-<body>
+<body data-state="step1">
 
 <!-- ============================================================================
      인라인 SVG sprite (WI-RSv3, file:// 호환 — 외부 icons.svg <use> 차단 우회)
@@ -91,126 +109,194 @@
   <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
 </svg>
 
+
 <div class="app-shell">
 
-  <!-- ========================================================================
-       사이드바 (글로벌, 도메인별)
-       operator: 9 메뉴 / tenant: 8 메뉴 / employee: 8 메뉴
-       _design-system/05-layouts.md §사이드바 메뉴 참조
-       ======================================================================== -->
   <nav class="sidebar">
-    <!-- 운영사: <Logo>, 테넌트: <TenantLogo> — 03-components.md §Logo / §TenantLogo 참조 -->
-    <div class="sidebar-logo">
-      <div class="logo">
-        <div class="logo-fallback">F</div>
-        <span class="logo-text">FlowHR</span>
-      </div>
-    </div>
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">FlowHR</span></div></div>
     <div class="sidebar-menu">
       <div class="sidebar-section-label">운영사</div>
-      <a class="sidebar-item is-active"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-dashboard"/></svg> 대시보드</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-building"/></svg> 테넌트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-credit-card"/></svg> 구독 / 요금제</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-receipt"/></svg> 청구 / 정산</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-flag"/></svg> 기능 권한</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-ticket"/></svg> 지원 티켓</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-scroll"/></svg> 감사 로그</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-chart"/></svg> 운영 리포트</a>
-      <a class="sidebar-item"><svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-settings"/></svg> 시스템 설정</a>
+      <a class="sidebar-item" href="/operator"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item is-active" href="/operator/tenants"><svg class="ico" width="18" height="18"><use href="#i-building"/></svg> 테넌트</a>
+      <a class="sidebar-item" href="/operator/plans"><svg class="ico" width="18" height="18"><use href="#i-credit-card"/></svg> 구독 / 요금제</a>
+      <a class="sidebar-item" href="/operator/billing"><svg class="ico" width="18" height="18"><use href="#i-receipt"/></svg> 청구 / 정산</a>
+      <a class="sidebar-item" href="/operator/feature-flags"><svg class="ico" width="18" height="18"><use href="#i-flag"/></svg> 기능 권한</a>
+      <a class="sidebar-item" href="/operator/tickets"><svg class="ico" width="18" height="18"><use href="#i-ticket"/></svg> 지원 티켓</a>
+      <a class="sidebar-item" href="/operator/audit-logs"><svg class="ico" width="18" height="18"><use href="#i-scroll"/></svg> 감사 로그</a>
+      <a class="sidebar-item" href="/operator/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 운영 리포트</a>
+      <a class="sidebar-item" href="/operator/system-settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 시스템 설정</a>
     </div>
     <div class="sidebar-footer">v1.0.0-beta · 운영사 환경</div>
   </nav>
 
   <div class="main">
-
-    <!-- ========================================================================
-         글로벌 헤더 (CM-16~19 의무 — 변경 금지)
-         ======================================================================== -->
     <header class="header">
-      <h1 class="page-title">[화면 타이틀]</h1>
-
-      <!-- CM-18 헤더 검색 (MVP △ — disabled + v1.1 배지) -->
+      <h1 class="page-title">신규 테넌트 등록</h1>
       <div class="header-search-wrap">
         <div class="header-search">
-          <svg class="icon" width="16" height="16"><use href="../_design-system/icons.svg#i-search"/></svg>
-          <input placeholder="검색은 v1.1에서 제공됩니다 (현재 화면별 필터 사용)" disabled />
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
+          <input placeholder="검색 v1.1" disabled />
           <span class="v11-badge">v1.1</span>
         </div>
       </div>
-
       <div class="header-actions">
-        <!-- CM-19 도움말 -->
-        <button class="icon-btn" data-tooltip="도움말 (현재 화면 가이드)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-help"/></svg>
-        </button>
-
-        <!-- CM-17 알림 종 -->
-        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)">
-          <svg class="ico" width="18" height="18"><use href="../_design-system/icons.svg#i-bell"/></svg>
-          <span class="badge-dot">3</span>
-        </button>
-
-        <!-- CM-16 프로필 드롭다운 -->
-        <div style="position:relative;">
-          <button class="profile-trigger">
-            <div class="avatar">[I]</div>
-            <svg class="ico" width="14" height="14"><use href="../_design-system/icons.svg#i-chevron-down"/></svg>
-          </button>
-          <!-- 드롭다운 펼친 상태 (실제 구현 시 click toggle) -->
-          <!--
-          <div class="dropdown dropdown-right-0" style="width:280px;">
-            <div class="dropdown-header">
-              <div class="dropdown-name">김운영</div>
-              <div class="dropdown-meta">operator_super · FlowHR 운영팀</div>
-            </div>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-user"/></svg>내 프로필 (OP-12)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-shield"/></svg>보안 설정 (2FA · 세션)</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-bell"/></svg>알림 설정</a>
-            <a class="dropdown-item"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-help"/></svg>도움말</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item danger"><svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-logout"/></svg>로그아웃</a>
-          </div>
-          -->
-        </div>
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">[I]</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
       </div>
     </header>
 
-    <!-- ========================================================================
-         점검 사전 공지 배너 (조건부 — maintenance_windows 활성 시만)
-         ========================================================================
-    <div class="maintenance-banner">
-      <svg class="ico" width="16" height="16"><use href="../_design-system/icons.svg#i-tool"/></svg>
-      <span>[점검 안내] 2026-05-20 22:00 ~ 23:00 시스템 점검이 예정되어 있습니다. 미리 작업을 저장해 주세요.</span>
-      <span class="close"><svg class="ico ico-sm" width="14" height="14"><use href="../_design-system/icons.svg#i-x"/></svg></span>
-    </div>
-    -->
-
-    <!-- ========================================================================
-         페이지 콘텐츠 (화면별 교체 영역)
-         ======================================================================== -->
     <main class="content">
-      <!-- 화면별 콘텐츠 시작 -->
 
-      <p style="color: var(--color-text-muted);">콘텐츠 영역 — 화면별로 이 부분만 교체합니다.</p>
+      <div style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px;">
+        <a style="color: var(--color-accent);" href="#">테넌트</a> › <span>신규 등록</span>
+        <span style="float: right;">임시저장됨 · 12분 전 · <a style="color: var(--color-accent); cursor: pointer;" href="#">임시저장</a></span>
+      </div>
 
-      <!-- 화면별 콘텐츠 끝 -->
+      <div class="wizard-shell">
+
+        <!-- Stepper -->
+        <aside class="card stepper">
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">1</span></div><div class="step-label">회사정보</div></div>
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">2</span></div><div class="step-label">도메인</div></div>
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">3</span></div><div class="step-label">요금제</div></div>
+          <div class="step is-completed"><div class="step-num"><span class="step-num-text">4</span></div><div class="step-label">관리자 계정</div></div>
+          <div class="step is-active"><div class="step-num">5</div><div class="step-label">모듈 선택</div></div>
+          <div class="step"><div class="step-num">6</div><div class="step-label">초기 데이터</div></div>
+          <div class="step"><div class="step-num">7</div><div class="step-label">완료 / 검토</div></div>
+        </aside>
+
+        <!-- Wizard Body -->
+        <div class="form-section" style="max-width: 720px;">
+
+          <!-- Step 1: 회사정보 -->
+          <div class="state-only" id="step-1">
+            <div class="form-section-header"><h2>1단계 — 회사정보</h2><p>고객사 기본 정보를 입력하세요. 사업자번호는 실시간 중복 검증됩니다.</p></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">회사명</label><input class="input" placeholder="예: 플로우상사 (주)"></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">사업자등록번호</label><input class="input" placeholder="123-45-67890" value="123-45-67890"><div class="input-help">형식 OK + 중복 없음 ✓</div></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">대표자</label><input class="input"></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">업종</label><select class="select"><option>도소매</option><option>제조업</option><option>서비스업</option><option>건설업</option><option>IT</option></select></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0; grid-column: 1 / 3;"><label class="label">주소</label><input class="input" placeholder="서울특별시 ..."></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">대표 연락처</label><input class="input" placeholder="02-1234-5678"></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">로고 (선택)</label><label class="file-input"><input type="file" class="sr-only"><span class="file-input-btn"><svg class="ico" width="14" height="14"><use href="#i-upload"/></svg> 파일 선택</span><span class="file-input-filename is-empty">선택된 파일 없음</span></label></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 24px;"><button class="btn btn-ghost" disabled>← 이전</button><button class="btn btn-primary">다음 →</button></div>
+          </div>
+
+          <!-- Step 3: 요금제 -->
+          <div class="state-only" id="step-3">
+            <div class="form-section-header"><h2>3단계 — 요금제 선택</h2><p>고객사가 사용할 요금제와 계약 조건을 설정하세요.</p></div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+              <div class="card"><div class="card-title">기본</div><div style="font-size: 22px; font-weight: 700;">₩9,900<span style="font-size: 12px; font-weight: 400; color: var(--color-text-muted);"> /명/월</span></div><ul style="font-size: 12px; padding-left: 18px; color: var(--color-text-muted); margin-top: 8px;"><li>근태/휴가/결재 기본</li><li>최대 50명</li></ul></div>
+              <div class="card" style="border-color: var(--color-accent); box-shadow: 0 0 0 2px var(--color-accent-bg);"><div class="card-title">프리미엄 <span class="badge badge-success">선택됨</span></div><div style="font-size: 22px; font-weight: 700;">₩19,800<span style="font-size: 12px; font-weight: 400; color: var(--color-text-muted);"> /명/월</span></div><ul style="font-size: 12px; padding-left: 18px; color: var(--color-text-muted); margin-top: 8px;"><li>전체 모듈 + 급여명세서</li><li>최대 200명</li><li>SLA 99.9%</li></ul></div>
+              <div class="card"><div class="card-title">커스텀</div><div style="font-size: 14px; color: var(--color-text-muted);">100명+ 협의</div><ul style="font-size: 12px; padding-left: 18px; color: var(--color-text-muted); margin-top: 8px;"><li>전체 모듈</li><li>전담 매니저</li></ul></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 20px;">
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">계약 시작일</label><div class="date-input"><input class="input" type="date" value="2026-06-01"></div></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">계약 종료일</label><div class="date-input"><input class="input" type="date" value="2027-05-31"></div></div>
+              <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">계약 인원</label><input class="input" type="number" value="30" min="1"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 24px;"><button class="btn btn-ghost">← 이전</button><button class="btn btn-primary">다음 →</button></div>
+          </div>
+
+          <!-- Step 5: 모듈 선택 -->
+          <div class="state-only" id="step-5">
+            <div class="form-section-header"><h2>5단계 — 모듈 선택</h2><p>고객사가 사용할 모듈을 활성화하세요. Phase 7에서 추가 토글 가능.</p></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px;">
+              <div class="module-toggle is-on"><div><strong>근태</strong><div style="font-size: 12px; color: var(--color-text-muted);">출퇴근 GPS / 휴게 / 야간 / 연장</div></div><span class="badge badge-success">ON</span></div>
+              <div class="module-toggle is-on"><div><strong>휴가</strong><div style="font-size: 12px; color: var(--color-text-muted);">연차 / 반차 / 경조사 / 보상휴가</div></div><span class="badge badge-success">ON</span></div>
+              <div class="module-toggle is-on"><div><strong>결재</strong><div style="font-size: 12px; color: var(--color-text-muted);">휴가 / 비용 / 외근 / 인사변경</div></div><span class="badge badge-success">ON</span></div>
+              <div class="module-toggle is-on"><div><strong>급여</strong><div style="font-size: 12px; color: var(--color-text-muted);">명세서 발행 + 다운로드</div></div><span class="badge badge-success">ON</span></div>
+              <div class="module-toggle"><div><strong>문서</strong><div style="font-size: 12px; color: var(--color-text-muted);">증명서 자동 발급</div></div><span class="muted">OFF</span></div>
+              <div class="module-toggle"><div><strong>외부연동</strong><div style="font-size: 12px; color: var(--color-text-muted);">슬랙 / 카카오워크 / 회계</div></div><span class="muted">OFF</span></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 24px;"><button class="btn btn-ghost">← 이전</button><button class="btn btn-primary">다음 →</button></div>
+          </div>
+
+          <!-- Step 7: 검토 / 완료 -->
+          <div class="state-only" id="step-7">
+            <div class="form-section-header"><h2>7단계 — 검토 및 등록 완료</h2><p>입력한 정보를 검토하고 등록을 완료하세요. 등록 후 관리자에게 초대 이메일이 발송됩니다.</p></div>
+            <table class="table review-table" style="margin-top: 16px;">
+              <tbody>
+                <tr><th>회사명</th><td>플로우상사 (주)</td></tr>
+                <tr><th>사업자번호</th><td>123-45-67890</td></tr>
+                <tr><th>도메인</th><td><code>flowtrading.flowhr.kr</code></td></tr>
+                <tr><th>요금제</th><td>프리미엄 · 12개월 · 30명</td></tr>
+                <tr><th>월 청구액</th><td><strong>₩594,000</strong> (₩19,800 × 30명)</td></tr>
+                <tr><th>대표관리자</th><td>이대표 · ceo@flowtrading.kr · 010-1234-5678</td></tr>
+                <tr><th>모듈</th><td>근태 · 휴가 · 결재 · 급여 (4개 활성)</td></tr>
+                <tr><th>초기 데이터</th><td>부서 3개 · 근무정책 표준 · 휴가정책 표준 · 결재라인 2단</td></tr>
+              </tbody>
+            </table>
+            <div class="auth-alert auth-alert-info" style="margin-top: 16px;">
+              <svg class="ico" width="18" height="18"><use href="#i-info"/></svg>
+              <div><strong>등록 후 다음이 자동 실행됩니다.</strong><span class="auth-alert-meta">1. tenants + subscriptions + tenant_settings INSERT (트랜잭션)<br>2. 대표관리자 초대 메일 발송 (welcome_invite 템플릿)<br>3. OP-02 테넌트 목록으로 이동</span></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 24px;"><button class="btn btn-ghost">← 이전</button><button class="btn btn-primary" onclick="applyState('invite_failed')">등록 완료 →</button></div>
+          </div>
+
+          <!-- Step 7 invite_failed -->
+          <div class="state-only" id="step-7-failed">
+            <div class="auth-alert auth-alert-warning">
+              <svg class="ico" width="18" height="18"><use href="#i-alert-t"/></svg>
+              <div><strong>테넌트는 생성되었으나 초대 메일 발송이 실패했습니다.</strong><span class="auth-alert-meta">tenants.status = pending_invite · request_id: req_8b3f9c2a · 재시도하시거나 OP-03 상세에서 수동으로 발송할 수 있습니다.</span></div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+              <button class="btn btn-primary">초대 메일 재발송</button>
+              <a href="/operator/tenants" class="btn btn-ghost">테넌트 목록으로 (OP-02)</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </main>
 
-    <!-- ========================================================================
-         글로벌 푸터 (변경 금지)
-         ======================================================================== -->
     <footer class="footer">
       <div>© 2026 FlowHR</div>
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a>도움말</a>
-        <a>운영팀 문의</a>
+        <a href="#">도움말</a>
+        <a href="#">운영팀 문의</a>
       </div>
-      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+      <div class="footer-version">v1.0.0-beta</div>
     </footer>
   </div>
 </div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="step1"         data-key="1">1 회사정보</span>
+  <span class="state-debug-key" data-state-key="step3"         data-key="2">2 요금제</span>
+  <span class="state-debug-key" data-state-key="step5"         data-key="3">3 모듈</span>
+  <span class="state-debug-key" data-state-key="step7"         data-key="4">4 검토</span>
+  <span class="state-debug-key" data-state-key="invite_failed" data-key="5">5 초대 실패</span>
+</div>
+
+<script>
+function applyState(s) {
+  document.body.setAttribute('data-state', s);
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+  });
+  var params = new URLSearchParams(location.search);
+  params.set('state', s);
+  history.replaceState(null, '', '?' + params.toString());
+}
+(function () {
+  applyState(new URLSearchParams(location.search).get('state') || 'step1');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'step1', '2': 'step3', '3': 'step5', '4': 'step7', '5': 'invite_failed' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
 
 </body>
 </html>

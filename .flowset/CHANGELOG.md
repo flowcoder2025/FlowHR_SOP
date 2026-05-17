@@ -8,6 +8,70 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.2.0] — 2026-05-16 (G2 운영 완료 + hotfix 진행 중)
+
+### 산출물 (OP-02 ~ OP-12, 11 화면 + 11 analysis)
+
+| ID | 패턴 | 5 상태 |
+|----|------|-------|
+| OP-02 테넌트 관리 | List + Side Filter + 10 Cols Table | default/loading/filtered/empty/error |
+| OP-03 테넌트 상세 | Detail + 3 Header Cards + 8 Tabs | basic/usage/audit/deactivate/not_found |
+| OP-04 신규 등록 | 7-Step Wizard Stepper | step1/step3/step5/step7/invite_failed |
+| OP-05 구독/요금제 | Plan List + Top Filter + Create/Edit Modal | default/create/edit/inactive/empty |
+| OP-06 청구/정산 | KPI 5 + 11 Cols Table + 일괄/환불 모달 | default/overdue_only/batch/refund/empty |
+| OP-07 기능 플래그 | Toggle Table + Add/Override/History 모달 | default/modified/add/override/history |
+| OP-08 지원 티켓 | Master-Detail + 응답 스레드 + 내부 메모 | list/detail/reply/internal/closed |
+| OP-09 감사 로그 | Filter Panel + 10 Cols + Drawer + CSV | default/filtered/drawer/export/empty |
+| OP-10 운영 리포트 | KPI 6 + Charts 4 + Heatmap + 상위 테넌트 | month/quarter/year/custom/empty |
+| OP-11 시스템 설정 | Vertical Tabs 9 + Switch | general/maintenance/notifications/security/backup |
+| OP-12 본인 프로필 | Detail + Tabs 5 + 운영사 보안 강화 | basic/security/sessions/notifications/force_logout |
+
+### 패턴 도입
+
+- `.session-row` is-current/is-staff/default 3 variant
+- `.toggle-pill` on/off/beta + `.switch` (38×22 round)
+- `.period-chip` active 색상 분기
+- `.vert-tab` border-left-active
+- `.drawer` 480px slide-in (감사 로그 상세)
+- `.diff-before/after` highlight (감사 before→after)
+
+### Hotfix (WI-KI-batch-006, 진행 중)
+
+KI-046 (DS SSOT, P1 both) + KI-047 (모바일, P1 codex) + KI-048 (라우팅, P1 codex) → trigger 도달. system-v3 (아래) 적용 후 DS 보강 + 19 화면 patch + CI 4 job 진행.
+
+### Hotfix3 (WI-KI-batch-006-fix3, 2026-05-17)
+
+hotfix2 통합 판정: evaluator PASS 8.735 + codex FAIL 6.5 (OR 원칙 → BLOCKED_FOR_HOTFIX_3) + PR #5 Playwright Smoke CI FAIL 종합 정정.
+
+**P0-A — JS 외부참조 재주입 정정**:
+- CM-01/CM-02/CM-03/OP-12 4 화면 password-toggle JS의 `setAttribute('href', '../_design-system/icons.svg#...')` → `'#i-...'` 인라인 sprite reference로 치환 (codex hotfix2 P0 잔존)
+
+**P0-B — Playwright Smoke false positive 제거**:
+- smoke.mjs `iconCheck` / `nativeCheck` 에 `Element.checkVisibility({ checkVisibilityCSS: true })` 가드 추가 — `.state-only` / data-state 토글로 의도된 hidden state element를 invisible/bare 카운트에서 제외 (PR #5 18/20 FAIL의 진짜 root cause)
+
+**P1 — `.active` → `.is-active` SSOT 통일 (rev1 포함)**:
+- components.css 9건 (sidebar-item / page-btn / tab / vert-tab / filter-chip / step×2 / legal-toc a)
+- _design-tokens.css 3건 (sidebar-item / filter-chip / tab — 레거시 잔존)
+- 03-components.md 코드 예제 4건 (filter-chip / tab / step / period-chip)
+- OP-08/09 inline `.chip.active` 4건 (style + markup)
+- HTML markup: sidebar-item active 12 + chip active 2 + filter-chip active 1 + legal-toc `<a class="active">` 1 = 16건
+- **rev1 추가 (evaluator FAIL 후 정정)**:
+  - `_showcase.html` 8건 markup (page-btn / tab / vert-tab / filter-chip / step / sidebar-item×3)
+  - `_design-system/_layout-shell.html:111` SSOT 템플릿 sidebar-item 1건
+  - `component-usage-matrix.json:15` allowed_classes 표기 통일 1건
+- 검증: `grep -rnE 'class="[^"]*\bactive\b[^"]*"' .flowset/wireframes/ --exclude-dir=_archive*` literal `.active` 잔존 0건 (총 32 + 10 = 42건 정정)
+
+**CI 보강**:
+- `inline-svg-sprite-check`: 패턴을 `['\"]\.\./_design-system/icons\.svg`로 broad화 — HTML attribute + JS literal 모두 검출 (codex 5항목 §17-7-1 확장)
+
+**KI 신규 등록 (P2, NON_BLOCKING)**:
+- KI-050 select-wrap 17건 (다음 batch)
+- KI-051 showcase-coverage CI 강화 (다음 batch)
+
+### 다음
+
+G3 테넌트 매니저 (TA-01~14, 14 화면, wf-v0.3.0).
+
 ## [system-v3] — 2026-05-16 (평가 시스템 v3 — file:// 호환 + 렌더링 검수 + DS 충실도)
 
 산출물 버전 아님 (시스템 강화). Codex 협의 합의안 반영.
@@ -36,7 +100,7 @@ evaluator(PASS 8.11), codex(WARNING 6.8) 둘 다 못 잡음 — 정적 텍스트
 
 Phase 5 와이어프레임 (G1 hotfix + G2 hotfix + G3/G4 + 전체 evaluator). 다른 Phase는 v2 4축 그대로.
 
-### 후속 작업 (별도 PR)
+### 후속 작업
 
 - G2 hotfix 확장 (`feature/WI-G2-wireframes-operator`): DS 보강 (.select-wrap / .file-input / 인라인 sprite) + 19 화면 patch + CI 4 job + showcase 매트릭스 → wf-v0.2.0 머지
 
