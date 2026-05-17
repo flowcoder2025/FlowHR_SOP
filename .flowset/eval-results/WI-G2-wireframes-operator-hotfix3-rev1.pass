@@ -1,0 +1,5 @@
+PASS — evaluator hotfix3-rev1 8.90/10
+2026-05-17
+모든 5축 임계 통과 + Hard gate 미발동.
+직전 hotfix3 FAIL 4 항목 + codex WARNING CM-21 runtime JS 1건 모두 HEAL.
+신규 P3 (KI-052 _layout-shell.html 외부 sprite 20건) NON_BLOCKING.
