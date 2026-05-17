@@ -8,6 +8,63 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.3.0] — 2026-05-17 (G3 테넌트 매니저 양산)
+
+### 산출물 (TA-01 ~ TA-14, 14 화면 + 14 analysis)
+
+| ID | 패턴 | 5 상태 |
+|----|------|-------|
+| TA-01 관리자 대시보드 | KPI 6 + Charts 4 + Activity Tables 3 + Notice | default/loading/filtered(manager 팀뷰)/empty/error |
+| TA-02 직원 관리 | List + Side Filter + 10 Cols Table + Bulk Upload (file-input) | default/loading/filtered/empty/error |
+| TA-03 직원 상세 | Header Cards 2 + Tabs 9 + Form-section | default(기본)/loading/filtered(인사)/empty(권한)/error |
+| TA-04 조직도 / 부서 관리 | 3-Pane (Tree + Detail + Members) | default(읽기)/loading/filtered(편집)/empty/error |
+| TA-05 근태 관리 | Filter Chips + KPI 4 + 10 Cols Table | default(오늘)/loading/filtered(팀)/empty/error |
+| TA-06 근태 수정 요청 | List + Filter + 10 Cols Table + Side Drawer (diff) | default(목록)/loading/filtered(상세)/empty/error |
+| TA-07 휴가 관리 | KPI 5 + Calendar Grid (직원×31일) + List Toggle | default(캘린더)/loading/filtered(목록)/empty/error |
+| TA-08 휴가 신청 상세 | Info Cards 5 + Approval Timeline + Sticky Action | default(대기)/loading/filtered(진행중)/empty(취소)/error |
+| TA-09 결재 / 승인 | Master-Detail Inbox + Tabs (받은/보낸/위임/완료) | default(받은)/loading/filtered(보낸)/empty/error |
+| TA-10 급여 / 문서 관리 | Tabs 5 + Bulk Upload (file-input) + Send Monitoring | default(급여)/loading/filtered(인사문서)/empty/error |
+| TA-11 문서함 / 전자계약 | List + Filter (v1.2 lock) + 7 Cols Table + Flow Guide | default(전체)/loading/filtered(v1.2)/empty/error |
+| TA-12 리포트 | Left Report List + Right Chart Canvas + 52h Warning | default(인력)/loading/filtered(초과근무)/empty/error |
+| TA-13 회사 설정 | Vertical Tabs 9 + Form Pane (work/leave/security) | default(근무)/loading/filtered(휴가)/empty(보안 read-only)/error |
+| TA-14 외부 연동 | Integration Card Grid (9) + API Key Table | default(채널)/loading/filtered(API Key)/empty/error |
+
+### 패턴 도입 (G3 신규)
+
+- `.profile-card` + `.profile-avatar-lg` + `.summary-grid` (TA-03 헤더)
+- `.org-tree` + `.tree-node.is-active` + `.tree-children` (TA-04 트리)
+- `.calendar-grid` (160px name + 31일 minmax + weekend variant) + `.leave-badge.l-full/l-half/l-sick` (TA-07)
+- `.timeline-step` + `.timeline-marker.is-done/is-pending` (TA-08 결재 라인)
+- `.sticky-actions` (TA-08 PWA 결재 sticky footer)
+- `.approval-shell` (380px / 1fr) + `.inbox-tabs.is-active` + `.approval-row.is-active` (TA-09)
+- `.report-shell` (260px / 1fr) + `.report-item.is-active/is-disabled` + `.chart-grid` (TA-12)
+- `.settings-shell` (220px / 1fr) + `.pane-canvas` (TA-13 vert-tabs 변종)
+- `.integration-grid` 3-col + `.int-card.is-coming` + `.seg-btn` (TA-14)
+
+### Tenant 사이드바 (8 메뉴 — 05-layouts.md SSOT)
+
+- 대시보드 / 직원 / 근태 / 휴가 / 결재 / 급여·문서 / 리포트 / 설정
+- href 실제 경로 (`/admin/employees`, `/admin/leaves/L-NNNN` 등 — placeholder 0)
+- 모든 화면 sidebar-footer "v1.0.0-beta · 테넌트 환경"
+
+### CI / 정책 의무 준수
+
+- 인라인 SVG sprite 14 화면 + 외부 `../_design-system/icons.svg` 참조 0건
+- `.is-active` variant SSOT (`.active` 금자 — runtime JS + markup)
+- native control DS wrap — `.select-wrap` (TA-02/04/13), `.file-input` (TA-02/10), `.date-input` (TA-02/13)
+- 화면 inline `<style>`은 page-grid layout만 (컴포넌트 재정의 0건)
+- showcase-coverage — component-usage-matrix.json 14 패턴 매핑 의무 준수
+
+### KI 사전 정정 (G3 첫 commit `01c800d`)
+
+- KI-052 (P3) `_layout-shell.html` 외부 sprite 20건 + `_layout-auth.html` 4건 = 24건 정정 후 진입
+- CI `inline-svg-sprite-check` 검사 범위 확장 (_design-system/_layout-*.html)
+
+### 다음
+
+- 평가 (evaluator + codex 병렬) → hotfix 사이클 (최대 3회) → PR 머지 → tag wf-v0.3.0
+- G4 테넌트 직원 (EM-01~11, 11 화면, wf-v0.4.0)
+
 ## [wf-v0.2.0] — 2026-05-16 (G2 운영 완료 + hotfix 진행 중)
 
 ### 산출물 (OP-02 ~ OP-12, 11 화면 + 11 analysis)

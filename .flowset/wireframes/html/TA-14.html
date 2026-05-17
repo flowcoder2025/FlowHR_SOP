@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<!--
+  TA-14 외부 연동 (`/admin/integrations`).
+  PRD: prd/domains/tenant-admin/TA-14-integrations.md
+  Layout: _design-system/_layout-shell.html (AppShell + tenant 8 메뉴, active=설정)
+  Pattern: Integration Card Grid + API Key Table (MVP partial — 알림 채널 + API Key만)
+  상태 (5): 1 default(연결 상태) / 2 loading / 3 filtered(API Key 탭) / 4 empty / 5 error
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — TA-14 외부 연동</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .integration-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .int-card { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .int-card .int-head { display: flex; gap: 10px; align-items: center; }
+  .int-card .int-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .int-card.is-coming { opacity: 0.65; }
+  .int-card .int-meta { font-size: 12px; color: var(--color-text-muted); }
+
+  .state-only { display: none; }
+  body[data-state="default"]  .state-default,
+  body[data-state="filtered"] .state-filtered,
+  body[data-state="empty"]    .state-empty,
+  body[data-state="error"]    .state-error { display: block; }
+  body[data-state="loading"] .integration-grid,
+  body[data-state="loading"] .api-key-table { opacity: 0.4; pointer-events: none; }
+  body[data-state="loading"] .loading-overlay { display: flex; }
+  .loading-overlay { display: none; padding: 32px; align-items: center; justify-content: center; gap: 10px; color: var(--color-text-muted); font-size: 13px; }
+  .loading-overlay > svg.ico { width: 18px !important; height: 18px !important; animation: spin 0.9s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  body[data-state="default"]  .view-channels { display: block; }
+  body[data-state="filtered"] .view-apikeys { display: block; }
+  .view-channels, .view-apikeys { display: none; }
+
+  body[data-state="default"]  .seg-btn[data-seg="channels"] { background: var(--color-accent); color: white; }
+  body[data-state="filtered"] .seg-btn[data-seg="apikeys"] { background: var(--color-accent); color: white; }
+  .seg-btn { padding: 6px 14px; font-size: 13px; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer; }
+  .seg-btn:first-child { border-radius: 6px 0 0 6px; border-right: none; }
+  .seg-btn:last-child { border-radius: 0 6px 6px 0; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></symbol>
+  <symbol id="i-check-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+  <symbol id="i-alert-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-alert-t" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+</svg>
+
+<div class="app-shell">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">플로우상사</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">관리자 메뉴</div>
+      <a class="sidebar-item" href="/admin"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/admin/employees"><svg class="ico" width="18" height="18"><use href="#i-users"/></svg> 직원</a>
+      <a class="sidebar-item" href="/admin/attendance"><svg class="ico" width="18" height="18"><use href="#i-clock"/></svg> 근태</a>
+      <a class="sidebar-item" href="/admin/leaves"><svg class="ico" width="18" height="18"><use href="#i-calendar-days"/></svg> 휴가</a>
+      <a class="sidebar-item" href="/admin/approvals"><svg class="ico" width="18" height="18"><use href="#i-check-square"/></svg> 결재</a>
+      <a class="sidebar-item" href="/admin/payroll"><svg class="ico" width="18" height="18"><use href="#i-file-text"/></svg> 급여 / 문서</a>
+      <a class="sidebar-item" href="/admin/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 리포트</a>
+      <a class="sidebar-item is-active" href="/admin/settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 테넌트 환경</div>
+  </nav>
+
+  <div class="main">
+
+    <header class="header">
+      <h1 class="page-title">외부 연동</h1>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
+          <input placeholder="검색은 v1.1에서 제공됩니다" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">정</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="page-action-bar">
+        <div class="summary">
+          <span class="state-default state-only">알림 채널 — 카카오 알림톡 / SMS / SMTP 활성. SSO / Calendar / Slack / 전자계약 / 출퇴근기기 / 회계 v1.2~v2.0</span>
+          <span class="state-filtered state-only">API Keys — 2개 활성 (HRIS 동기화 + 외부 BI). 만료 임박 0건</span>
+          <span class="state-empty state-only">연동 없음 (신규 테넌트)</span>
+          <span class="state-error state-only">연동 정보 조회 실패</span>
+        </div>
+        <div class="actions">
+          <div style="display: inline-flex;">
+            <button class="seg-btn" data-seg="channels">연동 채널</button>
+            <button class="seg-btn" data-seg="apikeys">API Key</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="position: relative;">
+
+        <div class="loading-overlay">
+          <svg class="ico"><use href="#i-loader"/></svg>
+          연동 정보를 불러오는 중…
+        </div>
+
+        <div class="empty-state state-only state-empty" style="padding: 80px 32px;">
+          <svg class="ico ico-empty" width="48" height="48"><use href="#i-link"/></svg>
+          <div style="font-size: 16px; font-weight: 600; color: var(--color-text);">연동된 외부 시스템이 없습니다</div>
+          <div style="font-size: 13px; color: var(--color-text-muted);">먼저 카카오 알림톡 / SMS / 이메일 채널을 연결하면 직원에게 알림을 발송할 수 있습니다.</div>
+        </div>
+
+        <div class="state-only state-error" style="padding: 32px;">
+          <div class="auth-alert auth-alert-error" role="alert">
+            <svg class="ico" width="18" height="18"><use href="#i-alert-c"/></svg>
+            <div><strong>연동 정보 조회 실패</strong><span class="auth-alert-meta">INTEGRATIONS_FETCH_FAILED · req_n2o5</span></div>
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+            <button class="btn btn-primary">재시도</button>
+          </div>
+        </div>
+
+        <!-- default — 연동 채널 그리드 -->
+        <div class="state-only state-default view-channels">
+
+          <div class="integration-grid">
+
+            <!-- 카카오 알림톡 -->
+            <div class="card int-card">
+              <div class="int-head">
+                <div class="int-icon" style="background: #FEE500;"><svg class="ico" width="20" height="20" style="color: #391B1B;"><use href="#i-send"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>카카오 알림톡</strong>
+                  <div class="int-meta">NHN Cloud · 채널 인증 필수</div>
+                </div>
+                <span class="badge badge-success">연결됨</span>
+              </div>
+              <div class="int-meta">
+                마지막 발송: 2026-05-17 09:32 · 24h 실패 0건<br>
+                템플릿 5종 (휴가승인 / 근태정정 / 결재대기 / 급여발송 / 입사환영)
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm">설정 변경</button>
+                <button class="btn btn-ghost btn-sm">테스트 발송</button>
+                <button class="btn btn-ghost btn-sm">로그 보기</button>
+              </div>
+            </div>
+
+            <!-- SMS -->
+            <div class="card int-card">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-smartphone"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>SMS</strong>
+                  <div class="int-meta">NHN Cloud · 알림톡 폴백용</div>
+                </div>
+                <span class="badge badge-success">연결됨</span>
+              </div>
+              <div class="int-meta">
+                마지막 발송: 2026-05-17 09:18 · 24h 실패 0건<br>
+                30분 미열람 시 자동 폴백 활성
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm">설정 변경</button>
+                <button class="btn btn-ghost btn-sm">테스트 발송</button>
+              </div>
+            </div>
+
+            <!-- SMTP -->
+            <div class="card int-card">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-mail"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>SMTP (이메일)</strong>
+                  <div class="int-meta">Supabase 기본 / 자체 SMTP</div>
+                </div>
+                <span class="badge badge-success">연결됨</span>
+              </div>
+              <div class="int-meta">
+                Supabase 기본 사용 중. 자체 SMTP 전환 가능.<br>
+                마지막 발송: 2026-05-17 08:54 · 24h 발송 142건
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm">자체 SMTP로 전환</button>
+                <button class="btn btn-ghost btn-sm">템플릿 보기</button>
+              </div>
+            </div>
+
+            <!-- 전자계약 (v1.2) -->
+            <div class="card int-card is-coming">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-file-text"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>전자계약 <span class="badge badge-muted">v1.2</span></strong>
+                  <div class="int-meta">모두싸인 · 헬로싸인 · 자체 PAdES</div>
+                </div>
+                <span class="badge badge-muted">대기</span>
+              </div>
+              <div class="int-meta">계약서 전자서명 자동화. 직원 OTP 인증 + 진행 상태 실시간 추적.</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm" disabled>연결 (v1.2)</button>
+              </div>
+            </div>
+
+            <!-- Google Calendar (v1.2) -->
+            <div class="card int-card is-coming">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-calendar-days"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>Google Calendar <span class="badge badge-muted">v1.2</span></strong>
+                  <div class="int-meta">휴가 일정 sync</div>
+                </div>
+                <span class="badge badge-muted">대기</span>
+              </div>
+              <div class="int-meta">승인된 휴가가 직원 캘린더에 자동 표시.</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm" disabled>연결 (v1.2)</button>
+              </div>
+            </div>
+
+            <!-- Slack (v1.2) -->
+            <div class="card int-card is-coming">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-bell"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>Slack <span class="badge badge-muted">v1.2</span></strong>
+                  <div class="int-meta">알림 sync</div>
+                </div>
+                <span class="badge badge-muted">대기</span>
+              </div>
+              <div class="int-meta">결재 / 근태 알림을 Slack 채널로 전송.</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm" disabled>연결 (v1.2)</button>
+              </div>
+            </div>
+
+            <!-- SSO (v1.2) -->
+            <div class="card int-card is-coming">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-lock"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>SSO <span class="badge badge-muted">v1.2</span></strong>
+                  <div class="int-meta">SAML 2.0 / OIDC</div>
+                </div>
+                <span class="badge badge-muted">대기</span>
+              </div>
+              <div class="int-meta">Okta / Azure AD / Google Workspace 단일 로그인.</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm" disabled>연결 (v1.2)</button>
+              </div>
+            </div>
+
+            <!-- 출퇴근 기기 (v1.3) -->
+            <div class="card int-card is-coming">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-clock"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>출퇴근 기기 <span class="badge badge-muted">v1.3</span></strong>
+                  <div class="int-meta">NFC / 지문 SDK</div>
+                </div>
+                <span class="badge badge-muted">대기</span>
+              </div>
+              <div class="int-meta">하드웨어 단말 연동 (제조사별 SDK).</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm" disabled>연결 (v1.3)</button>
+              </div>
+            </div>
+
+            <!-- Webhook (v1.3) -->
+            <div class="card int-card is-coming">
+              <div class="int-head">
+                <div class="int-icon"><svg class="ico" width="20" height="20"><use href="#i-globe"/></svg></div>
+                <div style="flex: 1;">
+                  <strong>Webhook <span class="badge badge-muted">v1.3</span></strong>
+                  <div class="int-meta">이벤트 외부 발송</div>
+                </div>
+                <span class="badge badge-muted">대기</span>
+              </div>
+              <div class="int-meta">FlowHR 이벤트를 외부 endpoint로 푸시.</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-ghost btn-sm" disabled>연결 (v1.3)</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- filtered — API Key 목록 -->
+        <div class="state-only state-filtered view-apikeys">
+          <div class="page-action-bar" style="margin-bottom: 12px;">
+            <div class="summary" style="font-size: 13px;">활성 2개 · 만료 임박 0건 · 24h 호출 1,247건</div>
+            <div class="actions">
+              <button class="btn btn-primary"><svg class="ico" width="14" height="14"><use href="#i-plus"/></svg> API Key 발급</button>
+            </div>
+          </div>
+
+          <div class="card card-flat api-key-table">
+            <table class="table">
+              <colgroup>
+                <col style="width: 22%"><col style="width: 18%"><col style="width: 14%"><col style="width: 12%">
+                <col style="width: 11%"><col style="width: 11%"><col style="width: 12%">
+              </colgroup>
+              <thead>
+                <tr><th>이름 / 사유</th><th>키 (마스킹)</th><th>권한</th><th>만료일 ↕</th><th>마지막 호출</th><th>24h 호출</th><th>액션</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>HRIS 동기화</strong><div style="font-size: 11px; color: var(--color-text-muted);">workday 연동</div></td>
+                  <td><code>fhr_pk_•••• •••• •••• 7c2a</code> <button class="icon-btn icon-btn-sm" data-tooltip="복사"><svg class="ico" width="12" height="12"><use href="#i-copy"/></svg></button></td>
+                  <td><span class="badge badge-muted">read-only</span></td>
+                  <td>2027-05-15</td>
+                  <td>2026-05-17 09:28</td>
+                  <td>1,021</td>
+                  <td><button class="btn btn-ghost btn-sm"><svg class="ico" width="12" height="12"><use href="#i-history"/></svg> 로그</button> <button class="btn btn-ghost btn-sm" style="color: var(--color-danger);"><svg class="ico" width="12" height="12"><use href="#i-trash"/></svg></button></td>
+                </tr>
+                <tr>
+                  <td><strong>외부 BI 대시보드</strong><div style="font-size: 11px; color: var(--color-text-muted);">Metabase 쿼리</div></td>
+                  <td><code>fhr_pk_•••• •••• •••• d4f9</code> <button class="icon-btn icon-btn-sm" data-tooltip="복사"><svg class="ico" width="12" height="12"><use href="#i-copy"/></svg></button></td>
+                  <td><span class="badge badge-muted">read-only</span></td>
+                  <td>2026-12-31</td>
+                  <td>2026-05-17 08:00</td>
+                  <td>226</td>
+                  <td><button class="btn btn-ghost btn-sm"><svg class="ico" width="12" height="12"><use href="#i-history"/></svg> 로그</button> <button class="btn btn-ghost btn-sm" style="color: var(--color-danger);"><svg class="ico" width="12" height="12"><use href="#i-trash"/></svg></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="auth-alert auth-alert-info" role="status" style="margin-top: 12px;">
+            <svg class="ico" width="18" height="18"><use href="#i-info"/></svg>
+            <div>
+              <strong>API Key 발급은 tenant_super만 가능합니다.</strong>
+              <span class="auth-alert-meta">키 값은 발급 시 한 번만 표시 (이후 hashed 저장). 분실 시 재발급 필요.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a href="/legal/terms">이용약관</a>
+        <a href="/legal/privacy">개인정보처리방침</a>
+        <a href="#">도움말</a>
+        <a href="#">운영팀 문의</a>
+      </div>
+      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+    </footer>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"  data-key="1">1 채널</span>
+  <span class="state-debug-key" data-state-key="loading"  data-key="2">2 조회중</span>
+  <span class="state-debug-key" data-state-key="filtered" data-key="3">3 API</span>
+  <span class="state-debug-key" data-state-key="empty"    data-key="4">4 빈</span>
+  <span class="state-debug-key" data-state-key="error"    data-key="5">5 오류</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'loading', '3': 'filtered', '4': 'empty', '5': 'error' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>
