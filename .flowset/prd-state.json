@@ -36,7 +36,7 @@
     "2-backlog": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.29, "eval_verdict": "PASS", "eval_attempts": 2, "rerun_score": 8.03, "rerun_at": "2026-05-15", "rerun_reason": "ST-073~080 추가 후 재평가"},
     "3-erd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.68, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.21, "rerun_at": "2026-05-15", "rerun_reason": "LegalDocument/UserConsent 추가 후 재평가, P2 4건 즉시 처리"},
     "4-api": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.78, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.40, "rerun_at": "2026-05-15", "rerun_reason": "API 보강 후 재평가, P1+P2 즉시 처리 (OP-12 API 6종 + Envelope→SuccessEnvelope)"},
-    "5-wireframes": {"status": "in_progress", "owner": "claude", "restarted_at": "2026-05-15", "policy_change": "Codex 이미지 폐기, HTML 직접 작성 단일 채택", "scope": "44 화면 (CM-01~22 + OP-01~12 + TA-01~14 + EM-01~11)"},
+    "5-wireframes": {"status": "completed", "owner": "claude", "restarted_at": "2026-05-15", "completed_at": "2026-05-18", "policy_change": "Codex 이미지 폐기, HTML 직접 작성 단일 채택", "scope": "45 화면 (CM 8 + OP 12 + TA 14 + EM 11)", "tag": "wf-v1.0.0", "eval_score_full": 8.07, "eval_verdict_full": "PASS", "codex_verdict": "CONDITIONAL 8.1", "integration_verdict": "MERGE_WITH_KI"},
     "6-sprint-plan": {"status": "pending"},
     "7-dev-kickoff": {"status": "pending"},
     "8-qa": {"status": "pending"},
