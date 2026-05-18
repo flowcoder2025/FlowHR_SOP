@@ -1,8 +1,8 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **작성**: 2026-05-18 (G3 wf-v0.3.0 머지 완료 + Playwright hotfix4 완료, G4 진입 직전)
-> **신규 세션 첫 작업**: 본 문서 §3 정독 → G4 양산 시작 (EM-01부터 또는 묶음 선택)
-> **이전 핸드오프**: 2026-05-17 G3 TA-01 양산 대기 (현재 본 문서로 갱신)
+> **작성**: 2026-05-18 (G4 wf-v0.4.0 머지 완료, Phase 5 전체 통합 진입 직전)
+> **신규 세션 첫 작업**: 본 문서 §3 정독 → Phase 5 전체 evaluator (44 화면 통합) 또는 사용자 결정
+> **이전 핸드오프**: 2026-05-18 G3 wf-v0.3.0 머지 완료 + G4 진입 안내 (현재 본 문서로 갱신)
 
 ## 1. 현재 상태 요약
 
@@ -16,133 +16,98 @@
 | (system-v2) | 평가 시스템 v2 | evaluator + codex 통합 정책 | ✅ 머지 (PR #6) | — |
 | (system-v3) | 평가 시스템 v3 | file:// 호환 + 렌더링 + DS 충실도 5축 | ✅ 머지 (PR #7) | — |
 | wf-v0.2.0 | G2 운영 | OP-02~12 (11) + hotfix1/2/3/rev1 | ✅ 머지 (PR #5) | wf-v0.2.0 |
-| **wf-v0.3.0** | **G3 테넌트 매니저** | **TA-01~14 (14)** + hotfix1/2/3/4 | ✅ **머지 (PR #8/#9/#10)** | **wf-v0.3.0** |
-| wf-v0.4.0 | G4 테넌트 직원 | EM-01~11 (11) | 🟡 **신규 세션 양산 대기** | — |
-| wf-v1.0.0 | Phase 5 전체 | 44 화면 통합 | ⏳ 대기 | — |
+| wf-v0.3.0 | G3 테넌트 매니저 | TA-01~14 (14) + hotfix1/2/3/4 | ✅ 머지 (PR #8/#9/#10) | wf-v0.3.0 |
+| (KI-063 강화) | G4 진입 전 의무 | CI sprite cross-check | ✅ 머지 (PR #11) | — |
+| **wf-v0.4.0** | **G4 테넌트 직원** | **EM-01~11 (11) + hotfix1/2** | ✅ **머지 (PR #12)** | **wf-v0.4.0** |
+| wf-v1.0.0 | Phase 5 전체 | **45 화면 통합** | ⏳ **신규 세션 진행 결정** | — |
 
-**현재 브랜치**: `main` (HEAD: `c5542d0` — HANDOFF 갱신 commit. 직전 코드 변경 commit은 `af4c149` PR #10 merge)
+**현재 브랜치**: `main` (HEAD: `c43ea50` — PR #12 squash 머지 commit)
 
-## 2. 최근 진행 (2026-05-17 ~ 2026-05-18)
+**Phase 5 화면 합계**: CM 8 + OP 12 + TA 14 + EM 11 = **45 화면** (PRD spec 44 화면 + CM-22 PWA install 1)
 
-### G3 wf-v0.3.0 머지 완료 (PR #8 + #9 + #10)
+## 2. 최근 진행 (2026-05-18)
 
-**3 PR 시퀀스**:
-- **PR #8** (commit `9e774573`, 2026-05-18T09:07:57Z) — G3 14 화면 + hotfix1/2/3 통합
-- **PR #9** (commit `034bad8`, 2026-05-18T09:17:44Z) — TA-03 use width/height (효과 없음, 진단 commit)
-- **PR #10** (commit `af4c149`, 2026-05-18T09:24:44Z) — TA-03 inline sprite 4 symbol 추가 (진짜 정정, Playwright PASS)
+### G4 wf-v0.4.0 머지 완료 (PR #12)
 
-**평가 결과 (4 사이클)**:
+**1 PR 시퀀스 (3 commit)**:
+- commit `0a39bf9` (2026-05-18T10:5x:xxZ) — G4 11 화면 + 11 analysis + DS 보강 + VERSION/CHANGELOG
+- commit `79315fc` (2026-05-18T11:xx:xxZ) — hotfix1 (codex 4 finding + evaluator P2 2건 mechanical fix)
+- commit `1a25d91` (2026-05-18T11:xx:xxZ) — hotfix2 (codex 재평가 P2/P3 + evaluator P3 mechanical fix)
+- merge commit `c43ea50` (2026-05-18T11:32:28Z) — PR #12 squash 머지 + auto-merge + delete-branch
 
-| 사이클 | evaluator | codex | 통합 | PR |
-|--------|----------:|------:|------|----|
-| 양산 직후 | PASS 9.22 | FAIL 6.1 | BLOCKED | #8 (draft) |
-| hotfix1 | PASS 8.48 | FAIL 7.0 | BLOCKED | #8 (draft) |
-| hotfix2 | PASS 8.65 | FAIL 7.3 | BLOCKED | #8 (draft) |
-| hotfix3 | PASS 8.475 | CONDITIONAL 8.1 (gpt-5.5) | MERGE_WITH_KI | **#8 머지** |
-| hotfix4 (Playwright sprite symbol 누락 정정) | — | — | PASS (CI Playwright) | **#9 진단** → **#10 정정 머지** |
+**평가 결과 (3 사이클)**:
 
-**Codex MCP hang 사고**: hotfix3 1차 호출 1시간6분 hang, 2차 38분 hang. 사용자 결정으로 gpt-5.5 모델 명시 후 12분 만에 정상 응답 (CONDITIONAL 8.1).
+| 사이클 | evaluator | codex (gpt-5.5) | 통합 | 정정 |
+|--------|----------:|----------------:|------|------|
+| 1차 | PASS 8.74 | CONDITIONAL 7.2 | MERGE_WITH_KI / hotfix1 | hotfix1 8건 mechanical fix |
+| 2차 (hotfix1 재평가) | PASS 8.98 | CONDITIONAL 8.1 | MERGE_WITH_KI / hotfix2 | hotfix2 5건 mechanical fix |
+| 3차 (hotfix2 후) | — (생략) | — (생략) | MERGE_WITH_KI | PASS 매트릭스 적용 — codex 결함 전수 해소 |
 
-### G3 산출물
+### G4 산출물
 
-- HTML 14 화면 (TA-01~14)
-- Analysis 14 (PRD 매핑 + 5상태 + i18n + API + 권한 + Phase 7 + 의존성)
-- VERSION wf-v0.3.0
-- CHANGELOG hotfix1/2/3 항목
-- components.css 870 → 1023+ lines (G3 신규 9 + base + 모바일 override)
-- _showcase.html 15 → 24 sections (G3 9 신규 demo)
-- 03-components.md §G3.1~G3.9 (~270 lines Anatomy + Props + Phase 7)
-- component-usage-matrix.json v1.1.0 (14 → 24 patterns)
-- tokens.css `--color-accent-bg` 추가
+- HTML 11 화면 (EM-01~11)
+- Analysis 11 (PRD 매핑 + 5~6상태 + i18n + API + 권한 + Phase 7 + 의존성)
+- VERSION wf-v0.4.0
+- CHANGELOG hotfix1/2 항목
+- components.css 988 → 1100+ lines (G4 신규 6 §G4.1~G4.6 + 보조 자식 §G4.7 7종 + button.notif-row reset + 모바일 override)
+- _showcase.html G4 6 신규 demo section
+- 03-components.md §G4.1~G4.6 (~125 lines Anatomy + Props + Phase 7)
+- component-usage-matrix.json v1.1.0 → v1.2.1 (24 → 31 patterns)
 
-### Playwright iconInvisible 사고 + 정정 (PR #9 → #10)
+### G4 신규 패턴 (6)
 
-- 1차 시도 (PR #9): TA-03 13건 svg `<use>`에 width/height attribute 추가 — **효과 없음**
-- 진단 (artifact 다운로드 + grep): **TA-03 inline sprite에 `i-arrow-right` / `i-download` / `i-eye` / `i-pdf` 4 symbol 누락**이 진짜 원인
-- 2차 시도 (PR #10): sprite block 끝에 4 symbol 추가 → **Playwright PASS**
+1. **ClockCard** — 출퇴근 시계 + 액션 그룹 (EM-01/02, PWA 핵심)
+2. **LeaveBalanceCard** — 잔여 휴가 강조 (EM-01/04, 48px accent num)
+3. **StatMiniList** — 미니 리스트 3건 (EM-01)
+4. **CalcSummary** — 자동 계산 박스 (EM-03 휴가 신청)
+5. **ChartPlaceholder** — Donut 차트 placeholder (EM-04, Phase 7 chart lib 교체 전)
+6. **NotifRow** — 알림 카드 리스트 (EM-10, is-unread variant + button reset)
 
-**교훈**: CI `inline-svg-sprite-check`는 sprite block 존재만 검사, 사용된 use href와 정의된 symbol id의 cross-check는 미실시. → KI-063 후보 (CI 강화).
+### G4 보조 자식 클래스 SSOT (7)
 
-## 3. 신규 세션 첫 작업 (G4 EM-01~11 양산)
+components.css §G4.7 — `.info-row-key/val` (7화면) + `.empty-state-title/desc` (10화면) + `.tab-count` (+is-active variant) + `.form-help` + `.history-card` (3화면).
 
-### 작업 1 — G4 양산 시작 (EM-01부터)
+## 3. 신규 세션 첫 작업 옵션
 
-main에서 새 브랜치 분기.
+Phase 5 와이어프레임 모든 그룹 완료 (G0~G4, 45 화면). **다음 작업은 사용자 결정** — 3 옵션:
 
-```bash
-git checkout main && git pull --ff-only origin main
-git checkout -b feature/WI-G4-wireframes-employee
-```
+### 옵션 A — Phase 5 전체 evaluator (wf-v1.0.0)
 
-**EM 11 화면 (PRD 기준)**:
-- `.flowset/prd/domains/employee/EM-01~11.md` 정확히 확인 (HANDOFF 예상 X)
-- PRD `prd/domains/employee/README.md` 인덱스 + 권한 매트릭스
+review-system.md §17-3 정책: "Phase 5 전체 evaluator (44 화면) — full review". 본 단계는 cross-group 일관성, 전 화면 Playwright smoke, 모든 KI 잔존 정리.
 
-**Employee 사이드바 8 메뉴 (`05-layouts.md` §employee SSOT, L66~76)**:
+작업:
+1. main에서 새 브랜치 `feature/WI-Phase5-final-evaluator`
+2. Phase 5 전체 evaluator 호출 (full review, sampled 30% 미적용)
+3. 결과에 따라 KI 일괄 정정 (현재 활성 P2 7건 + P3 28건 검토)
+4. wf-v1.0.0 tag + Phase 5 종료 마커 (`.flowset/eval-results/phase-5.pass`)
+5. Phase 6 (스프린트 계획) 진입 준비
 
-```
-대시보드 (i-dashboard)         → /me → EM-01
-출퇴근 (i-clock)               → /me/attendance → EM-02
-휴가 (i-calendar-days)         → /me/leaves → EM-04 (+EM-03)
-결재 (i-check-square)          → /me/approvals → EM-05 (+EM-11)
-급여 (i-file-text)             → /me/payslips → EM-06
-문서 (i-file-text)             → /me/documents → EM-07 (+EM-08)
-알림 (i-bell)                  → /me/notifications → EM-10
-내 정보 (i-user)               → /me/profile → EM-09
-```
+### 옵션 B — Phase 6 직접 진입 (스프린트 계획)
 
-footer: `v1.0.0-beta · 직원 환경`. sidebar-section-label: `내 메뉴`.
+Phase 5는 G0~G4 그룹별 evaluator로 충분히 검증됨 (각 그룹 PASS). Phase 5 전체 evaluator를 생략하고 Phase 6 (스프린트 계획 — mvp-plan.md + sprint-001~N.md) 직접 진입. CLAUDE.md `project.md §1` 진행 순서표 명시.
 
-### 작업 2 — G4 패턴 의무 (G3와 동일)
+### 옵션 C — KI 잔존 일괄 정리 (docs batch)
 
-- `_layout-shell.html` 복사 + employee 사이드바 8 메뉴 + 화면별 active
-- 인라인 sprite 의무 (file:// 호환) — **사용 use href와 정의된 symbol id cross-check 필수** (G3 사고 교훈)
-- 5 상태 토글 (state-debug + body data-state)
-- `.is-active` variant SSOT (`.active` 금지)
-- native control wrap (`.select-wrap` / `.file-input` / `.date-input`)
-- href 실제 경로 (placeholder 0)
-- showcase 매핑 + 03-components G4 신규 패턴 사양 (있다면)
-- G3 신규 components (profile-card / org-tree / calendar-grid / approval-timeline+sticky / approval-shell / report-shell / settings-shell / integration-grid / req-shell) 재사용 가능
+활성 KI 35건 (P2 6 + P3 28) 일괄 정리 batch. evaluator/codex 추가 호출 없이 mechanical fix만. wf-v0.4.1 patch tag 또는 별도 docs commit.
 
-### 작업 3 — 평가 절차 (review-system v3 + G3 교훈)
+**사용자 결정 의무 시점**: 본 분기점은 review-system.md §10에 포함되지 않으나 진행 방향 선택 → **사용자 입력 필요**.
 
-그룹 양산 종료 시:
-1. VERSION wf-v0.4.0 + CHANGELOG 항목
-2. commit/push
-3. PR draft 생성
-4. evaluator (subagent_type=evaluator, run_in_background) + codex (subagent_type=general-purpose, run_in_background, mcp__codex__codex 위탁 — **gpt-5.5 모델 명시**)
-5. 두 통지 대기 후 통합 판정
-6. PASS_BOTH → ready → CI → auto-merge → tag wf-v0.4.0
-7. hotfix 최대 3회 사이클
-8. **사용 use href와 sprite symbol id cross-check 의무** (G3 PR #9/#10 사고 교훈)
-9. 그룹 완료 후 KI close-out
-
-### 작업 4 — 페이스 옵션
-
-- **권장 (G2/G3 패턴)**: 일괄 양산 → 평가 → hotfix
-- 묶음별: 컨텍스트 보호
-- 세밀: 1 화면씩
-
-## 4. Known Issues 현황 (활성)
+## 4. Known Issues 현황 (활성 — wf-v0.4.0 머지 후)
 
 | 심각도 | 활성 | 임계 | 트리거 |
 |--------|------|------|--------|
 | P0 | 0 | 1 | ❌ |
 | P1 | 0 | 3 | ❌ |
-| P2 | 7 (KI-049/050/051/054/060/061 + **KI-063 sprite cross-check CI 강화 — G4 진입 전 의무**) | 5 | 도달 |
-| P3 | 24 (KI-005/006/007/013/016/017/020/023/025/032~036/038/040/042~045/055/056/057/062 / KI-015/041 INDEX strike resolved 정정 완료) | 10 | 도달 |
+| P2 | 6 (KI-049/050/051/054/060/061 — KI-063 G4 진입 전 resolved) | 5 | 도달 |
+| P3 | 28 (KI-005/006/007/013/016/017/020/023/025/032~036/038/040/042~045/055/056/057/062 + **KI-064/065/066/067 G4 evaluator 신규**) | 10 | 도달 |
 
-**G3 resolved**: KI-046/047/048/052/053/058/059 (P1/P2/P3 일부)
+**G4 resolved**: 신규 KI 없음 (모든 결함 hotfix1/2에서 머지 전 해소)
 
-**G4 진입 전 의무 (KI-063 P2)**:
-- **KI-063** CI `inline-svg-sprite-check` 강화 — `comm -23 <(grep use href) <(grep symbol id)` 0건 의무 (PR #9/#10 사고 재발 방지). `.github/workflows/pr-checks.yml` 신규 step 추가.
-
-**차기 batch 권고 (G4 또는 후속)**:
-- KI-049 analysis 권한 매트릭스 7화면 누락 (OP-04/05/06/08/10/11/12)
-- KI-050 .select-wrap 17건 미적용
-- KI-054 icon-only aria-label (WCAG 2.1 AA)
-- KI-060 TA-13 vert-tab font-weight drift (600 vs 700 SSOT)
-- KI-061 components.css 7 base 셀렉터 중복 systemic
+**G4 신규 P3 (차후 batch)**:
+- KI-064 EM-11 사이드바 비표시 시각 분기
+- KI-065 EM-03 `.calc-val.is-emphasis` variant
+- KI-066 EM-09 vert-tab data-tab=security 중복
+- KI-067 페이지 한정 grid 8종 컴포넌트화 후보
 
 ## 5. 핵심 정책 결정 (변경 금지)
 
@@ -155,31 +120,31 @@ footer: `v1.0.0-beta · 직원 환경`. sidebar-section-label: `내 메뉴`.
 | 그룹 머지 직후 KI close-out은 main 직접 push 허용 | 사용자 결정 2026-05-17 |
 | 화면별 inline `<style>` 컴포넌트 재정의 금지 (DS SSOT) | design-system-ssot CI + 03-components.md |
 | 외부 SVG `<use>` 금지 → 인라인 sprite + #i-... reference 의무 | review-system.md §17-1 + CI |
+| **CI inline-svg-sprite-check sprite cross-check 의무** (KI-063 resolved) | PR #11 / pr-checks.yml §3 |
 | native control DS wrap 의무 | review-system.md §17-2 + CI |
 | variant naming `.is-*` 표준 (`.active` 금지) | G2 hotfix3-rev1 SSOT 통일 |
 | 사용자 개입 6개 시점만 | review-system.md §10 |
 | 그룹 완료 시에만 사용자 보고 (능동 진행) | 사용자 결정 2026-05-16 |
-| **codex MCP hang 시 모델 명시 (gpt-5.5)** | **사용자 결정 2026-05-18** |
-| **PR auto-merge가 CI 일부 PASS 시점에 머지 가능** | branch protection enforce_admins=false (관찰) |
+| codex MCP hang 시 모델 명시 (gpt-5.5) | 사용자 결정 2026-05-18 |
+| PR auto-merge가 CI 일부 PASS 시점에 머지 가능 | branch protection enforce_admins=false (관찰) |
 
 ## 6. PR 현황
 
 | PR | 제목 | 상태 |
 |----|------|------|
-| #1~#7 | G0~G2 + system-v2/v3 | ✅ MERGED |
-| **#8** | **WI-G3-docs G3 테넌트 와이어프레임 (wf-v0.3.0)** | ✅ **MERGED 2026-05-18 (auto-merge)** |
-| **#9** | **WI-G3hotfix3-fix TA-03 use width/height (효과 없음)** | ✅ **MERGED 2026-05-18 (진단 commit)** |
-| **#10** | **WI-G3hotfix4-fix TA-03 inline sprite 4 symbol 추가** | ✅ **MERGED 2026-05-18 (Playwright PASS)** |
-| #(미생성) | G4 wf-v0.4.0 | ⏳ 양산 완료 후 생성 |
+| #1~#10 | G0~G3 + system-v2/v3 + hotfix4 | ✅ MERGED |
+| #11 | WI-G4prep-ci CI sprite cross-check 강화 (KI-063) | ✅ MERGED 2026-05-18 |
+| **#12** | **WI-G4-docs G4 직원 와이어프레임 (wf-v0.4.0)** | ✅ **MERGED 2026-05-18** |
+| #(미생성) | Phase 5 전체 또는 Phase 6 진입 | ⏳ 사용자 결정 후 |
 
 ## 7. Task 상태 (이전 세션 → 신규 세션)
 
 | 영역 | 상태 |
 |------|------|
-| G0/G1/G2 양산 + 평가 | ✅ completed |
-| **G3 TA-01~14 양산 + hotfix1/2/3/4 + 머지** | ✅ **completed (wf-v0.3.0 tag)** |
-| G4 EM-01~11 양산 | 🟡 **신규 세션 시작** |
-| Phase 5 전체 evaluator (44 화면) | ⏳ 대기 |
+| G0/G1/G2/G3 양산 + 평가 | ✅ completed |
+| KI-063 CI sprite cross-check 강화 | ✅ completed (PR #11) |
+| **G4 EM-01~11 양산 + hotfix1/2 + 머지** | ✅ **completed (wf-v0.4.0 tag)** |
+| Phase 5 전체 evaluator (45 화면) | ⏳ **사용자 결정 — 옵션 A/B/C** |
 
 ## 8. 컨텍스트 압축 시 우선 보존
 
@@ -187,9 +152,11 @@ footer: `v1.0.0-beta · 직원 환경`. sidebar-section-label: `내 메뉴`.
 - `.flowset/contracts/review-system.md` (§17 v3 SSOT)
 - `.flowset/contracts/review-rubric.md` (§10 5축)
 - `.flowset/known-issues/INDEX.md`
-- `.flowset/wireframes/_design-system/component-usage-matrix.json` (v1.1.0 24 patterns)
-- `.flowset/wireframes/_design-system/03-components.md` (§G3.1~G3.9 신규 사양)
-- `docs/FlowHR_screen_spec_v_1.md` (EM-01~11 명세)
+- `.flowset/wireframes/_design-system/component-usage-matrix.json` (v1.2.1 31 patterns)
+- `.flowset/wireframes/_design-system/03-components.md` (§G3 + §G4 신규 사양)
+- `.flowset/wireframes/_design-system/components.css` (§G4 + §G4.7 SSOT)
+- `.flowset/eval-results/phase-5-g4*.{eval,codex}.md` (G4 평가 결과 4 파일)
+- `docs/FlowHR_screen_spec_v_1.md` (Phase 5 SSOT, 45 화면 통합)
 
 ## 9. 변경 이력
 
@@ -200,4 +167,5 @@ footer: `v1.0.0-beta · 직원 환경`. sidebar-section-label: `내 메뉴`.
 | 2026-05-16 | 갱신 — G2 hotfix2 진행 중 다음 세션 인계 | 컨텍스트 한계 |
 | 2026-05-16 | 갱신 — codex hotfix2 결과 + hotfix3 진입 안내 | OR 원칙 BLOCKED |
 | 2026-05-17 | 갱신 — G2 wf-v0.2.0 머지 완료 + G3 진입 | wf-v0.2.0 tag + G3 양산 시작 |
-| **2026-05-18** | **본 갱신 — G3 wf-v0.3.0 머지 완료 (PR #8/#9/#10) + G4 진입 안내** | wf-v0.3.0 tag + G4 EM 양산 시작 |
+| 2026-05-18 | 갱신 — G3 wf-v0.3.0 머지 완료 + G4 진입 안내 | wf-v0.3.0 tag + G4 EM 양산 시작 |
+| **2026-05-18** | **본 갱신 — G4 wf-v0.4.0 머지 완료 + Phase 5 전체 통합 안내** | **wf-v0.4.0 tag + Phase 5 종료 옵션** |
