@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1 wf-v0.2.0 resolved + **audit hotfix3 NEW-P0/P1 정정 2026-05-18 — OP-04:179 + _showcase L386/529/618/809 5건 select-wrap, 21건 총 적용**) |
-| P2 Medium | **4** | 5 | ❌ 임계 미달 — KI-049/054/060/061. KI-053/058 G3 hotfix2~3 resolved + KI-063 WI-G4prep-ci resolved + KI-050 **audit hotfix2 16/17 정정 (OP-02/05/06/07/11) + audit hotfix3 OP-04 1건 + _showcase 4건 추가 정정 = resolved 2026-05-18 (총 21건 .select-wrap, 45/45 CI 강화 PASS)** + **KI-051 audit hotfix3 resolved (CI native-element-wrap-check `.select-wrap` parent 검증 추가)**. |
-| P3 Low | **31** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + **KI-070 audit hotfix2 codex G1 (2026-05-18)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
+| P2 Medium | **5** | 5 | ✅ 트리거 도달 — KI-049/054/060/061 + **KI-071 신규 (Phase 2 4차 재평가 NON_BLOCKING, 2026-05-19 — epics.md/estimation.md/stories.md 12곳 stale)**. KI-053/058 G3 hotfix2~3 resolved + KI-063 WI-G4prep-ci resolved + KI-050 audit hotfix2/3 resolved + KI-051 audit hotfix3 resolved. **Phase 6 mvp-plan 작성 시 KI-071 SSOT 인용 갱신과 함께 일괄 처리 (mechanical fix 12곳)**. |
+| P3 Low | **29** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + KI-070 audit hotfix2 codex G1 + **~~KI-013~~ / ~~KI-034~~ resolved (Phase 6 진입 전 의무, 2026-05-19)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -29,7 +29,7 @@
 | ~~KI-010~~ | P3 | 1 | API | ~~matrix.json TenantDraft.endpoints U 누락~~ | — | — | **resolved (batch-001)** |
 | ~~KI-011~~ | P3 | 1 | PRD | ~~04-data-model.md 변경 이력 "26 엔티티" 잔존~~ | — | — | **resolved (batch-001)** |
 | ~~KI-012~~ | P3 | 1 | PRD | ~~03-tech-architecture.md i18n "en 추후"~~ | — | — | **resolved (batch-001)** |
-| KI-013 | P3 | 2 | Backlog | EP-03/04/05/09/10/11/12 7 Epic Task 분해 미완 — Phase 6 스프린트 계획 진입 전에 완전 분해 필요 | evaluator Phase 2 attempt 1 | 2026-05-15 | scheduled (Phase 6) |
+| ~~KI-013~~ | P3 | 2 | Backlog | ~~EP-03/04/05/09/10/11/12 7 Epic Task 분해 미완 — Phase 6 스프린트 계획 진입 전에 완전 분해 필요~~ | evaluator Phase 2 attempt 1 | 2026-05-15 | **resolved (Phase 6 진입 전 의무, 2026-05-19 — tasks.md TS-084~220 신규 137 Task 분해 + ST-073~080 26 Task 보강 → 합계 80 Story / 223 Task / 838 MD)** |
 | ~~KI-014~~ | P3 | 2 | Backlog | ~~EP-08 AttendanceModification routing~~ | — | — | **resolved (Phase 3 rls.md §4 Approval polymorphic)** |
 | ~~KI-015~~ | P3 | 2 | Backlog | ~~estimation.md 200 MD vs tasks.md 739 MD 환산 차이~~ | evaluator Phase 2 attempt 1 | 2026-05-15 | **resolved (estimation.md L60-63에 정책 명시)** |
 | KI-016 | P3 | 2 | Backlog | dependency-graph.md NHN Cloud 30~60일 출처 URL/발행일 부재 — 운영사가 실제 신청 시 NHN Cloud 공식 가이드 URL 인용 보강 | evaluator Phase 2 attempt 2 | 2026-05-15 | scheduled (Phase 9 베타 진입 전 NHN Cloud 신청 시점) |
@@ -50,7 +50,7 @@
 | ~~KI-031~~ | P1 | 5 | Process | ~~evaluator 검증 축 부족~~ | user@Phase5 | 2026-05-15 | **resolved (evaluator.md L38/L61-64 + review-rubric.md L91, batch-003)** |
 | KI-032 | P3 | 1 (재평가) | PRD | prd/README.md L26/L29/L33 카운트 미갱신 (36→44, 15→22, 11→12) | evaluator Phase 1 rerun | 2026-05-15 | open (1줄 수정, 다음 batch-004) |
 | KI-033 | P3 | 1 (재평가) | PRD | prd/03-tech-architecture.md L46 디렉토리 트리 OP-12 + 정적 페이지 라우트 누락 | evaluator Phase 1 rerun | 2026-05-15 | open (1줄 수정, 다음 batch-004) |
-| KI-034 | P3 | 2 (재평가) | Backlog | tasks.md L182 / estimation.md L30 합계 stale + dependency-graph.md 신규 8 Story 미반영 + stories.md L6-28 인용 표 헤더 stale + ST-073~080 의존 필드 누락 + README.md L98 표현 stale (6 항목 묶음) | evaluator Phase 2 rerun | 2026-05-15 | open (Phase 6 KI-013과 함께 처리) |
+| ~~KI-034~~ | P3 | 2 (재평가) | Backlog | ~~tasks.md L182 / estimation.md L30 합계 stale + dependency-graph.md 신규 8 Story 미반영 + stories.md L6-28 인용 표 헤더 stale + ST-073~080 의존 필드 누락 + README.md L98 표현 stale (6 항목 묶음)~~ | evaluator Phase 2 rerun | 2026-05-15 | **resolved (Phase 6 진입 전 의무, 2026-05-19 — 5 파일 정정: tasks.md 223 Task/838 MD + estimation.md 415 SP/218 MD + dependency-graph.md ST-073~080 의존 절 + stories.md 80 Story 헤더/인용 표 + backlog/README.md 45 화면)** |
 | KI-035 | P3 | 3 (재평가) | DB | seed.md legal v1.0.0 INSERT 누락 + erd.md L692 user_consents tenant_id NULL 엣지케이스 + indexes.md L132 부분 중복 (3 항목 묶음) | evaluator Phase 3 rerun | 2026-05-15 | open (Phase 7 KI-017/020과 함께 처리) |
 | KI-036 | P3 | 4 (재평가) | API | auth.md L230 cross-operator sessions 응답 본문 미정의 + cron.md L65-83 tenant_settings.value jsonb 경로 정합 미확인 + common.md L111 KI-026 정책 정합 Phase 7 재검증 (3 항목 묶음) | evaluator Phase 4 rerun | 2026-05-15 | open (Phase 7과 함께 처리) |
 | ~~KI-037~~ | P1 | 5 | Wireframe | ~~디자인 시스템 SSOT 부재~~ | 사용자 지적 | 2026-05-16 | **resolved (batch-004 evaluator PASS 8.61, archive 예정)** |
@@ -87,6 +87,7 @@
 | KI-068 | P3 | 5 | Wireframe | OP 모달 title `<h2>` inline-styled (G2 leftover) — `.modal-title` SSOT 미적용. G2 OP 화면 일부 모달이 `<div class="modal-header"><h2 style="...">제목</h2>` 패턴 유지. audit hotfix2 또는 Phase 7 React 변환 시 일괄 정정. | codex SAMP-P3-001 audit hotfix1 | 2026-05-18 | open (차기 docs batch) |
 | KI-069 | P3 | 5 | Wireframe | KI-049 audit hotfix1 보강 일부 backtick 텍스트 손상 — 16 화면 권한 매트릭스 § 텍스트 정정 필요 (CM-01만 audit hotfix2 정정 완료, 나머지 15건 잔존). | evaluator audit hotfix1 NON_BLOCKING | 2026-05-18 | open (차기 docs batch) |
 | KI-070 | P3 | 5 | Wireframe | inline svg width/height attribute 누락 — `<svg class="ico">` 패턴 (CSS `.ico { width: 16; height: 16 }`로 시각 보정되나 file:// fallback 계약 불일치). 다수 화면 광범위 영향. | codex G1-PHASE5-CDX-004 audit hotfix2 | 2026-05-18 | open (차기 docs batch) |
+| KI-071 | P2 | 2 (4차 재평가) | Backlog | Phase 2 backlog 잔존 stale 12곳: (a) epics.md L39/56/109/128/148/204/222 7건 Epic 단위 SP 인용 stale (EP-02 34→31 / EP-03 21→26 / EP-06 34→40 / EP-07 34→35 / EP-08 55→58 / EP-11 21→20 / EP-12 34→38) — stories.md L505 SSOT 미인용 (b) estimation.md L66/L71-72/L92 4건 비용 환산 stale (379 SP / 200 MD / 739 MD / 380-390 SP → 415/218/838/415) (c) estimation.md L47 209 MD 반올림 근거 미명시 (d) stories.md L646 OP-12 14 endpoint 경로 shorthand vs PRD operator-prefix 미정합 (P3 NON_BLOCKING) | evaluator 4차 + codex 4차 (gpt-5.5 기본) 모두 NON_BLOCKING_OBSERVATIONS 동의 | 2026-05-19 | open (Phase 6 mvp-plan 작성 시 SSOT 인용 갱신과 함께 처리) |
 
 ## 등록 형식
 

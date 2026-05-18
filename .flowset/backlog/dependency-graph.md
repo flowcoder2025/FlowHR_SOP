@@ -56,6 +56,7 @@ graph TD
 - ST-002~004 ← ST-001
 - ST-005 ← ST-001, ST-068 동시
 - ST-068/069 ← Supabase 인프라
+- ST-072 (CM-06 오류·점검 P0) ← ST-005 (RLS), ST-068 (audit_logs), Sentry 인프라
 
 ### Sprint 2 (Tenant)
 - ST-006 ← ST-005 (RLS), ST-053 (초기 데이터 입력 폼)
@@ -66,6 +67,7 @@ graph TD
 - ST-024~027 ← ST-006 (테넌트 존재), ST-005 (RLS)
 - ST-028~029 ← ST-006 (회사 단위 트리)
 - ST-030 ← ST-024
+- ST-071 (TA-01 관리자 대시보드 P0) ← ST-024 (직원 마스터), ST-068 (audit), ST-069 (Realtime) — 직원 마스터 완료 직후 진입, 차트 데이터는 EP-07/08 진행 따라 점진적 활성
 
 ### Sprint 4 (Attendance)
 - ST-031 ← ST-024 (직원), ST-053 (work_policy)
@@ -81,6 +83,57 @@ graph TD
 - ST-058 ← 모든 P0 Epic
 - ST-059~062 ← EP-06
 - ST-066 ← ST-068, ST-055 (카카오 연동)
+
+### Sprint 8 (P1 운영사 도메인)
+- ST-070 (OP-01 운영사 대시보드 P0) ← ST-007 (테넌트 목록), ST-011~014 (청구/플랜), ST-020~022 (티켓/감사) — EP-03 청구 cron + EP-05 티켓 동시 진행 후 데이터 집계 활성
+
+## ST-073~080 신규 8 Story 의존 (KI-027~030 batch-003 보강)
+
+> PRD 보강 (CM-16~22 + OP-12) 대응 8 Story의 선행 관계. 본 절은 Sprint 1~6 본문 표와 함께 KI-034 closure 2026-05-19 추가.
+
+| Story | 화면 | 우선순위 | 선행 | 진입 권장 Sprint |
+|-------|------|--------|------|----------------|
+| ST-073 | CM-16 헤더 프로필 드롭다운 | P1 | ST-001 (로그인), ST-058~062 (직원 셀프), ST-080 (OP-12) | Sprint 7 (헤더 컴포넌트 일괄) |
+| ST-074 | CM-17 헤더 알림 종 | P1 | ST-060 (알림함), ST-069 (Realtime publication) | Sprint 7 |
+| ST-075 | CM-18 헤더 검색 안내 | P3 | (없음 — FE only) | Sprint 10 (잔여 폴리싱) |
+| ST-076 | CM-19 헤더 도움말 | P2 | ST-020 (티켓 BE), ST-079 (CM-22 투어 재실행) | Sprint 9 |
+| ST-077 | CM-20 PWA 설치 가이드 | P1 | ST-031 (출퇴근 PWA), ST-058 (EM-01 PWA) | Sprint 4 (PWA 묶음) 또는 Sprint 7 |
+| ST-078 | CM-21 약관/개인정보 + 동의 | P0 | ST-005 (RLS), ST-068 (audit_logs) | Sprint 1 (PIPA 컴플라이언스 — MVP 출시 의무) |
+| ST-079 | CM-22 첫 로그인 온보딩 투어 | P2 | ST-001 (로그인), ST-073 (헤더 프로필 — 다시 보기 진입) | Sprint 9 |
+| ST-080 | OP-12 운영사 본인 프로필 | P1 | ST-001 (로그인), ST-004 (2FA), ST-068 (audit) | Sprint 8 (운영사 묶음 EP-03 동시) |
+
+### Mermaid (신규 8 Story)
+
+```mermaid
+graph TD
+    ST005[ST-005 RLS] --> ST078[ST-078 약관·동의 P0]
+    ST068[ST-068 audit_logs] --> ST078
+    ST001[ST-001 로그인] --> ST073[ST-073 헤더 프로필 P1]
+    ST058[ST-058 EM-01] --> ST073
+    ST080[ST-080 OP-12 P1] --> ST073
+    ST060[ST-060 알림함] --> ST074[ST-074 헤더 알림 종 P1]
+    ST069[ST-069 Realtime] --> ST074
+    ST031[ST-031 출퇴근 PWA] --> ST077[ST-077 PWA 설치 P1]
+    ST058 --> ST077
+    ST020[ST-020 티켓 BE] --> ST076[ST-076 헤더 도움말 P2]
+    ST079 --> ST076
+    ST001 --> ST080
+    ST004[ST-004 2FA] --> ST080
+    ST068 --> ST080
+    ST001 --> ST079[ST-079 온보딩 투어 P2]
+    ST073 --> ST079
+```
+
+### Sprint 진입 권장 요약
+
+- **Sprint 1**: ST-078 동시 진행 (PIPA 컴플라이언스 — DB 마이그레이션 + 강제 동의 가드는 인증과 함께)
+- **Sprint 4 또는 7**: ST-077 (PWA 설치 가이드 — EM-02 출퇴근 묶음 또는 헤더 컴포넌트 묶음)
+- **Sprint 7**: ST-073/074 (헤더 프로필 + 알림 종 — UI 컴포넌트 일괄)
+- **Sprint 8**: ST-080 (OP-12 운영사 프로필 — EP-03 운영사 도메인 동시)
+- **Sprint 9**: ST-076/079 (도움말 패널 + 온보딩 투어)
+- **Sprint 10**: ST-075 (검색 안내 — 잔여 폴리싱)
+
+---
 
 ## Cross-Epic 동시 진행 가능 페어
 
@@ -105,3 +158,4 @@ graph TD
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 12 Epic / Sprint 1~10 / 외부 의존 | Phase 2 진입 |
+| 2026-05-19 | ST-073~080 신규 8 Story 의존 절 추가 (선행 + Sprint 진입 권장 + Mermaid) | KI-034 closure (Phase 6 진입 전 의무) |
