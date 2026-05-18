@@ -174,7 +174,7 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .kpi-delta > svg { width: 12px !important; height: 12px !important; flex-shrink: 0; }
 .kpi-delta.up { color: var(--color-success); }
 .kpi-delta.down { color: var(--color-danger); }
-.kpi-sub { font-size: 12px; color: var(--color-text-muted); margin-top: 6px; }
+.kpi-sub, .kpi-meta { font-size: 12px; color: var(--color-text-muted); margin-top: 6px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
 /* ============ Badge ============
    Anatomy: [icon?] [label]
@@ -402,11 +402,11 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border); margin-bottom: 20px; overflow-x: auto; align-items: center; }
 
 /* Vertical Tabs */
+/* .vert-tabs / .vert-tab SSOT는 §G3 신규 섹션 (L757+). 본 G2 정의는 cascade로 후자 승리 — KI-061 hotfix dead code 제거.
+   `.vert-tabs` 본 정의 (background bg + border + r-lg + padding 8 + shadow-sm — G2 카드 variant)는 보존 — G3 L757+의 flex column gap 2와 차이. */
 .vert-tabs { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 8px; box-shadow: var(--shadow-sm); }
-.vert-tab { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 13px; color: var(--color-text); border-radius: var(--r-sm); cursor: pointer; line-height: 1.4; }
-.vert-tab:hover { background: var(--color-surface); }
-/* .vert-tab.is-active SSOT는 §G3 신규 섹션에 정의 (border-left-color accent + accent-bg + accent color). G3 hotfix3 KI-059 중복 제거 */
-.vert-tab > svg { width: 16px !important; height: 16px !important; opacity: 0.7; flex-shrink: 0; }
+/* button.vert-tab — TA-13 button reset (UA 기본 background/border 제거 — 사용자 지적 "디자인 시스템 미준수" 정정) */
+button.vert-tab { background: none; border: none; width: 100%; text-align: left; font: inherit; }
 
 /* Breadcrumb */
 .breadcrumb { display: flex; gap: 6px; font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px; align-items: center; }
@@ -445,15 +445,15 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .dropdown-item.danger > svg { color: var(--color-danger); }
 .dropdown-divider { height: 1px; background: var(--color-border-light); margin: 4px 0; }
 
-/* ============ Modal ============ */
+/* ============ Modal (backdrop alias for overlay — `.modal-overlay` SSOT는 L672+) ============
+   KI-061 hotfix: `.modal-header / .modal-body / .modal-footer` 중복 제거.
+   SSOT는 §G3 신규 섹션 (L686+: modal-header flex justify-between/align-flex-start/margin-bottom 12 / modal-footer flex/gap 8/justify-end/margin-top 20).
+   `.modal-box` 자체 padding 24와 nested padding 충돌 방지 — modal-body는 inner padding 0 + overflow-y/flex만. */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: var(--z-modal-backdrop); display: flex; align-items: center; justify-content: center; }
 .modal { background: var(--color-bg); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); max-width: 600px; width: 90vw; max-height: 90vh; display: flex; flex-direction: column; z-index: var(--z-modal); }
-.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
-.modal-header h3 { font-size: 16px; font-weight: 600; }
-.modal-header .close { cursor: pointer; color: var(--color-text-muted); padding: 4px; border-radius: var(--r-sm); }
-.modal-header .close:hover { background: var(--color-surface-2); color: var(--color-text); }
-.modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-end; gap: 8px; }
+.modal-body { overflow-y: auto; flex: 1; }
+.modal-title { font-size: 16px; font-weight: 600; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 6px; }
+.modal-title > svg.ico { width: 16px !important; height: 16px !important; }
 
 /* ============ Toast ============ */
 .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 16px; border-radius: var(--r-md); box-shadow: var(--shadow-lg); font-size: 13px; z-index: var(--z-toast); display: flex; align-items: center; gap: 8px; min-width: 280px; max-width: 480px; background: var(--color-bg); border: 1px solid var(--color-border); }
@@ -504,11 +504,12 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .h-bar-fill { height: 100%; background: var(--color-accent); }
 .h-bar-value { width: 60px; text-align: right; color: var(--color-text-muted); }
 
-/* ============ Stepper (마법사) ============ */
+/* ============ Stepper (마법사 — wizard 카드 variant. SSOT는 §G3 신규 섹션 L712+ list variant도 함께 정의) ============
+   KI-061 hotfix: `.stepper` / `.step` G2 wizard 카드 정의 + G3 list 정의 cascade 충돌.
+   본 G2 정의는 wizard 단독 페이지 (CM-03 등) 한정. G3 L712+가 cascade로 승리하나 wizard에서는 본 정의 의도. */
 .stepper { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow-sm); }
 .stepper h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 .stepper p.meta { font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px; }
-.step { display: flex; gap: 12px; padding: 12px 0; position: relative; }
 .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--color-surface-2); color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
 .step.done .step-num { background: var(--color-success); color: #fff; }
 .step.is-active .step-num { background: var(--color-accent); color: #fff; }
@@ -567,10 +568,11 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .section-header .link { font-size: 12px; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
 
 /* ============ Page Action Bar (콘텐츠 상단 - 카운트 + 액션) ============ */
-.page-action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.page-action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
 .page-action-bar .summary { font-size: 13px; color: var(--color-text-muted); }
 .page-action-bar .summary strong { color: var(--color-text); }
-.page-action-bar .actions { display: flex; gap: 8px; }
+/* .actions — align-items: center 추가 (button과 strong/span 텍스트 정렬 — TA-07 "이전달, 년/월, 다음달" 정렬 사용자 지적 정정) */
+.page-action-bar .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 /* ============ Auth Layout (비인증 영역 — _layout-auth.html) ============
    사용 화면: CM-01 로그인 / CM-02 비밀번호 찾기 / CM-03 활성화 / CM-04 2FA /
@@ -747,9 +749,9 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .diff-before { background: var(--color-danger-bg); padding: 2px 6px; border-radius: 3px; color: var(--color-danger); }
 .diff-after  { background: var(--color-success-bg); padding: 2px 6px; border-radius: 3px; color: var(--color-success); }
 
-/* === Tabs (수평) — OP-03/OP-12 표준 (기존 tab/tabs-row를 표준화) ================= */
-.tabs-row { border-bottom: 1px solid var(--color-border-light); display: flex; gap: 4px; }
-.tab { display: inline-block; padding: 8px 16px; font-size: 13px; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+/* === Tabs (수평) — `.tabs` (G3/G4 EM) + `.tabs-row` (G2/G3 OP/TA) alias 통합 SSOT (audit fix) === */
+.tabs, .tabs-row { border-bottom: 1px solid var(--color-border); display: flex; gap: 4px; align-items: center; overflow-x: auto; margin-bottom: 20px; }
+.tab { display: inline-flex; align-items: center; padding: 8px 16px; font-size: 13px; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; background: none; border-left: none; border-right: none; border-top: none; font-family: inherit; }
 .tab:hover { color: var(--color-text); }
 .tab.is-active { color: var(--color-accent); border-bottom-color: var(--color-accent); font-weight: 700; }
 
@@ -908,9 +910,10 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .calendar-cell.day-header { background: var(--color-surface-2); color: var(--color-text-muted); text-align: center; font-weight: 600; padding: 8px 2px; }
 .calendar-cell.name-cell { font-size: 12px; font-weight: 500; color: var(--color-text); padding: 8px 12px; }
 .calendar-cell.weekend { background: var(--color-surface-2); color: var(--color-text-muted); }
-.leave-badge { display: inline-block; height: 16px; border-radius: 2px; font-size: 10px; padding: 1px 4px; color: white; line-height: 14px; white-space: nowrap; }
+/* .leave-badge — TA-07 캘린더 cell 내부 (calendar-cell minmax 28px). overflow handling 추가 (사용자 지적 "반차 잘림" 정정) */
+.leave-badge { display: inline-block; height: 16px; border-radius: 2px; font-size: 10px; padding: 1px 4px; color: white; line-height: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; box-sizing: border-box; text-align: center; }
 .leave-badge.l-full { background: #3B82F6; width: 100%; }
-.leave-badge.l-half { background: #10B981; width: 50%; }
+.leave-badge.l-half { background: #10B981; width: 50%; min-width: 14px; }
 .leave-badge.l-sick { background: #F59E0B; width: 100%; }
 
 /* === Approval Timeline + Sticky (TA-08, PWA 결재) === */
