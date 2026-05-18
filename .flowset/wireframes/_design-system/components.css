@@ -1061,10 +1061,15 @@ button.notif-row { background: none; border: none; font: inherit; }
 .notif-row-type { flex-shrink: 0; font-size: 11px; }
 .notif-row-time { font-size: 11px; color: var(--color-text-muted); flex-shrink: 0; }
 
-/* === G4.7 보조 자식 클래스 SSOT 등록 (evaluator P2 정정) ===
-   G4 화면 다수 사용되나 base 컴포넌트의 자식 클래스로 components.css 미정의 상태.
-   info-row-key/val (info-row 자식, 7화면 사용), empty-state-title/desc (10화면),
-   tab-count (G3 신규 — tab 내 카운트 배지), form-help (form-row 자식 도움말 텍스트). */
+/* === G4.7 보조 자식 클래스 SSOT 등록 (evaluator P2 정정 + hotfix2 history-card 추가) ===
+   G4 화면 다수 사용되나 base 컴포넌트의 자식 클래스로 components.css 미정의 상태였음.
+   클래스 목록 (8종):
+     1. info-row-key / 2. info-row-val (info-row 자식, 7화면 사용)
+     3. empty-state-title / 4. empty-state-desc (10화면 사용)
+     5. tab-count (G3 신규 — tab 내 카운트 배지) + 5-variant tab.is-active .tab-count
+     6. form-help (form-row 자식 도움말 텍스트)
+     7. history-card (card variant — 이력 카드, body[data-state=loading] selector 타깃, EM-02/04/08 3화면)
+   참고: file-input-name 클래스는 G4-CDX-001 hotfix1 정정으로 file-input-filename으로 통일되어 잔존 0건. */
 .info-row-key { color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; font-size: 13px; }
 .info-row-val { color: var(--color-text); font-weight: 500; font-size: 13px; }
 .empty-state-title { font-size: 14px; font-weight: 600; color: var(--color-text); margin-top: 8px; }
@@ -1073,6 +1078,8 @@ button.notif-row { background: none; border: none; font: inherit; }
 .tab.is-active .tab-count { background: var(--color-accent-bg); color: var(--color-accent); }
 .form-help { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
 .form-help > svg.ico { width: 12px !important; height: 12px !important; }
+/* .history-card — card modifier. base .card 시각 유지하고 페이지 loading state opacity 타깃 selector 역할만. */
+.history-card { /* base card 그대로 상속 — body[data-state="loading"] .history-card 셀렉터 anchor */ }
 
 /* === G4 모바일 override === */
 @media (max-width: 768px) {

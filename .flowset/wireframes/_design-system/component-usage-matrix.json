@@ -1,6 +1,6 @@
 {
   "$schema": "./component-usage-matrix.schema.json",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "updated_at": "2026-05-18",
   "source_of_truth": ".flowset/wireframes/_design-system/component-usage-matrix.json",
   "spec_ref": ".flowset/contracts/review-system.md §17-4 (Codex 합의안)",
@@ -247,8 +247,16 @@
       "applicable_screens": ["EM-10"],
       "components": ["notif-card", "notif-row", "notif-row-dot", "notif-row-icon", "notif-row-body", "notif-row-title", "notif-row-desc", "notif-row-type", "notif-row-time"],
       "showcase_anchor": "_showcase.html#section-notif-row",
-      "allowed_classes": ["notif-card", "notif-row", "notif-row is-unread", "notif-row-dot", "notif-row-icon", "notif-row-body", "notif-row-title", "notif-row-desc", "notif-row-type", "notif-row-time"],
-      "react_mapping": "Realtime broadcast 구독 + PWA Web Push (iOS 16.4+) + 카카오 알림톡 폴백 — is-unread variant"
+      "allowed_classes": ["notif-card", "notif-row", "notif-row is-unread", "notif-row-dot", "notif-row-icon", "notif-row-body", "notif-row-title", "notif-row-desc", "notif-row-type", "notif-row-time", "button.notif-row"],
+      "react_mapping": "Realtime broadcast 구독 + PWA Web Push (iOS 16.4+) + 카카오 알림톡 폴백 — is-unread variant + 비이동 시 button reset"
+    },
+    {
+      "prd_pattern": "Auxiliary Child Classes (G4 §G4.7 SSOT)",
+      "applicable_screens": ["전 G4 화면 + 전 G3 + G2 일부"],
+      "components": ["info-row-key", "info-row-val", "empty-state-title", "empty-state-desc", "tab-count", "form-help", "history-card"],
+      "showcase_anchor": "_showcase.html#section-g4-aux (TBD — 차후 demo 추가)",
+      "allowed_classes": ["info-row-key", "info-row-val", "empty-state-title", "empty-state-desc", "tab-count", "tab.is-active .tab-count", "form-help", "history-card"],
+      "react_mapping": "base 컴포넌트(info-row / empty-state / tab / form-row / card)의 자식 또는 modifier — components.css §G4.7 SSOT. history-card는 card variant (loading state selector anchor)"
     }
   ],
 
@@ -313,6 +321,16 @@
         "G4 신규 6 패턴 추가 — Clock Card (PWA 출퇴근), Leave Balance Card, Stat Mini List, Calc Summary, Chart Placeholder Donut, Notif Row",
         "applicable_screens 업데이트 — Dashboard에 EM-01 / Master-Detail에 EM-05 EM-11 / Date Input에 EM-03 / Profile Card에 EM-09 추가 (기존 패턴 매핑 확장)",
         "기존 24 patterns + G4 신규 6 = 30 patterns (24 → 30)"
+      ]
+    },
+    {
+      "version": "1.2.1",
+      "date": "2026-05-18",
+      "wi": "WI-G4hotfix2-fix (codex G4-HF1-REVAL-001/002 + evaluator NON_BLOCKING P3 2건)",
+      "changes": [
+        "Auxiliary Child Classes (G4 §G4.7 SSOT) 신규 패턴 추가 — info-row-key/val, empty-state-title/desc, tab-count(+is-active variant), form-help, history-card (G4 hotfix2 정정 history-card 등록 포함)",
+        "Notif Row allowed_classes에 'button.notif-row' 추가 (G4-CDX-004 hotfix1 정정 reflect)",
+        "기존 30 patterns + auxiliary 1 = 31 patterns"
       ]
     }
   ]

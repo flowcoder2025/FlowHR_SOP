@@ -8,6 +8,40 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.0-hotfix2] — 2026-05-18 (G4 hotfix2 — codex CONDITIONAL 8.1 + evaluator PASS 8.98 NON_BLOCKING P3)
+
+evaluator PASS 8.98 + codex CONDITIONAL 8.1 → MERGE_WITH_KI (PASS + CONDITIONAL) → 모두 mechanical fix → 능동 정정.
+
+### codex 2 신규 findings 정정
+
+**P2 G4-HF1-REVAL-001 — components.css §G4.7 카운트 + history-card 미정의**:
+- `.history-card` 누락 — EM-02/04/08 3 화면 `<div class="card history-card">` 사용 중. components.css §G4.7에 `.history-card` 추가 (base .card 시각 상속 + loading state selector anchor 역할만)
+- §G4.7 주석 갱신 — "8종" 명시 + 카운트 정확히 표기 + file-input-name → file-input-filename 통일 commentary 추가
+
+**P3 G4-HF1-REVAL-002 — EM-02 stale 5 state 표기**:
+- EM-02.html 상단 주석 "상태 (5)" → "상태 (6) — default/loading/empty/modal/offline/error"
+- EM-02 analysis §3 디자인 시스템 사용 — "state-default/empty/modal/error" → "state-default/empty/modal/offline/error + state-debug 6 key"
+- EM-02 analysis §7 검증 — "5 상태 토글" → "6 상태 토글"
+
+### evaluator 2 NON_BLOCKING P3 정정
+
+**P3 — history-card components.css 등록**: codex G4-HF1-REVAL-001과 통합 정정 (위 §G4.7)
+
+**P3 — matrix.json allowed_classes G4 §G4.7 미반영**:
+- component-usage-matrix.json v1.2.0 → v1.2.1 (patch)
+- 신규 patterns entry "Auxiliary Child Classes (G4 §G4.7 SSOT)" 추가 — 7종 클래스 + 8종 allowed_classes (tab.is-active .tab-count variant 포함)
+- Notif Row allowed_classes에 "button.notif-row" 추가 (G4-CDX-004 hotfix1 정정 reflect)
+- 30 patterns → 31 patterns
+
+### file-input-name deprecated 검증
+
+- codex 지적 "file-input-name deprecated 미표기" → 실제 잔존 0건 확인 (hotfix1 G4-CDX-001에서 file-input-filename 통일 완료)
+- §G4.7 주석에 commentary 추가하여 명시화
+
+### sprite cross-check 재검증
+
+- 11/11 PASS (변경 없음 — hotfix2는 HTML svg 변경 없음)
+
 ## [wf-v0.4.0-hotfix1] — 2026-05-18 (G4 hotfix1 — codex CONDITIONAL 7.2 + evaluator P2 mechanical fix)
 
 evaluator PASS 8.74 + codex CONDITIONAL 7.2 → 통합 판정 MERGE_WITH_KI/hotfix1 권장 → 모든 결함 mechanical fix → 능동 정정.
