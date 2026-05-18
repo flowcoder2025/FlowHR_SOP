@@ -29,7 +29,7 @@
       "ops_entry": "P0/P1/P2 0건 + P3는 운영 백로그 이관"
     }
   },
-  "current_phase": "6-sprint-plan",
+  "current_phase": "7-dev-kickoff",
   "phases": {
     "0-setup": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15"},
     "1-prd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.15, "eval_verdict": "PASS", "eval_attempts": 2, "rerun_score": 9.13, "rerun_at": "2026-05-15", "rerun_reason": "WI-KI-batch-003 보강 후 재평가"},
@@ -37,7 +37,7 @@
     "3-erd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.68, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.21, "rerun_at": "2026-05-15", "rerun_reason": "LegalDocument/UserConsent 추가 후 재평가, P2 4건 즉시 처리"},
     "4-api": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.78, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.40, "rerun_at": "2026-05-15", "rerun_reason": "API 보강 후 재평가, P1+P2 즉시 처리 (OP-12 API 6종 + Envelope→SuccessEnvelope)"},
     "5-wireframes": {"status": "completed", "owner": "claude", "restarted_at": "2026-05-15", "completed_at": "2026-05-18", "policy_change": "Codex 이미지 폐기, HTML 직접 작성 단일 채택", "scope": "45 화면 (CM 8 + OP 12 + TA 14 + EM 11)", "tag": "wf-v1.0.0", "eval_cycle": "1차 FAIL 7.45 → h1 PASS 8.07 → h2 FAIL 7.84 → h3 PASS 8.13", "eval_score_final": 8.13, "eval_verdict_final": "PASS (evaluator 5축 모두 7.5+, Hard gate 5/5 PASS)", "codex_verification": "G1 PASS 9.2 + G2 CONDITIONAL 8.1 + G3 PASS 8.8 + G4 PASS 9.0 (4 그룹 분할 호출 — full review hang 회피)", "integration_verdict": "MERGE_WITH_KI → P3 NON_BLOCKING 정리 완료 → PASS"},
-    "6-sprint-plan": {"status": "ready", "entry_obligations_resolved_at": "2026-05-19", "entry_obligations_resolved": ["KI-013 resolved — 7 Epic 137 Task 신규 분해 + ST-071 보강", "KI-034 resolved — 5 파일 합계/의존/카운트 정합화"], "rerun_pass_marker": ".flowset/eval-results/WI-Phase6prep-docs.pass", "next_step": "mvp-plan.md 작성 — 디렉토리 구조 SSOT 포함 (사용자 결정 2026-05-19: codex 협의 후 결정)"},
+    "6-sprint-plan": {"status": "completed", "started_at": "2026-05-19", "completed_at": "2026-05-19", "entry_obligations_resolved": ["KI-013 resolved", "KI-034 resolved"], "eval_score": 9.00, "eval_verdict": "PASS", "eval_attempts": 2, "codex_score": 8.21, "codex_attempts": 4, "codex_model": "gpt-5.5", "combined_verdict": "PASS_WITH_KI", "ki_resolved": ["KI-071 (P2 12곳 + 추가 3건 묶음)"], "ki_registered": ["KI-072 (P3, sprint-007 spill 결합)", "KI-073 (P3, MD 임계 미명시)", "KI-074 (P3, §4 S5 가독성)"], "directory_ssot": "mvp-plan.md §1 (codex 7건 권고 채택 2026-05-19, gpt-5.5)", "pass_marker": ".flowset/eval-results/WI-016-docs-phase6.pass"},
     "7-dev-kickoff": {"status": "pending"},
     "8-qa": {"status": "pending"},
     "9-beta": {"status": "pending"},
@@ -58,7 +58,7 @@
     "auth": "Supabase Auth (이메일 + TOTP 2FA + 매직링크)",
     "state": "TanStack Query + Zustand",
     "ui_kit": "shadcn/ui + Lucide icons + Pretendard font",
-    "i18n": "next-intl (ko 기본, en 추후)",
+    "i18n": "next-intl (ko + en MVP) — WI-KI-batch-005 사용자 결정 2026-05-16 (외국인 근로자 P8 페르소나 + 06-mvp-scope.md L75 동시 출시)",
     "testing": "Vitest + Playwright (E2E) + Testing Library"
   },
   "pwa_constraints_notes": [

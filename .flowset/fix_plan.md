@@ -48,10 +48,10 @@
 - [ ] WI-014-docs analysis/*.md 컴포넌트 분해 / 인터랙션 / 반응형 / 접근성 정리
 - [ ] WI-015-docs Phase 5 evaluator (doc 모드) — 보강 검증 축으로 재호출
 
-## Phase 6 — MVP 스프린트 계획
+## Phase 6 — MVP 스프린트 계획 [✓ PASS 9.00 / codex 8.21 PASS_WITH_KI (2026-05-19)]
 
-- [ ] WI-016-docs 스프린트 분해 (2주 단위)
-- [ ] WI-017-docs 스프린트별 수용 기준
+- [x] WI-016-docs Phase 6 MVP 스프린트 계획 — mvp-plan.md (디렉토리 구조 SSOT codex 7건 권고 채택) + sprint-001~010.md
+- [x] WI-017-docs 스프린트별 수용 기준 — sprint-001~010.md 각각 DoD + 위험 명시 (WI-016 통합 처리)
 
 ## Phase 7 — 개발 착수
 

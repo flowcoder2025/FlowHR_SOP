@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1 wf-v0.2.0 resolved + **audit hotfix3 NEW-P0/P1 정정 2026-05-18 — OP-04:179 + _showcase L386/529/618/809 5건 select-wrap, 21건 총 적용**) |
-| P2 Medium | **5** | 5 | ✅ 트리거 도달 — KI-049/054/060/061 + **KI-071 신규 (Phase 2 4차 재평가 NON_BLOCKING, 2026-05-19 — epics.md/estimation.md/stories.md 12곳 stale)**. KI-053/058 G3 hotfix2~3 resolved + KI-063 WI-G4prep-ci resolved + KI-050 audit hotfix2/3 resolved + KI-051 audit hotfix3 resolved. **Phase 6 mvp-plan 작성 시 KI-071 SSOT 인용 갱신과 함께 일괄 처리 (mechanical fix 12곳)**. |
-| P3 Low | **29** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + KI-070 audit hotfix2 codex G1 + **~~KI-013~~ / ~~KI-034~~ resolved (Phase 6 진입 전 의무, 2026-05-19)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
+| P2 Medium | **4** | 5 | ❌ 임계 미달 — KI-049/054/060/061. KI-053/058 G3 hotfix2~3 resolved + KI-063 WI-G4prep-ci resolved + KI-050 audit hotfix2/3 resolved + KI-051 audit hotfix3 resolved + **~~KI-071~~ Phase 6 mvp-plan 작성 동반 정합화 resolved (2026-05-19 — 12곳 + 추가 stale 3건 동시 처리)**. |
+| P3 Low | **32** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + KI-070 audit hotfix2 codex G1 + ~~KI-013~~ / ~~KI-034~~ resolved + ~~KI-015~~ resolved + ~~KI-041~~ resolved + **KI-072/073/074 신규 (Phase 6 evaluator 2차 NON_BLOCKING, 2026-05-19 — spill 결합 + MD 임계 + 가독성)** |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -87,7 +87,10 @@
 | KI-068 | P3 | 5 | Wireframe | OP 모달 title `<h2>` inline-styled (G2 leftover) — `.modal-title` SSOT 미적용. G2 OP 화면 일부 모달이 `<div class="modal-header"><h2 style="...">제목</h2>` 패턴 유지. audit hotfix2 또는 Phase 7 React 변환 시 일괄 정정. | codex SAMP-P3-001 audit hotfix1 | 2026-05-18 | open (차기 docs batch) |
 | KI-069 | P3 | 5 | Wireframe | KI-049 audit hotfix1 보강 일부 backtick 텍스트 손상 — 16 화면 권한 매트릭스 § 텍스트 정정 필요 (CM-01만 audit hotfix2 정정 완료, 나머지 15건 잔존). | evaluator audit hotfix1 NON_BLOCKING | 2026-05-18 | open (차기 docs batch) |
 | KI-070 | P3 | 5 | Wireframe | inline svg width/height attribute 누락 — `<svg class="ico">` 패턴 (CSS `.ico { width: 16; height: 16 }`로 시각 보정되나 file:// fallback 계약 불일치). 다수 화면 광범위 영향. | codex G1-PHASE5-CDX-004 audit hotfix2 | 2026-05-18 | open (차기 docs batch) |
-| KI-071 | P2 | 2 (4차 재평가) | Backlog | Phase 2 backlog 잔존 stale 12곳: (a) epics.md L39/56/109/128/148/204/222 7건 Epic 단위 SP 인용 stale (EP-02 34→31 / EP-03 21→26 / EP-06 34→40 / EP-07 34→35 / EP-08 55→58 / EP-11 21→20 / EP-12 34→38) — stories.md L505 SSOT 미인용 (b) estimation.md L66/L71-72/L92 4건 비용 환산 stale (379 SP / 200 MD / 739 MD / 380-390 SP → 415/218/838/415) (c) estimation.md L47 209 MD 반올림 근거 미명시 (d) stories.md L646 OP-12 14 endpoint 경로 shorthand vs PRD operator-prefix 미정합 (P3 NON_BLOCKING) | evaluator 4차 + codex 4차 (gpt-5.5 기본) 모두 NON_BLOCKING_OBSERVATIONS 동의 | 2026-05-19 | open (Phase 6 mvp-plan 작성 시 SSOT 인용 갱신과 함께 처리) |
+| ~~KI-071~~ | P2 | 2 (4차 재평가) | Backlog | ~~Phase 2 backlog 잔존 stale 12곳: (a) epics.md L39/56/109/128/148/204/222 7건 Epic 단위 SP 인용 stale (b) estimation.md L66/L71-72/L92 4건 비용 환산 stale (c) estimation.md L47 209 MD 반올림 근거 미명시 (d) stories.md L646 OP-12 14 endpoint shorthand~~ | evaluator 4차 + codex 4차 NON_BLOCKING_OBSERVATIONS | 2026-05-19 | **resolved (Phase 6 KI 정합화, 2026-05-19 — 12곳 모두 정정 + 추가 stale 3건 (prd-state.json:61 i18n / api/README.md:3 entity 카운트 / .claude/rules/project.md L57 CI job 카운트) 동시 처리)** |
+| KI-072 | P3 | 6 | Sprint | sprint-007.md S6 spill 시나리오 (ST-043/044/045/070 spill 옵션)에서 ST-070을 S8 흡수 시 sprint-008.md 헤더 (29 SP → 34 SP) 갱신 의무 미명시 — spill 발동 시점에 sprint-008 hotfix 동반 의무. Phase 7 Sprint 1 실측 후 보수배수 4배+ 확인 시 spill 발동 시점 처리 | evaluator Phase 6 2차 NON_BLOCKING | 2026-05-19 | scheduled (Phase 7 Sprint 1 실측 후) |
+| KI-073 | P3 | 6 | Sprint | mvp-plan §7 R-1 위험 "1 SP × 0.5 MD 환산 — Sprint 1 실측 후 보수배수 재조정" 정책 명시되어 있으나 재조정 발동 임계 (예: "실측 4.5배+ 시") 미명시 | evaluator Phase 6 2차 NON_BLOCKING | 2026-05-19 | scheduled (Phase 7 Sprint 1 회고 시 결정) |
+| KI-074 | P3 | 6 | Sprint | mvp-plan §4 S5 행 "8+3+8+8+5 = 32" 합산 표기에서 항목 5개 중 SP 4행과 5행 모두 8로 표기되어 시각적 혼동 가능 (산술 정합 ✓) | evaluator Phase 6 2차 NON_BLOCKING | 2026-05-19 | open (차기 docs batch) |
 
 ## 등록 형식
 
