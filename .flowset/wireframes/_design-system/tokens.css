@@ -11,6 +11,7 @@
   --color-primary-bg: #1E3A8A;
   --color-accent: #3B82F6;
   --color-accent-light: #DBEAFE;
+  --color-accent-bg: #EFF6FF;  /* accent 배경 (alias — hover/active state). G3 hotfix3 추가 (KI-058) */
 
   /* Surface */
   --color-bg: #FFFFFF;

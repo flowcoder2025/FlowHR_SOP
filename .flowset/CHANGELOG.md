@@ -8,6 +8,262 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.3.0-hotfix3] — 2026-05-18 (G3 hotfix3 — codex mechanical fix 능동 정정)
+
+evaluator PASS 8.65 + codex FAIL 7.3 → BLOCKED_FOR_HOTFIX → codex 권고 "모두 mechanical fix — 사용자 결정 불필요" → 능동 정정.
+
+### 정정 (codex G3-CDX-003-HF2/HF2-B + evaluator KI-058/059)
+
+**P1 G3-CDX-003-HF2 — TA-01 .kpi-row margin 정합**:
+- TA-01:17 `.kpi-row { grid-template-columns: repeat(6, 1fr); margin-bottom: 20px }` → `margin-bottom` 제거 (base components.css 16px 통일)
+
+**P1 G3-CDX-003-HF2-B — TA-13 vert-tab SSOT 위임**:
+- TA-13:32-34 vert-tab state binding 시각 declaration 위 SSOT 위임 주석 추가 (CSS는 mixin 없으므로 declaration 자체는 유지 — `.vert-tab.is-active`와 동일 4 속성 명시)
+- 추가 정정: components.css L408 `.vert-tab.is-active` 기존 정의 (accent-light) 제거 → L885 §G3 SSOT (accent-bg) 단일화 (KI-059 resolved)
+
+**evaluator P2 KI-058 — `--color-accent-bg` 토큰 추가**:
+- tokens.css L14 `--color-accent-bg: #EFF6FF;` 1줄 추가 (alias — hover/active state)
+- components.css 8 클래스 (.vert-tab.is-active / .approval-row.is-active / .report-item.is-active / .step.is-active / .master-item.is-active / .auth-alert-info / .install-card.is-active / .config-card.is-active) fallback 정합 (이전 무색 렌더링 해소)
+
+**P3 정정**:
+- TA-03.html:199 주석 "5 pane" → "3 pane (PRD §6 정합)" (commit 오기 정정)
+- matrix.json:251 changelog "G3 신규 10 패턴" → "9 패턴" + "기존 15 patterns + G3 신규 9 = 24" (Date Input은 update만)
+- 03-components.md §G3.5~G3.9 Props 변수 + Phase 7 라이브러리 매핑 보강 (§G3.5 인박스 카운트/SLA/단계 + ResizablePanel/react-swipeable/Realtime / §G3.6 5+v1.3 종류 + recharts/visx + 머터리얼라이즈드 뷰 / §G3.7 9 탭 + cron + RLS audit / §G3.8 9 종류 + API Key + Vault + Realtime / §G3.9 7 변수 + Sheet + react-diff-view)
+
+### KI INDEX 갱신
+
+- KI-053 (P2) → **resolved** (hotfix2 _showcase + 03-components 9/9)
+- KI-058 (P2) → **resolved** (hotfix3 tokens.css 1줄)
+- KI-059 (P3) → **resolved** (hotfix3 components.css L408 중복 제거)
+- 카운트 갱신: P2 5 → 4 / P3 20 → 19
+
+### 정적 게이트 + 추가 검증
+
+- href="#" 0 / javascript:void(0) 0 / 외부 sprite 0
+- matrix.json metadata 정합 v1.1.0 / 2026-05-18 / 24 patterns / changelog 9 표기
+- components.css `.vert-tab.is-active` 중복 0건 (L408 제거 후 L885만 잔존)
+- tokens.css `--color-accent-bg` 정의 1건 (L14)
+- TA-01 .kpi-row margin-bottom 0건 (base components.css 16px 통일)
+- _showcase G3 9/9 + 03-components §G3.1~G3.9 9/9
+
+### 재평가 통합 판정 (2026-05-18)
+
+| 평가자 | 결과 | 점수 |
+|--------|------|------|
+| evaluator hotfix3 | PASS | 8.475 |
+| codex hotfix3 (gpt-5.5) | CONDITIONAL | 8.1 |
+| 통합 (review-system.md §4 OR) | **CONDITIONAL_MERGE_WITH_KI** | — |
+
+- evaluator 3회 연속 PASS (8.48 → 8.65 → 8.475)
+- codex FAIL 7.0 → FAIL 7.3 → CONDITIONAL 8.1 (개선)
+- codex MCP hang 2회 (1시간6분 + 38분) → gpt-5.5 모델 명시로 해소 (사용자 결정)
+
+### 잔존 NON_BLOCKING (KI-060/061/062 신규 등록)
+
+- **KI-060 (P2)** TA-13.html:40 vert-tab font-weight: 600 vs components.css L766 700 declaration drift
+- **KI-061 (P2)** components.css 7 base 셀렉터 중복 systemic (.tab/.vert-tab/.vert-tabs/.modal-header/.modal-footer/.step/.stepper) — KI-059는 .vert-tab.is-active 변종만 잡음
+- **KI-062 (P3)** .pass marker 0 bytes + Playwright 렌더 증거 analysis 명시 권장
+
+카운트 갱신: P2 4 → 6 (KI-060/061 신규) / P3 19 → 20 (KI-062 신규)
+
+### 머지 진행
+
+- PR draft → ready 변환
+- CI 9 job 통과 대기 (Playwright Smoke 포함)
+- auto-merge --squash --delete-branch
+- tag wf-v0.3.0
+- main 동기화 + KI close-out
+
+## [wf-v0.3.0-hotfix2] — 2026-05-18 (G3 hotfix2 — 완전 SSOT 동기화)
+
+evaluator PASS 8.48 + codex FAIL 7.0 → BLOCKED_FOR_HOTFIX → 사용자 결정 "완전 SSOT 동기화" 채택.
+
+### 정정 (P1 codex G3-CDX-002-HF1, G3-CDX-003-HF1 + evaluator G3-EV-H1-001~010)
+
+**matrix.json v1.1.0 metadata 정정**:
+- top-level `version: "1.0.0"` → `"1.1.0"` (commit `bf0c1d5` 누락분)
+- `updated_at: "2026-05-16"` → `"2026-05-18"`
+- changelog 1.1.0 entry 수치 정정: "8 패턴 / 14→22" → "10 패턴 / 14→24" (Profile + Side Drawer 별도 카운트 명시)
+
+**components.css SSOT 보강**:
+- `.kpi-row { display: grid; gap: 12px; margin-bottom: 16px }` base 등록 (TA-01/05/07 화면별 column 수만 inline override)
+- `.vert-tab.is-active` 등록 (state binding 패턴 SSOT)
+
+**화면 inline 정리**:
+- TA-01/05/07: `.kpi-row { grid-template-columns: repeat(N, 1fr) }` column override만 유지 (base는 components.css)
+- TA-02: `<a href="javascript:void(0)" onclick="return false;">초기화</a>` → `<button type="button" aria-label="필터 초기화">초기화</button>`
+
+**TA-13 scope-hr PRD §6 정합 정정**:
+- 결재라인 pane에 `scope-hr` 클래스 부착 (hr_admin R 가능 — 5 → 6 pane)
+- commit "6 pane" 의도 → 실제 markup도 6 pane 정합
+
+**analysis 갱신 (HTML ↔ analysis 정합)**:
+- TA-03.md L22 "변경이력 — Phase 7 timeline" → 9 pane stack 본문 시각화 명시 (line-through diff 등)
+- TA-13.md L18/L20 "(Phase 7)" → 본문 markup 명시 (결재라인 5 종류 + 감사로그 본 테넌트 한정)
+- 5 상태 매트릭스에 scope-mgr/scope-hr 표시 패턴 명시 (PRD §6 정합)
+
+### _showcase.html G3 9 demo 추가 (KI-053 partial resolve)
+
+15 → 24 sections. 신규: section-profile-card / section-org-tree / section-calendar / section-approval-timeline / section-approval-inbox / section-report-canvas / section-settings-pane / section-integration / section-side-drawer. footer note v1.0 → v1.1.
+
+### 03-components.md G3 9 패턴 사양 (§G3.1~G3.9, KI-053 resolved)
+
+각 패턴 Anatomy (CSS 구조) + Props 변수 + Variant + 모바일 + Phase 7 매핑 (~100 lines × 9 = ~270 lines 추가).
+
+### KI INDEX 5건 신규 등록
+
+- **KI-053 (P2)** G3 신규 9 패턴 _showcase.html + 03-components.md 미등록 — **resolved (본 hotfix2)**
+- **KI-054 (P2)** icon-only aria-label 누락 (data-tooltip 35 / aria 23) — 차기 batch
+- **KI-055 (P3)** TA-01/10/11 가짜 base path (`/admin/notices/N-NNNN` 등) → Phase 7 실제 ID
+- **KI-056 (P3)** footer `/help` `/support` 라우트 05-layouts.md helpers SSOT 미명시
+- **KI-057 (P3)** G2 화면 모바일 미디어 쿼리 부재 (G3는 components.css @media 적용)
+- KI-052는 G3 진입 commit `01c800d`로 resolved 표기
+
+### 카운트 갱신
+
+| 심각도 | 활성 | 임계 | 트리거 |
+|--------|------|------|------|
+| P0 | 0 | 1 | ❌ |
+| P1 | 0 | 3 | ❌ |
+| P2 | 5 (KI-049/050/051/053→resolve/054) → **4 후 hotfix2** | 5 | resolve-pending |
+| P3 | 20 (KI-052 resolved + 055/056/057 신규) | 10 | 도달 |
+
+### 정적 게이트 9/9 + 추가 검증 11/11 재PASS
+
+- href="#" 0건 / `javascript:void(0)` 0건 (button 변환 후)
+- inline 컴포넌트 재정의: kpi-row base components.css 이동 후 화면 column override만 잔존 (CI 통과)
+- matrix.json v1.1.0 metadata 정합 + 24 patterns
+- components.css G3 신규 9 + base 11 클래스 등록 (+11 lines)
+- _showcase.html 24 sections (15+9)
+- 03-components.md §G3.1~G3.9 추가
+
+### 다음
+
+- 재평가 (evaluator + codex 병렬) → PASS_BOTH 시 ready → CI → auto-merge → tag wf-v0.3.0
+
+## [wf-v0.3.0-hotfix1] — 2026-05-18 (G3 hotfix1 — P1 3건 + TA-03/13 pane)
+
+evaluator PASS 9.22 + codex FAIL 6.1 통합 판정 BLOCKED_FOR_HOTFIX → 사용자 결정 "P1 3건 + TA-03/13 pane 모두 추가" 채택.
+
+### P1 정정 (codex G3-CDX-001~003)
+
+**G3-CDX-001 — `href="#"` 48건 → 0건**:
+- footer 28건 일괄 sed (`도움말` → `/help`, `운영팀 문의` → `/support`) — 14 화면 적용
+- TA-01 공지 5건 → `/admin/notices` 가짜 base path
+- TA-02 필터 "초기화" 1건 → `javascript:void(0)` + `onclick="return false;"` (click 핸들러)
+- TA-10 급여 5 + 인사문서 4건 → `/admin/documents/D-2026`
+- TA-11 계약 5건 → `/admin/contracts/CT-2026`
+
+**G3-CDX-002 — component-usage-matrix.json v1.1.0 — G3 신규 9 패턴 추가** (14 → 24 patterns):
+- Profile Card + Summary Grid (TA-03/EM-09)
+- Org Tree 3-Pane (TA-04)
+- Calendar Grid 직원×일자 (TA-07)
+- Approval Timeline + Sticky Action (TA-08, PWA 결재)
+- Approval Master-Detail Inbox (TA-09, PWA 결재)
+- Report List + Chart Canvas (TA-12)
+- Settings Vertical Tabs Pane (TA-13)
+- Integration Card Grid (TA-14)
+- Side Detail Drawer with Diff (TA-06/OP-09)
+- Date Input applicable_screens 정정 — TA-02 + TA-13 추가 (G3-CDX-008)
+
+**G3-CDX-003 — inline `<style>` G3 신규 클래스 정의 → components.css SSOT 이동**:
+- components.css 870 → 1023 lines (+153 lines / G3 신규 8 섹션 + 모바일 override)
+- 9 화면 inline `<style>` 정리 — page-grid layout (kpi-row / chart-row / leave-shell 등 화면 한정)만 유지
+
+### P2 — TA-03 7 pane + TA-13 6 pane 추가 (사용자 결정 채택)
+
+**TA-03 (직원 상세) — 7 pane 추가 → 9 pane stack (PRD §3-2 100% coverage)**:
+- 추가: 계약정보 (super only, lock 아이콘) / 근태 (TA-05 임베드) / 휴가 (EM-04 임베드) / 급여 (지급 이력) / 문서 (계약/증명/발령) / 결재이력 (제출 + 처리) / 변경이력 (audit_logs diff)
+- state-default = 9 pane 전체 표시 (super/hr_admin) / state-filtered = 5 pane만 (manager scope-mgr — 기본/근태/휴가)
+
+**TA-13 (회사 설정) — 6 pane 추가 → 9 pane stack**:
+- 추가: 회사정보 (회사명/사업자/대표자/도메인/로고 file-input) / 결재라인 (5 종류 + SLA) / 역할권한 (4 역할 매트릭스, super only) / 알림 (채널 우선순위 + 폴백 임계 + 10 템플릿) / 문서양식 (5 양식 + 변수 + 버전) / 감사로그 (본 테넌트 한정 + 보존 7년)
+- state-default = 9 pane 전체 (super) / state-filtered = 6 pane scope-hr (hr_admin) / state-empty = 보안 pane 강조 (read-only 시나리오)
+
+### P2 추가 정정 (NON_BLOCKING)
+
+- **G3-CDX-007 모바일 override**: components.css `@media (max-width: 768px)` G3 신규 grid 패턴 단열 + calendar-grid overflow-x
+- **G3-CDX-008 Date Input matrix applicable_screens**: TA-02 + TA-13 추가 (G3-CDX-002와 통합 처리)
+
+### NON_BLOCKING (차후 KI 등록)
+
+- KI-053 (P2) G3 신규 18+ 패턴 → 9 패턴 추가로 partial resolve (잔여는 차후 _showcase.html demo 추가)
+- KI-054 (P3) _showcase.html G3 demo 미추가
+- KI-055 (P3) TA-01 공지 + TA-10 payslip `/admin/notices` / `/admin/documents` 가짜 base (Phase 7 실제 ID 매핑)
+- KI-056 (P3) footer 도움말 / 운영팀 `/help` `/support` 라우트 — 차후 05-layouts.md helpers SSOT 명시
+- KI-057 (P2) icon-only 버튼 aria-label 누락 (G3-CDX-006) — analysis md "Phase 7 변환 시 보강" 명시
+
+### 정적 게이트 9/9 재검증 PASS
+
+- 외부 sprite 0건 / 인라인 sprite 14/14
+- `.active` 변종 0건
+- bare select 0건 / native control wrap 14/14
+- inline 컴포넌트 재정의 0건
+- href="#" 0건 (48 → 0)
+- matrix.json 24 patterns + 5 forbidden_global JSON valid
+- components.css 신규 9 패턴 등록 + 모바일 override
+
+### 다음
+
+- 재평가 (evaluator + codex 병렬) → PASS_BOTH 시 ready → CI → auto-merge → tag wf-v0.3.0
+
+## [wf-v0.3.0] — 2026-05-17 (G3 테넌트 매니저 양산)
+
+### 산출물 (TA-01 ~ TA-14, 14 화면 + 14 analysis)
+
+| ID | 패턴 | 5 상태 |
+|----|------|-------|
+| TA-01 관리자 대시보드 | KPI 6 + Charts 4 + Activity Tables 3 + Notice | default/loading/filtered(manager 팀뷰)/empty/error |
+| TA-02 직원 관리 | List + Side Filter + 10 Cols Table + Bulk Upload (file-input) | default/loading/filtered/empty/error |
+| TA-03 직원 상세 | Header Cards 2 + Tabs 9 + Form-section | default(기본)/loading/filtered(인사)/empty(권한)/error |
+| TA-04 조직도 / 부서 관리 | 3-Pane (Tree + Detail + Members) | default(읽기)/loading/filtered(편집)/empty/error |
+| TA-05 근태 관리 | Filter Chips + KPI 4 + 10 Cols Table | default(오늘)/loading/filtered(팀)/empty/error |
+| TA-06 근태 수정 요청 | List + Filter + 10 Cols Table + Side Drawer (diff) | default(목록)/loading/filtered(상세)/empty/error |
+| TA-07 휴가 관리 | KPI 5 + Calendar Grid (직원×31일) + List Toggle | default(캘린더)/loading/filtered(목록)/empty/error |
+| TA-08 휴가 신청 상세 | Info Cards 5 + Approval Timeline + Sticky Action | default(대기)/loading/filtered(진행중)/empty(취소)/error |
+| TA-09 결재 / 승인 | Master-Detail Inbox + Tabs (받은/보낸/위임/완료) | default(받은)/loading/filtered(보낸)/empty/error |
+| TA-10 급여 / 문서 관리 | Tabs 5 + Bulk Upload (file-input) + Send Monitoring | default(급여)/loading/filtered(인사문서)/empty/error |
+| TA-11 문서함 / 전자계약 | List + Filter (v1.2 lock) + 7 Cols Table + Flow Guide | default(전체)/loading/filtered(v1.2)/empty/error |
+| TA-12 리포트 | Left Report List + Right Chart Canvas + 52h Warning | default(인력)/loading/filtered(초과근무)/empty/error |
+| TA-13 회사 설정 | Vertical Tabs 9 + Form Pane (work/leave/security) | default(근무)/loading/filtered(휴가)/empty(보안 read-only)/error |
+| TA-14 외부 연동 | Integration Card Grid (9) + API Key Table | default(채널)/loading/filtered(API Key)/empty/error |
+
+### 패턴 도입 (G3 신규)
+
+- `.profile-card` + `.profile-avatar-lg` + `.summary-grid` (TA-03 헤더)
+- `.org-tree` + `.tree-node.is-active` + `.tree-children` (TA-04 트리)
+- `.calendar-grid` (160px name + 31일 minmax + weekend variant) + `.leave-badge.l-full/l-half/l-sick` (TA-07)
+- `.timeline-step` + `.timeline-marker.is-done/is-pending` (TA-08 결재 라인)
+- `.sticky-actions` (TA-08 PWA 결재 sticky footer)
+- `.approval-shell` (380px / 1fr) + `.inbox-tabs.is-active` + `.approval-row.is-active` (TA-09)
+- `.report-shell` (260px / 1fr) + `.report-item.is-active/is-disabled` + `.chart-grid` (TA-12)
+- `.settings-shell` (220px / 1fr) + `.pane-canvas` (TA-13 vert-tabs 변종)
+- `.integration-grid` 3-col + `.int-card.is-coming` + `.seg-btn` (TA-14)
+
+### Tenant 사이드바 (8 메뉴 — 05-layouts.md SSOT)
+
+- 대시보드 / 직원 / 근태 / 휴가 / 결재 / 급여·문서 / 리포트 / 설정
+- href 실제 경로 (`/admin/employees`, `/admin/leaves/L-NNNN` 등 — placeholder 0)
+- 모든 화면 sidebar-footer "v1.0.0-beta · 테넌트 환경"
+
+### CI / 정책 의무 준수
+
+- 인라인 SVG sprite 14 화면 + 외부 `../_design-system/icons.svg` 참조 0건
+- `.is-active` variant SSOT (`.active` 금자 — runtime JS + markup)
+- native control DS wrap — `.select-wrap` (TA-02/04/13), `.file-input` (TA-02/10), `.date-input` (TA-02/13)
+- 화면 inline `<style>`은 page-grid layout만 (컴포넌트 재정의 0건)
+- showcase-coverage — component-usage-matrix.json 14 패턴 매핑 의무 준수
+
+### KI 사전 정정 (G3 첫 commit `01c800d`)
+
+- KI-052 (P3) `_layout-shell.html` 외부 sprite 20건 + `_layout-auth.html` 4건 = 24건 정정 후 진입
+- CI `inline-svg-sprite-check` 검사 범위 확장 (_design-system/_layout-*.html)
+
+### 다음
+
+- 평가 (evaluator + codex 병렬) → hotfix 사이클 (최대 3회) → PR 머지 → tag wf-v0.3.0
+- G4 테넌트 직원 (EM-01~11, 11 화면, wf-v0.4.0)
+
 ## [wf-v0.2.0] — 2026-05-16 (G2 운영 완료 + hotfix 진행 중)
 
 ### 산출물 (OP-02 ~ OP-12, 11 화면 + 11 analysis)

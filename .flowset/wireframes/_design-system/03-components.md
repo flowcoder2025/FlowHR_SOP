@@ -1100,3 +1100,206 @@ interface StepperProps {
 | 2026-05-16 | Anatomy + Props + Variant matrix + 정렬 의무 + svg attribute 강제 | 사용자 지적 (변수화 누락 + 버튼 정렬 깨짐) |
 | 2026-05-16 | Variable Notation 정책 §1-1 + 텍스트 가변성 검증 §2-1 추가 | 사용자 지적 (showcase 도메인 텍스트 하드코딩) |
 | 2026-05-16 | 신규 8 컴포넌트 섹션 등록 (Modal / Switch / Stepper / Toggle Pill / Period Chip / Drawer / Diff / File Input / Date Input / Select Wrap) | KI-batch-006-fix2 hotfix2 — evaluator/codex 양 평가자 P1 지적 |
+| 2026-05-18 | G3 신규 9 패턴 사양 추가 (§G3.1~G3.9) | KI-053 / G3 hotfix2 — evaluator Hard gate "DS SSOT 결함" 해소 |
+
+---
+
+## G3 신규 9 패턴 사양 (wf-v0.3.0 hotfix2, 2026-05-18)
+
+### §G3.1 Profile Card + Summary Grid
+
+**적용**: TA-03 직원 상세, EM-09 본인 프로필
+
+**Anatomy**:
+- `.header-cards` (grid 280px / 1fr, gap 16px) — 페이지 wrapper
+- 좌측: `.card.profile-card` (flex, gap 14px, padding 16px)
+  - `.profile-avatar-lg` (64×64 원형, accent bg, 24px font 600, flex-shrink 0)
+  - `.profile-meta` (13px text-muted, line-height 1.6)
+- 우측: `.card > .summary-grid` (grid repeat(4, 1fr), gap 12px, padding 16px)
+  - `.summary-cell` × 4 (flex column, gap 4px)
+    - `.summary-label` (11px uppercase letter-spacing 0.5px text-muted)
+    - `.summary-value` (16px font 600 text)
+
+**Props 변수**: 직원명 / 사번 / 직급 / 부서 / 고용형태 / 재직상태 배지 / 4 KPI (잔여연차 / 최근근태 / 결재진행 / 재직기간)
+
+**Variant**: 본인 프로필(EM-09)에서는 4 KPI가 본인 데이터, manager view는 일부 KPI hidden
+
+**모바일**: `@media (max-width: 768px)` grid-template-columns: 1fr
+
+### §G3.2 Org Tree 3-Pane
+
+**적용**: TA-04 조직도
+
+**Anatomy**:
+- `.org-shell` (grid 280px / 1fr / 1.2fr, align-items: start, gap 16px)
+- 좌측: `.card.org-tree` (padding 12px, min-h 480px)
+  - `.tree-node` (flex gap 6px, padding 6px 8px, radius 4px, cursor: pointer, font 13px)
+    - `:hover` surface-2 bg
+    - `.is-active` (accent bg, white, font 600)
+    - `.tree-meta` (11px text-muted, margin-left: auto — 인원수)
+  - `.tree-children` (padding-left 14px, border-left 1px dashed border-light, margin-left 12px)
+- 중앙: `.card > .form-section` (부서 상세 — `.form-readonly` ↔ `.form-edit` 토글)
+- 우측: `.card > .table` (구성원 — 이름/직급/입사일/상태/액션)
+
+**Props 변수**: 부서 트리 (계층) / 부서명 / 부서 코드 / 부서장 / 상위 / 활성 여부 / 구성원 리스트
+
+**Phase 7**: react-arborist 또는 react-complex-tree + 드래그앤드롭 + URL ?dept=NN 동기화
+
+### §G3.3 Calendar Grid (직원×일자)
+
+**적용**: TA-07 휴가 관리
+
+**Anatomy**:
+- `.calendar-grid` (grid, gap 1px, border 1px, page-local `grid-template-columns: 160px repeat(31, minmax(28px, 1fr))`)
+- `.calendar-cell` (bg, padding 6px 4px, font 11px, min-h 30px)
+  - `.day-header` (surface-2 bg, text-muted, center, font 600, padding 8px 2px)
+  - `.name-cell` (font 12px 500, padding 8px 12px)
+  - `.weekend` (surface-2 bg, text-muted)
+- `.leave-badge` (inline-block, height 16px, radius 2px, font 10px, padding 1px 4px, white, line-height 14px)
+  - `.l-full` (#3B82F6 blue, width 100%) — 연차
+  - `.l-half` (#10B981 green, width 50%) — 반차
+  - `.l-sick` (#F59E0B amber, width 100%) — 병가
+
+**Props 변수**: 직원 리스트 / 일자 (월/주) / 휴가 배치 (직원 × 일자) / 휴가 유형
+
+**Variant**: 월 뷰 (31 cols) / 주 뷰 (7 cols, Phase 7 토글)
+
+**모바일**: `@media (max-width: 768px)` overflow-x: auto
+
+### §G3.4 Approval Timeline + Sticky Action
+
+**적용**: TA-08 휴가 신청 상세 (PWA 결재 핵심)
+
+**Anatomy**:
+- `.info-cards` (grid repeat(2, 1fr), gap 16px, margin-bottom 16px) + `> .card-wide` span 2
+- `.info-cell` (padding 8px 0, flex gap 12px, font 13px)
+  - `> .info-label` (90px width, text-muted)
+  - `> .info-value` (text, flex 1)
+- `.timeline-step` (flex gap 12px, padding 10px 0, border-bottom 1px border-light)
+  - `:last-child` border-bottom: none
+  - `.timeline-marker` (28×28 원형, surface-2 bg, text-muted, font 12px 600, flex-shrink 0)
+    - `.is-done` (success bg, white)
+    - `.is-pending` (warning bg, white)
+- `.sticky-actions` (position: sticky, bottom 16px, flex gap 8px, padding 12px, bg, border 1px, radius var(--r-md), shadow-md)
+
+**Props 변수**: 신청자 / 휴가 정보 / 잔여 (현재 + 승인 후) / 결재라인 단계 / 본문 / 첨부 / 처리 이력
+
+**Variant**: state default (대기 — 1단계 pending) / state filtered (진행중 — 1단계 done) / state empty (취소 — sticky 숨김)
+
+**PWA**: `bottom: env(safe-area-inset-bottom)` notch 대응
+
+### §G3.5 Approval Master-Detail Inbox
+
+**적용**: TA-09 결재 / 승인
+
+**Anatomy**:
+- `.approval-shell` (grid 380px / 1fr, align-items: start, min-h 600px, gap 16px)
+- 좌측: `.card.inbox-sidebar` (padding 0)
+  - `.inbox-tabs` (flex, border-bottom 1px border-light)
+    - `.inbox-tab` (flex 1, padding 10px 8px, center, font 13px, text-muted, border-bottom 2px transparent)
+      - `.is-active` (accent color, accent border-bottom-color, font 600)
+    - `.count-chip` (inline-block, warning bg, white, radius 10px, padding 1px 6px, font 11px 600, margin-left 4px)
+  - `.approval-row` (padding 12px, border-bottom 1px border-light, cursor: pointer, font 13px)
+    - `:hover` surface-2 bg
+    - `.is-active` (accent-bg, border-left 3px accent, padding-left 9px)
+    - `.row-head` (flex space-between gap 6px, margin-bottom 4px)
+    - `.row-title` (font 600 text)
+    - `.row-meta` (font 11px text-muted)
+- 우측: `.card` (상세 — Approval Timeline 변종 재사용)
+
+**Props 변수**: 인박스 카운트 (warning chip — 받은 결재 대기 N) / 결재 종류 (휴가/근태/증명서/문서) / 요청자 (이름+부서) / SLA 임박 (warning badge — "1h" / "23m") / 단계 표기 ("1/2" 형식) / 본인 처리 여부 / 일괄 처리 가능 카운트
+
+**Variant**: 받은(default) / 보낸(filtered) / 위임(v1.1 small) / 완료. 행 선택 — `.approval-row.is-active` accent border-left + 우측 상세 동기화
+
+**Phase 7**: shadcn/ui ResizablePanel (좌/우 width 조절) + Sheet (모바일 drawer 풀스크린 전환) + react-swipeable (좌 스와이프 승인 / 우 반려) + Realtime channel `approvals:tenant_id={id}` (신규/단계 전이/SLA 임박 알림) + 일괄 승인 zod (같은 type만)
+
+### §G3.6 Report List + Chart Canvas
+
+**적용**: TA-12 리포트
+
+**Anatomy**:
+- `.report-shell` (grid 260px / 1fr, align-items: start, gap 16px)
+- 좌측: `.card.report-list` (padding 8px)
+  - `.report-item` (padding 12px, radius 6px, cursor: pointer, font 13px, flex gap 10px align-center, margin-bottom 4px)
+    - `:hover` surface-2 bg
+    - `.is-active` (accent-bg, accent color, font 600)
+    - `.is-disabled` (text-muted, cursor: not-allowed, opacity 0.7 — v1.3 커스텀)
+- 우측: `.chart-grid` (grid 1fr 1fr, gap 16px) + `> .card-wide` span 2
+
+**Props 변수**: 리포트 종류 (5+v1.3) / 기간 / 부서 필터 / 직급 필터 / 차트 데이터 (Line/Bar/Donut/Stacked/Radar) / 임박 alert (52h) / PDF/Excel 다운로드 핸들러
+
+**Variant**: 인력 / 근태 / 휴가 / 초과근무 (warning) / 부서비교 / 커스텀 (v1.3 disabled)
+
+**Phase 7**: recharts 또는 visx (LineChart/BarChart/DonutChart/StackedBar/Radar) + shadcn/ui Card + Puppeteer (PDF 생성) + SheetJS (Excel 내보내기). 머터리얼라이즈드 뷰 (성능 — 부서별 사전 집계).
+
+### §G3.7 Settings Vertical Tabs Pane
+
+**적용**: TA-13 회사 설정 (OP-11 vert-tabs 변종)
+
+**Anatomy**:
+- `.settings-shell` (grid 220px / 1fr, align-items: start, gap 16px)
+- 좌측: `.vert-tabs` + `.vert-tab` (기존 컴포넌트 — `.is-active` SSOT components.css 등록)
+- 우측: `.pane-canvas` (position: relative) with `.card.pane` × 9
+
+**Props 변수**: 9 탭 (회사정보 / 근무정책 / 휴가정책 / 결재라인 / 역할권한 / 알림 / 문서양식 / 보안 / 감사로그) / 변경 이력 (audit_logs) / 적용 시점 (date-input) / 권한 매트릭스 (super/hr_admin/manager/employee)
+
+**Variant**: state default = super 9 pane / state filtered = hr_admin 6 pane (scope-hr 부착) / state empty = 보안 단독
+
+**Phase 7**: shadcn/ui Tabs (orientation=vertical) + URL ?tab=X + react-hook-form + zod (탭별 schema) + 적용 예정 cron (매 00:00 status=scheduled→active) + Supabase RLS audit_logs `tenant_id`
+
+### §G3.8 Integration Card Grid
+
+**적용**: TA-14 외부 연동
+
+**Anatomy**:
+- `.integration-grid` (grid repeat(3, 1fr), gap 16px)
+- `.int-card` (padding 16px, flex column, gap 10px)
+  - `.is-coming` (opacity 0.65 — v1.2/v1.3 disabled)
+  - `.int-head` (flex gap 10px align-center)
+    - `.int-icon` (40×40, radius 8px, surface-2 bg, flex-shrink 0)
+  - `.int-meta` (font 12px text-muted)
+- `.seg-btn` (padding 6px 14px, font 13px, border 1px, bg, cursor: pointer)
+  - `:first-child` radius 6px 0 0 6px, border-right: none
+  - `:last-child` radius 0 6px 6px 0
+
+**Props 변수**: 연동 종류 (카카오 알림톡 / SMS / SMTP / 전자계약 / Calendar / Slack / SSO / 출퇴근기기 / Webhook) / 상태 (connected/pending/error/disconnected) / 마지막 발송 / 24h 실패 / 템플릿 카운트 / API Key (이름/마스킹키/권한/만료/24h 호출)
+
+**Variant**: connected (success badge) / pending (muted) / error / disconnected. `.is-coming` v1.2/v1.3 디저블드. 세그먼트 토글 채널 ↔ API Key (`.seg-btn[data-seg="channels"]` vs `[data-seg="apikeys"]`).
+
+**Phase 7**: shadcn/ui Card + Dialog (연결 설정 모달) + react-hook-form (API 키 발급) + Supabase Vault (인증 정보 암호화) + Realtime channel `integrations:tenant_id={id}` + react-day-picker (만료일)
+
+### §G3.9 Side Detail Drawer with Diff
+
+**적용**: TA-06 근태 수정 요청, OP-09 감사 로그 (drawer 일관 패턴)
+
+**Anatomy**:
+- `.req-shell` (grid 1fr → state filtered 시 1fr/360px, transition grid-template-columns 0.2s, gap 16px)
+- `.req-drawer` (display: none → state filtered display block, position: sticky top 16px)
+- `.diff-row` (flex gap 8px align-baseline, padding 6px 0, font 13px)
+  - `> .diff-label` (64px width, text-muted, font 12px)
+- diff highlight: 원기록 text-decoration: line-through + text-muted / 요청값 success color + font 600
+
+**Props 변수**: 요청 정보 (직원/대상일/요청유형) / 원기록 (출근시각 등) / 요청값 / 사유 (textarea) / 증빙 (file-input — 사진/문서) / 결재라인 단계별 (timeline reuse) / 액션 (승인/반려/의견)
+
+**Variant**: state default = 목록 1fr / state filtered = 목록 + drawer 1fr/360px transition 0.2s. OP-09 감사 로그에서도 동일 drawer 패턴 (diff highlight 재사용 — before→after)
+
+**Phase 7**: shadcn/ui Sheet (drawer) + URL `?id=req-XXX` 동기화 + react-hook-form (반려 사유 textarea + zod validate) + react-dropzone (증빙) + diff library (react-diff-view 또는 자체 highlight)
+
+### 모바일 override 일괄 (G3 신규 9 패턴 + Approval/Report/Settings/Integration)
+
+```css
+@media (max-width: 768px) {
+  .header-cards,
+  .summary-grid,
+  .org-shell,
+  .approval-shell,
+  .report-shell,
+  .settings-shell,
+  .integration-grid,
+  .info-cards,
+  .chart-grid { grid-template-columns: 1fr !important; }
+  .info-cards > .card-wide,
+  .chart-grid > .card-wide { grid-column: span 1; }
+  .calendar-grid { overflow-x: auto; }
+}
+```

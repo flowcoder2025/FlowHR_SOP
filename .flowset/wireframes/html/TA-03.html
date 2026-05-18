@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<!--
+  TA-03 직원 상세 (`/admin/employees/:id`).
+  PRD: prd/domains/tenant-admin/TA-03-employee-detail.md
+  Layout: _design-system/_layout-shell.html (AppShell + tenant 8 메뉴)
+  Pattern: Detail + Header Cards + Tabs (component-usage-matrix.json §Detail+Tabs)
+  탭 9개: 기본정보 / 인사정보 / 계약정보 / 근태 / 휴가 / 급여 / 문서 / 결재이력 / 변경이력
+  상태 (5): 1 default(기본정보) / 2 loading / 3 인사정보탭 / 4 empty(권한제한) / 5 error
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — TA-03 직원 상세</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  /* 페이지 한정 — state 토글 + 탭 active 시각 + state-debug + loading overlay
+     G3 신규 클래스 (.header-cards / .profile-card / .summary-grid 등)는 components.css SSOT 이동 */
+
+  .pane { display: none; }
+  body[data-state="default"]  .pane.scope-full,
+  body[data-state="default"]  .pane.scope-mgr,
+  body[data-state="filtered"] .pane.scope-mgr,
+  body[data-state="empty"]    .state-empty,
+  body[data-state="error"]    .state-error { display: block; }
+  body[data-state="loading"] .detail-canvas { opacity: 0.35; pointer-events: none; }
+  body[data-state="loading"] .loading-overlay { display: flex; }
+  .state-only { display: none; }
+  body[data-state="empty"] .state-empty,
+  body[data-state="error"] .state-error { display: block; }
+  .loading-overlay { display: none; padding: 32px; align-items: center; justify-content: center; gap: 10px; color: var(--color-text-muted); font-size: 13px; }
+  .loading-overlay > svg.ico { width: 18px !important; height: 18px !important; animation: spin 0.9s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* 탭 active 시각 토글 — default=기본정보 / filtered=manager 5탭 첫번째(기본정보) */
+  body[data-state="default"]  .tab[data-tab="basic"],
+  body[data-state="filtered"] .tab[data-tab="basic"] { background: var(--color-bg); border-bottom-color: var(--color-bg); color: var(--color-text); font-weight: 600; }
+  body[data-state="filtered"] .tab[data-tab="contract"],
+  body[data-state="filtered"] .tab[data-tab="payroll"],
+  body[data-state="filtered"] .tab[data-tab="doc"],
+  body[data-state="filtered"] .tab[data-tab="approval"],
+  body[data-state="filtered"] .tab[data-tab="audit"] { opacity: 0.4; cursor: not-allowed; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></symbol>
+  <symbol id="i-check-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+  <symbol id="i-alert-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-alert-t" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+</svg>
+
+<div class="app-shell">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">플로우상사</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">관리자 메뉴</div>
+      <a class="sidebar-item" href="/admin"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item is-active" href="/admin/employees"><svg class="ico" width="18" height="18"><use href="#i-users"/></svg> 직원</a>
+      <a class="sidebar-item" href="/admin/attendance"><svg class="ico" width="18" height="18"><use href="#i-clock"/></svg> 근태</a>
+      <a class="sidebar-item" href="/admin/leaves"><svg class="ico" width="18" height="18"><use href="#i-calendar-days"/></svg> 휴가</a>
+      <a class="sidebar-item" href="/admin/approvals"><svg class="ico" width="18" height="18"><use href="#i-check-square"/></svg> 결재</a>
+      <a class="sidebar-item" href="/admin/payroll"><svg class="ico" width="18" height="18"><use href="#i-file-text"/></svg> 급여 / 문서</a>
+      <a class="sidebar-item" href="/admin/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 리포트</a>
+      <a class="sidebar-item" href="/admin/settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 테넌트 환경</div>
+  </nav>
+
+  <div class="main">
+
+    <header class="header">
+      <h1 class="page-title">직원 상세 — 한직원 (E-0044)</h1>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
+          <input placeholder="검색은 v1.1에서 제공됩니다" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">정</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- 브레드크럼 + 액션 -->
+      <div class="page-action-bar">
+        <div class="summary">
+          <a class="link" href="/admin/employees"><svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-left"/></svg> 직원 목록</a>
+          · 사번 E-0044 · 영업1팀 · 입사 2023-03-15
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-edit"/></svg> 정보 수정</button>
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-upload"/></svg> 문서 업로드</button>
+          <button class="btn btn-ghost">휴직 처리</button>
+          <button class="btn btn-danger"><svg class="ico" width="14" height="14"><use href="#i-logout"/></svg> 퇴사 처리</button>
+        </div>
+      </div>
+
+      <!-- 헤더 카드 (프로필 + 요약) -->
+      <div class="header-cards">
+        <div class="card profile-card">
+          <div class="profile-avatar-lg">한</div>
+          <div>
+            <div style="font-size: 18px; font-weight: 600; color: var(--color-text);">한직원</div>
+            <div class="profile-meta">
+              사번 E-0044 · 대리<br>
+              영업1팀 · 정규<br>
+              <span class="badge badge-success">재직</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="summary-grid">
+            <div class="summary-cell"><span class="summary-label">잔여 연차</span><span class="summary-value">7 / 15<small style="color: var(--color-text-muted); font-weight: 400;">일</small></span></div>
+            <div class="summary-cell"><span class="summary-label">최근 근태</span><span class="summary-value" style="color: var(--color-warning);">지각 (오늘)</span></div>
+            <div class="summary-cell"><span class="summary-label">결재 진행 중</span><span class="summary-value">2<small style="color: var(--color-text-muted); font-weight: 400;">건</small></span></div>
+            <div class="summary-cell"><span class="summary-label">재직 기간</span><span class="summary-value">3년 2개월</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 9개 -->
+      <div class="tabs-row" role="tablist">
+        <button class="tab" data-tab="basic" role="tab">기본정보</button>
+        <button class="tab" data-tab="hr" role="tab">인사정보</button>
+        <button class="tab" data-tab="contract" role="tab">계약정보 <svg class="ico ico-sm" width="12" height="12"><use href="#i-lock"/></svg></button>
+        <button class="tab" data-tab="att" role="tab">근태</button>
+        <button class="tab" data-tab="leave" role="tab">휴가</button>
+        <button class="tab" data-tab="payroll" role="tab">급여</button>
+        <button class="tab" data-tab="doc" role="tab">문서</button>
+        <button class="tab" data-tab="approval" role="tab">결재이력</button>
+        <button class="tab" data-tab="audit" role="tab">변경이력</button>
+      </div>
+
+      <div class="detail-canvas" style="position: relative;">
+        <div class="loading-overlay">
+          <svg class="ico"><use href="#i-loader"/></svg>
+          직원 상세를 불러오는 중…
+        </div>
+
+        <!-- empty 상태: 권한 제한 -->
+        <div class="empty-state state-only state-empty" style="padding: 60px 32px;">
+          <svg class="ico ico-empty" width="48" height="48"><use href="#i-lock"/></svg>
+          <div style="font-size: 16px; font-weight: 600; color: var(--color-text);">조회 권한이 없습니다</div>
+          <div style="font-size: 13px; color: var(--color-text-muted);">tenant_manager는 소속팀 직원의 기본정보 / 근태 / 휴가 탭만 조회할 수 있습니다.<br>전체 정보는 HR 관리자에게 문의해 주세요.</div>
+          <a class="btn btn-ghost btn-sm" href="/admin/employees" style="margin-top: 12px;">직원 목록으로</a>
+        </div>
+
+        <!-- error 상태 -->
+        <div class="state-only state-error" style="padding: 32px;">
+          <div class="auth-alert auth-alert-error" role="alert">
+            <svg class="ico" width="18" height="18"><use href="#i-alert-c"/></svg>
+            <div>
+              <strong>직원 상세 조회에 실패했습니다.</strong>
+              <span class="auth-alert-meta">코드: EMPLOYEE_FETCH_FAILED · request_id: req_c1d4 · 직원 ID가 올바른지 확인해 주세요.</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+            <button class="btn btn-primary">재시도</button>
+            <a class="btn btn-ghost" href="/admin/employees">목록으로</a>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             탭 9개 본문 — 와이어프레임 검수용 stack 표시
+             default state: 9 pane 모두 (super/hr_admin 전체 권한)
+             filtered state: 3 pane만 (manager — 기본정보/근태/휴가, scope-mgr 클래스, PRD §6 정합)
+             ============================================================ -->
+
+        <!-- 1. 기본정보 (PRD §3-2 — 모든 권한) -->
+        <div class="card pane scope-full scope-mgr" style="padding: 0;">
+          <div class="form-section">
+            <div class="form-section-header"><h3>기본 정보</h3><span style="font-size: 12px; color: var(--color-text-muted);">최근 수정 2026-05-10 by 정인사</span></div>
+            <div class="form-row"><label class="label">이름</label><div>한직원</div></div>
+            <div class="form-row"><label class="label">이메일</label><div><code>han@flowtrading.kr</code></div></div>
+            <div class="form-row"><label class="label">연락처</label><div>010-1234-5678</div></div>
+            <div class="form-row"><label class="label">생년월일</label><div>1992-08-15 (만 33세)</div></div>
+            <div class="form-row"><label class="label">주소</label><div>서울시 강남구 테헤란로 123, 플로우빌딩 8층</div></div>
+            <div class="form-row"><label class="label">비상연락처</label><div>한모 (모) · 010-9876-5432</div></div>
+            <div class="form-row"><label class="label">가족 정보</label><div>배우자 1, 자녀 1 (부양가족 등록)</div></div>
+          </div>
+        </div>
+
+        <!-- 2. 인사정보 (super / hr_admin only) -->
+        <div class="card pane scope-full" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header"><h3>인사 정보</h3><span style="font-size: 12px; color: var(--color-text-muted);">최근 변경 2026-04-01 (부서 이동)</span></div>
+            <div class="form-row"><label class="label">사번</label><div><code>E-0044</code> <span class="badge badge-muted">변경 불가</span></div></div>
+            <div class="form-row"><label class="label">부서</label><div>영업1팀 (2024-04-01부터, 이전 영업2팀)</div></div>
+            <div class="form-row"><label class="label">직급 / 직책</label><div>대리 / 영업 담당</div></div>
+            <div class="form-row"><label class="label">고용형태</label><div>정규</div></div>
+            <div class="form-row"><label class="label">입사일</label><div>2023-03-15</div></div>
+            <div class="form-row"><label class="label">수습 기간</label><div>2023-03-15 ~ 2023-06-14 (종료)</div></div>
+            <div class="form-row"><label class="label">근무지</label><div>본사 (서울)</div></div>
+            <div class="form-row"><label class="label">직무 설명</label><div style="color: var(--color-text-muted);">B2B 영업 채널 관리, 신규 거래선 발굴, 주요 고객 응대</div></div>
+          </div>
+        </div>
+
+        <!-- 3. 계약정보 (super only — 연봉 포함) -->
+        <div class="card pane scope-full" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header">
+              <h3>계약 정보 <svg class="ico ico-sm" width="14" height="14" aria-label="super 권한만"><use href="#i-lock"/></svg></h3>
+              <span style="font-size: 12px; color: var(--color-text-muted);">2FA 재인증 필요 · 최근 변경 2024-03-01</span>
+            </div>
+            <div class="form-row"><label class="label">계약서 종류</label><div>정규직 근로계약서 (2024 표준)</div></div>
+            <div class="form-row"><label class="label">계약 기간</label><div>2023-03-15 ~ 무기한</div></div>
+            <div class="form-row"><label class="label">계약 직급</label><div>대리 (2024-03-01 진급)</div></div>
+            <div class="form-row"><label class="label">연봉</label><div><span style="color: var(--color-text-muted);">●●●●●●●●</span> <button class="btn btn-ghost btn-sm" aria-label="연봉 표시"><svg class="ico" width="14" height="14"><use href="#i-eye"/></svg> 표시 (2FA)</button></div></div>
+            <div class="form-row"><label class="label">계좌</label><div><code>국민은행 ●●●●-●●●●-1234</code> <button class="btn btn-ghost btn-sm" aria-label="계좌 표시">표시 (2FA)</button></div></div>
+            <div class="form-row"><label class="label">계약서 파일</label><div><a class="link" href="/admin/contracts/CT-2023-0044"><svg class="ico ico-sm" width="14" height="14"><use href="#i-file-text"/></svg> 2023 정규직 근로계약서.pdf (PDF)</a></div></div>
+          </div>
+        </div>
+
+        <!-- 4. 근태 (TA-05 임베드 직원 단일 필터) -->
+        <div class="card pane scope-full scope-mgr" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header">
+              <h3>근태 (최근 30일)</h3>
+              <a class="link" href="/admin/attendance?employee=E-0044">전체 보기 (TA-05) <svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div style="padding: 0 16px;">
+              <table class="table">
+                <thead><tr><th>날짜</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>상태</th></tr></thead>
+                <tbody>
+                  <tr><td>2026-05-17</td><td>09:00</td><td>-</td><td>0:00</td><td><span class="badge badge-success">정상</span></td></tr>
+                  <tr><td>2026-05-16</td><td>09:02</td><td>18:30</td><td>8:28</td><td><span class="badge badge-success">정상</span></td></tr>
+                  <tr><td>2026-05-15</td><td>09:30</td><td>18:15</td><td>7:45</td><td><span class="badge badge-warning">지각</span></td></tr>
+                  <tr><td>2026-05-14</td><td>09:00</td><td>18:10</td><td>8:10</td><td><span class="badge badge-success">정상</span></td></tr>
+                  <tr><td>2026-05-13</td><td>10:00</td><td>14:00</td><td>4:00</td><td><span class="badge badge-info">외근</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="padding: 8px 16px; font-size: 12px; color: var(--color-text-muted);">월별 출근율 94.7% (이번달 21일 / 정상 18 · 지각 3 · 외근 1 · 휴가 0)</div>
+          </div>
+        </div>
+
+        <!-- 5. 휴가 (EM-04 임베드 — 잔여 + 사용 이력) -->
+        <div class="card pane scope-full scope-mgr" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header">
+              <h3>휴가</h3>
+              <a class="link" href="/admin/leaves?employee=E-0044">전체 보기 (TA-07) <svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px;">
+              <div><div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase;">총 부여</div><div style="font-size: 18px; font-weight: 600;">15.0일</div></div>
+              <div><div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase;">사용</div><div style="font-size: 18px; font-weight: 600;">5.0일</div></div>
+              <div><div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase;">잔여</div><div style="font-size: 18px; font-weight: 600; color: var(--color-text);">10.0일</div></div>
+            </div>
+            <div style="padding: 0 16px 16px;">
+              <table class="table">
+                <thead><tr><th>유형</th><th>기간</th><th>일수</th><th>상태</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="badge badge-info">연차</span></td><td>2026-06-01~03</td><td>3.0</td><td><span class="badge badge-warning">대기 (결재 중)</span></td></tr>
+                  <tr><td><span class="badge badge-info">연차</span></td><td>2026-04-29~30</td><td>2.0</td><td><span class="badge badge-success">사용 완료</span></td></tr>
+                  <tr><td><span class="badge badge-info">반차</span></td><td>2026-03-15 PM</td><td>0.5</td><td><span class="badge badge-success">사용 완료</span></td></tr>
+                  <tr><td><span class="badge badge-info">연차</span></td><td>2026-02-12~13</td><td>2.0</td><td><span class="badge badge-success">사용 완료</span></td></tr>
+                  <tr><td><span class="badge badge-info">반차</span></td><td>2026-01-20 PM</td><td>0.5</td><td><span class="badge badge-success">사용 완료</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 급여 (super / hr_admin / 본인 only) -->
+        <div class="card pane scope-full" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header">
+              <h3>급여 이력 <svg class="ico ico-sm" width="14" height="14" aria-label="HR 이상 + 본인"><use href="#i-lock"/></svg></h3>
+              <a class="link" href="/admin/payroll?employee=E-0044">전체 (TA-10) <svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div style="padding: 0 16px 16px;">
+              <table class="table">
+                <thead><tr><th>지급월</th><th>지급액</th><th>공제액</th><th>실수령</th><th>명세서</th></tr></thead>
+                <tbody>
+                  <tr><td>2026-04</td><td>4,500,000</td><td>620,000</td><td>3,880,000</td><td><a class="link" href="/admin/documents/PAY-2026-04-E0044"><svg class="ico ico-sm" width="12" height="12"><use href="#i-pdf"/></svg> PDF</a></td></tr>
+                  <tr><td>2026-03</td><td>4,500,000</td><td>618,500</td><td>3,881,500</td><td><a class="link" href="/admin/documents/PAY-2026-03-E0044"><svg class="ico ico-sm" width="12" height="12"><use href="#i-pdf"/></svg> PDF</a></td></tr>
+                  <tr><td>2026-02</td><td>4,500,000</td><td>625,000</td><td>3,875,000</td><td><a class="link" href="/admin/documents/PAY-2026-02-E0044"><svg class="ico ico-sm" width="12" height="12"><use href="#i-pdf"/></svg> PDF</a></td></tr>
+                  <tr><td>2026-01</td><td>4,500,000</td><td>610,000</td><td>3,890,000</td><td><a class="link" href="/admin/documents/PAY-2026-01-E0044"><svg class="ico ico-sm" width="12" height="12"><use href="#i-pdf"/></svg> PDF</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. 문서 (계약서·증명서·인사문서) -->
+        <div class="card pane scope-full" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header">
+              <h3>문서함</h3>
+              <button class="btn btn-ghost btn-sm" aria-label="문서 업로드"><svg class="ico" width="14" height="14"><use href="#i-upload"/></svg> 업로드</button>
+            </div>
+            <div style="padding: 0 16px 16px;">
+              <table class="table">
+                <thead><tr><th>문서명</th><th>유형</th><th>업로드일</th><th>액션</th></tr></thead>
+                <tbody>
+                  <tr><td><a class="link" href="/admin/contracts/CT-2023-0044">2023 정규직 근로계약서</a></td><td><span class="badge badge-info">계약</span></td><td>2023-03-15</td><td><button class="btn btn-ghost btn-sm" aria-label="다운로드"><svg class="ico" width="12" height="12"><use href="#i-download"/></svg></button></td></tr>
+                  <tr><td><a class="link" href="/admin/documents/CERT-2026-001">2026-01 재직증명서</a></td><td><span class="badge badge-info">증명</span></td><td>2026-01-22</td><td><button class="btn btn-ghost btn-sm" aria-label="다운로드"><svg class="ico" width="12" height="12"><use href="#i-download"/></svg></button></td></tr>
+                  <tr><td><a class="link" href="/admin/documents/ASSIGN-2024-01">2024-04 부서이동 발령서</a></td><td><span class="badge badge-info">발령</span></td><td>2024-04-01</td><td><button class="btn btn-ghost btn-sm" aria-label="다운로드"><svg class="ico" width="12" height="12"><use href="#i-download"/></svg></button></td></tr>
+                  <tr><td><a class="link" href="/admin/documents/NDA-E0044">2023 비밀유지 계약서 (NDA)</a></td><td><span class="badge badge-info">계약</span></td><td>2023-03-15</td><td><button class="btn btn-ghost btn-sm" aria-label="다운로드"><svg class="ico" width="12" height="12"><use href="#i-download"/></svg></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. 결재이력 (본인이 제출 + 처리) -->
+        <div class="card pane scope-full" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header">
+              <h3>결재 이력</h3>
+              <a class="link" href="/admin/approvals?employee=E-0044">전체 (TA-09) <svg class="ico ico-sm" width="14" height="14"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div style="padding: 0 16px 16px;">
+              <table class="table">
+                <thead><tr><th>유형</th><th>구분</th><th>제목</th><th>요청일</th><th>상태</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="badge badge-info">휴가</span></td><td>제출</td><td><a class="link" href="/admin/leaves/L-2026-0142">2026-06-01~03 연차 3일</a></td><td>2026-05-16</td><td><span class="badge badge-warning">대기 (1/2)</span></td></tr>
+                  <tr><td><span class="badge badge-info">근태</span></td><td>제출</td><td><a class="link" href="/admin/attendance-mods/A-2026-0331">2026-05-15 출근 09:30→09:00</a></td><td>2026-05-16</td><td><span class="badge badge-warning">대기</span></td></tr>
+                  <tr><td><span class="badge badge-info">증명서</span></td><td>제출</td><td><a class="link" href="/admin/documents/CERT-2026-001">2026-01 재직증명서</a></td><td>2026-01-20</td><td><span class="badge badge-success">승인</span></td></tr>
+                  <tr><td><span class="badge badge-info">휴가</span></td><td>제출</td><td><a class="link" href="/admin/leaves/L-2026-0089">2026-04-29~30 연차</a></td><td>2026-04-15</td><td><span class="badge badge-success">승인</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. 변경이력 (audit_logs 직원 단위 — 이전/이후 diff) -->
+        <div class="card pane scope-full" style="padding: 0; margin-top: 12px;">
+          <div class="form-section">
+            <div class="form-section-header">
+              <h3>변경 이력</h3>
+              <span style="font-size: 12px; color: var(--color-text-muted);">audit_logs 기반 · 보존 7년</span>
+            </div>
+            <div style="padding: 0 16px 16px;">
+              <table class="table">
+                <thead><tr><th>시각</th><th>처리자</th><th>항목</th><th>이전 → 이후</th></tr></thead>
+                <tbody>
+                  <tr><td>2026-05-10 14:22</td><td>정인사</td><td>연락처</td><td><span style="color: var(--color-text-muted); text-decoration: line-through;">010-1111-2222</span> → <strong>010-1234-5678</strong></td></tr>
+                  <tr><td>2026-04-01 09:15</td><td>이대표</td><td>부서</td><td><span style="color: var(--color-text-muted); text-decoration: line-through;">영업2팀</span> → <strong>영업1팀</strong></td></tr>
+                  <tr><td>2026-03-01 10:30</td><td>이대표</td><td>직급</td><td><span style="color: var(--color-text-muted); text-decoration: line-through;">주임</span> → <strong>대리</strong> (진급)</td></tr>
+                  <tr><td>2023-06-15 17:00</td><td>system</td><td>수습 종료</td><td><span style="color: var(--color-text-muted); text-decoration: line-through;">probation</span> → <strong>active</strong></td></tr>
+                  <tr><td>2023-03-15 09:00</td><td>정인사</td><td>입사</td><td><strong>employees INSERT</strong> (사번 E-0044)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a href="/legal/terms">이용약관</a>
+        <a href="/legal/privacy">개인정보처리방침</a>
+        <a href="/help">도움말</a>
+        <a href="/support">운영팀 문의</a>
+      </div>
+      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+    </footer>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"  data-key="1">1 기본</span>
+  <span class="state-debug-key" data-state-key="loading"  data-key="2">2 조회중</span>
+  <span class="state-debug-key" data-state-key="filtered" data-key="3">3 인사</span>
+  <span class="state-debug-key" data-state-key="empty"    data-key="4">4 권한</span>
+  <span class="state-debug-key" data-state-key="error"    data-key="5">5 오류</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'loading', '3': 'filtered', '4': 'empty', '5': 'error' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>

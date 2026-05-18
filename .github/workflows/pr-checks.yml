@@ -189,7 +189,9 @@ jobs:
           # hotfix2 (KI-batch-006-fix2): 외부 참조 1건이라도 발견 시 fail (sprite 보유 무관).
           # hotfix3 (codex 5항목 §17-7-1 확장): JS source의 setAttribute / 동적 외부 ref도 차단
           #   — 따옴표(["']) + 외부 경로 패턴으로 HTML attribute와 JS literal 모두 잡음
+          # G3 진입 (KI-052): _design-system/_layout-{shell,auth}.html 템플릿도 검사 (SSOT 사각 해소)
           fail=0
+          # 1. 화면 HTML (인라인 sprite 의무 + 외부 참조 금지)
           for f in .flowset/wireframes/html/*.html; do
             [ ! -f "$f" ] && continue
             has_external=$(grep -cE "['\"]\.\./_design-system/icons\.svg" "$f" || true)
@@ -201,6 +203,16 @@ jobs:
             fi
             if [ "${has_inline:-0}" -eq 0 ]; then
               echo "::error file=$f::인라인 sprite 없음 (file:// 차단). <svg xmlns=... style=\"display:none\"><symbol id=\"i-...\">…</symbol></svg> 추가 필요."
+              fail=1
+            fi
+          done
+          # 2. _design-system 템플릿 (외부 참조만 금지 — sprite block은 화면 작성자가 추가)
+          for f in .flowset/wireframes/_design-system/_layout-*.html; do
+            [ ! -f "$f" ] && continue
+            has_external=$(grep -cE "['\"]\.\./_design-system/icons\.svg" "$f" || true)
+            if [ "${has_external:-0}" -gt 0 ]; then
+              echo "::error file=$f::SSOT 템플릿 외부 svg 참조 ${has_external}건 — 차기 화면에 file:// 차단 전파 위험. '#i-...'로 변경 필요"
+              grep -nE "['\"]\.\./_design-system/icons\.svg" "$f" | head -5
               fail=1
             fi
           done

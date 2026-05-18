@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<!--
+  TA-10 급여 / 문서 관리 (`/admin/payroll`).
+  PRD: prd/domains/tenant-admin/TA-10-payroll-documents.md
+  Layout: _design-system/_layout-shell.html (AppShell + tenant 8 메뉴, active=급여/문서)
+  Pattern: Tabs (5) + Table + Bulk Upload Card (file-input wrap 의무)
+  상태 (5): 1 default(급여탭) / 2 loading / 3 filtered(인사문서탭) / 4 empty / 5 error
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — TA-10 급여 / 문서 관리</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  .state-only { display: none; }
+  body[data-state="default"]  .state-default,
+  body[data-state="filtered"] .state-filtered,
+  body[data-state="empty"]    .state-empty,
+  body[data-state="error"]    .state-error { display: block; }
+  body[data-state="loading"] .table-body,
+  body[data-state="loading"] .upload-card { opacity: 0.4; pointer-events: none; }
+  body[data-state="loading"] .loading-overlay { display: flex; }
+  .loading-overlay { display: none; padding: 32px; align-items: center; justify-content: center; gap: 10px; color: var(--color-text-muted); font-size: 13px; }
+  .loading-overlay > svg.ico { width: 18px !important; height: 18px !important; animation: spin 0.9s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* 탭 active 토글 (default=급여 / filtered=인사문서) */
+  body[data-state="default"]  .tab[data-tab="payroll"] { background: var(--color-bg); border-bottom-color: var(--color-bg); color: var(--color-text); font-weight: 600; }
+  body[data-state="filtered"] .tab[data-tab="hr-doc"] { background: var(--color-bg); border-bottom-color: var(--color-bg); color: var(--color-text); font-weight: 600; }
+
+  body[data-state="default"]  .payroll-bulk { display: block; }
+  body[data-state="filtered"] .hr-doc-table { display: block; }
+  .payroll-bulk, .hr-doc-table { display: none; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></symbol>
+  <symbol id="i-check-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-paperclip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+  <symbol id="i-excel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="10" y1="13" y2="13"/><line x1="8" x2="10" y1="17" y2="17"/><line x1="14" x2="16" y1="13" y2="13"/><line x1="14" x2="16" y1="17" y2="17"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+  <symbol id="i-alert-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></symbol>
+</svg>
+
+<div class="app-shell">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">플로우상사</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">관리자 메뉴</div>
+      <a class="sidebar-item" href="/admin"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/admin/employees"><svg class="ico" width="18" height="18"><use href="#i-users"/></svg> 직원</a>
+      <a class="sidebar-item" href="/admin/attendance"><svg class="ico" width="18" height="18"><use href="#i-clock"/></svg> 근태</a>
+      <a class="sidebar-item" href="/admin/leaves"><svg class="ico" width="18" height="18"><use href="#i-calendar-days"/></svg> 휴가</a>
+      <a class="sidebar-item" href="/admin/approvals"><svg class="ico" width="18" height="18"><use href="#i-check-square"/></svg> 결재</a>
+      <a class="sidebar-item is-active" href="/admin/payroll"><svg class="ico" width="18" height="18"><use href="#i-file-text"/></svg> 급여 / 문서</a>
+      <a class="sidebar-item" href="/admin/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 리포트</a>
+      <a class="sidebar-item" href="/admin/settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 테넌트 환경</div>
+  </nav>
+
+  <div class="main">
+
+    <header class="header">
+      <h1 class="page-title">급여 / 문서 관리</h1>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
+          <input placeholder="검색은 v1.1에서 제공됩니다" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">정</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- 탭 5 -->
+      <div class="tabs-row" role="tablist">
+        <button class="tab" data-tab="payroll" role="tab">급여명세서 <span class="badge badge-muted">42</span></button>
+        <button class="tab" data-tab="contract" role="tab">계약서 <span class="badge badge-muted">38</span></button>
+        <button class="tab" data-tab="hr-doc" role="tab">인사문서 <span class="badge badge-muted">15</span></button>
+        <button class="tab" data-tab="cert" role="tab">증명서 <span class="badge badge-muted">8</span></button>
+        <button class="tab" data-tab="company-doc" role="tab">회사문서 <span class="badge badge-muted">5</span></button>
+      </div>
+
+      <div class="page-action-bar">
+        <div class="summary">
+          <span class="state-default state-only">2026-04월 급여 — 30명 발송 · 열람 25 · 미열람 5 (7일 경과)</span>
+          <span class="state-filtered state-only">인사문서 15건 (발령 8 · 평가 5 · 교육 2)</span>
+          <span class="state-empty state-only">표시할 문서가 없습니다</span>
+          <span class="state-error state-only">문서 조회 실패</span>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-download"/></svg> 양식 다운로드</button>
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-send"/></svg> 미열람자 재발송</button>
+          <button class="btn btn-primary"><svg class="ico" width="14" height="14"><use href="#i-plus"/></svg> 신규 업로드</button>
+        </div>
+      </div>
+
+      <div style="position: relative;">
+
+        <div class="loading-overlay">
+          <svg class="ico"><use href="#i-loader"/></svg>
+          문서를 불러오는 중…
+        </div>
+
+        <div class="empty-state state-only state-empty" style="padding: 60px 32px;">
+          <svg class="ico ico-empty" width="48" height="48"><use href="#i-file-text"/></svg>
+          <div style="font-size: 16px; font-weight: 600; color: var(--color-text);">이 탭에 등록된 문서가 없습니다</div>
+          <div style="font-size: 13px; color: var(--color-text-muted);">양식 다운로드 후 입력 → 업로드하거나, 신규 업로드 버튼으로 등록하세요.</div>
+        </div>
+
+        <div class="state-only state-error" style="padding: 32px;">
+          <div class="auth-alert auth-alert-error" role="alert">
+            <svg class="ico" width="18" height="18"><use href="#i-alert-c"/></svg>
+            <div>
+              <strong>문서 조회에 실패했습니다.</strong>
+              <span class="auth-alert-meta">코드: DOCUMENTS_FETCH_FAILED · request_id: req_j8k1</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+            <button class="btn btn-primary">재시도</button>
+            <button class="btn btn-ghost">운영팀 문의</button>
+          </div>
+        </div>
+
+        <!-- default — 급여명세서 일괄 흐름 -->
+        <div class="state-only state-default payroll-bulk">
+
+          <!-- 일괄 업로드 카드 -->
+          <div class="card upload-card" style="padding: 16px; margin-bottom: 16px;">
+            <div class="card-title">2026-04월 일괄 업로드</div>
+            <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 4px;">표준 양식 (30명 직원 자동 채움) — 지급/공제 입력 후 업로드 → 서버 검증 → 5명 미리보기 → 일괄 발송.</p>
+            <div style="display: flex; gap: 12px; margin-top: 12px; align-items: center; flex-wrap: wrap;">
+              <label class="file-input">
+                <input type="file" class="sr-only" accept=".xlsx,.xls">
+                <span class="file-input-btn"><svg class="ico" width="14" height="14"><use href="#i-paperclip"/></svg> Excel 파일 선택</span>
+                <span class="file-input-filename">payroll-2026-04.xlsx (28KB)</span>
+              </label>
+              <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="#i-eye"/></svg> 미리보기 (5명 샘플)</button>
+              <button class="btn btn-primary btn-sm"><svg class="ico" width="14" height="14"><use href="#i-send"/></svg> 일괄 발송 (30명)</button>
+            </div>
+          </div>
+
+          <!-- 발송 모니터링 테이블 -->
+          <div class="card card-flat">
+            <div class="table-body">
+              <table class="table">
+                <colgroup>
+                  <col style="width: 18%"><col style="width: 9%"><col style="width: 13%"><col style="width: 10%">
+                  <col style="width: 11%"><col style="width: 13%"><col style="width: 12%"><col style="width: 14%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>문서명 ↕</th><th>유형 ↕</th><th>대상자</th><th>지급월 ↕</th>
+                    <th>발송상태 ↕</th><th>열람상태 ↕</th><th>생성일 ↕</th><th>액션</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2026-04 한직원 급여명세서</a></td>
+                    <td><span class="badge badge-info">급여</span></td>
+                    <td>한직원 (E-0044)</td>
+                    <td>2026-04</td>
+                    <td><span class="badge badge-success">발송</span></td>
+                    <td><span class="badge badge-success">열람</span> 04-30 16:18</td>
+                    <td>2026-04-25</td>
+                    <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                  </tr>
+                  <tr style="background: var(--color-warning-bg);">
+                    <td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2026-04 임차장 급여명세서</a></td>
+                    <td><span class="badge badge-info">급여</span></td>
+                    <td>임차장 (E-0033)</td>
+                    <td>2026-04</td>
+                    <td><span class="badge badge-success">발송</span></td>
+                    <td><span class="badge badge-warning">미열람 (7d)</span></td>
+                    <td>2026-04-25</td>
+                    <td><button class="btn btn-sm btn-ghost"><svg class="ico" width="12" height="12"><use href="#i-send"/></svg> 재발송</button></td>
+                  </tr>
+                  <tr>
+                    <td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2026-04 최팀장 급여명세서</a></td>
+                    <td><span class="badge badge-info">급여</span></td>
+                    <td>최팀장 (E-0012)</td>
+                    <td>2026-04</td>
+                    <td><span class="badge badge-success">발송</span></td>
+                    <td><span class="badge badge-success">열람</span> 04-29 08:42</td>
+                    <td>2026-04-25</td>
+                    <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2026-04 윤주임 급여명세서</a></td>
+                    <td><span class="badge badge-info">급여</span></td>
+                    <td>윤주임 (E-0042)</td>
+                    <td>2026-04</td>
+                    <td><span class="badge badge-success">발송</span></td>
+                    <td><span class="badge badge-success">수령확인</span> 05-02</td>
+                    <td>2026-04-25</td>
+                    <td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2026-04 강사원 급여명세서</a></td>
+                    <td><span class="badge badge-info">급여</span></td>
+                    <td>강사원 (E-0017)</td>
+                    <td>2026-04</td>
+                    <td><span class="badge badge-success">발송</span></td>
+                    <td><span class="badge badge-warning">미열람 (5d)</span></td>
+                    <td>2026-04-25</td>
+                    <td><button class="btn btn-sm btn-ghost"><svg class="ico" width="12" height="12"><use href="#i-send"/></svg> 재발송</button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--color-border-light); font-size: 13px; color: var(--color-text-muted);">
+                <span>1-5 / 42 (페이지당 20)</span>
+                <div style="display: flex; gap: 4px;">
+                  <button class="btn btn-ghost btn-sm" disabled><svg class="ico" width="14" height="14"><use href="#i-chevron-left"/></svg></button>
+                  <button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">1</button>
+                  <button class="btn btn-ghost btn-sm">2</button>
+                  <button class="btn btn-ghost btn-sm">3</button>
+                  <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="#i-chevron-right"/></svg></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- filtered — 인사문서 탭 -->
+        <div class="card card-flat state-only state-filtered hr-doc-table">
+          <div class="table-body">
+            <table class="table">
+              <colgroup>
+                <col style="width: 22%"><col style="width: 10%"><col style="width: 14%"><col style="width: 12%">
+                <col style="width: 14%"><col style="width: 13%"><col style="width: 15%">
+              </colgroup>
+              <thead>
+                <tr><th>문서명 ↕</th><th>유형 ↕</th><th>대상자</th><th>발송상태 ↕</th><th>열람상태 ↕</th><th>생성일 ↕</th><th>액션</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2026-04 부서이동 발령서 — 한직원</a></td><td><span class="badge badge-info">발령</span></td><td>한직원</td><td><span class="badge badge-success">발송</span></td><td><span class="badge badge-success">수령확인</span></td><td>2026-04-01</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+                <tr><td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2025-12 인사평가서 — 영업1팀</a></td><td><span class="badge badge-info">평가</span></td><td>전체 (18명)</td><td><span class="badge badge-success">발송</span></td><td><span class="badge badge-success">100% 열람</span></td><td>2026-01-05</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+                <tr><td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2026-05 교육 이수증 — 정보보호</a></td><td><span class="badge badge-info">교육</span></td><td>전체 (47명)</td><td><span class="badge badge-success">발송</span></td><td><span class="badge badge-warning">42 / 47 열람</span></td><td>2026-05-10</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+                <tr><td><a href="/admin/documents/D-2026" style="color: var(--color-accent); font-weight: 600;">2025-Q4 성과평가 결과</a></td><td><span class="badge badge-info">평가</span></td><td>전체 (42명)</td><td><span class="badge badge-success">발송</span></td><td><span class="badge badge-success">39 / 42 열람</span></td><td>2026-02-15</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              </tbody>
+            </table>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--color-border-light); font-size: 13px; color: var(--color-text-muted);">
+              <span>1-4 / 15</span>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn btn-ghost btn-sm" disabled><svg class="ico" width="14" height="14"><use href="#i-chevron-left"/></svg></button>
+                <button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">1</button>
+                <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="#i-chevron-right"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a href="/legal/terms">이용약관</a>
+        <a href="/legal/privacy">개인정보처리방침</a>
+        <a href="/help">도움말</a>
+        <a href="/support">운영팀 문의</a>
+      </div>
+      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+    </footer>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"  data-key="1">1 급여</span>
+  <span class="state-debug-key" data-state-key="loading"  data-key="2">2 조회중</span>
+  <span class="state-debug-key" data-state-key="filtered" data-key="3">3 인사문서</span>
+  <span class="state-debug-key" data-state-key="empty"    data-key="4">4 빈</span>
+  <span class="state-debug-key" data-state-key="error"    data-key="5">5 오류</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'loading', '3': 'filtered', '4': 'empty', '5': 'error' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>

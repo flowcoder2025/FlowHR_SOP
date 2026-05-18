@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!--
+  TA-05 근태 관리 (`/admin/attendance`).
+  PRD: prd/domains/tenant-admin/TA-05-attendance.md
+  Layout: _design-system/_layout-shell.html (AppShell + tenant 8 메뉴)
+  Pattern: KPI Cards + Filter Bar + 9 Cols Table
+  상태 (5): 1 default / 2 loading / 3 filtered(영업1팀+이상자) / 4 empty / 5 error
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FlowHR — TA-05 근태 관리</title>
+<link rel="stylesheet" href="../_design-system/tokens.css">
+<link rel="stylesheet" href="../_design-system/components.css">
+<style>
+  /* .kpi-row base는 components.css SSOT — 페이지별 column 수만 inline */
+  .kpi-row { grid-template-columns: repeat(4, 1fr); }
+
+  .state-only { display: none; }
+  body[data-state="default"]  .state-default,
+  body[data-state="filtered"] .state-filtered,
+  body[data-state="empty"]    .state-empty,
+  body[data-state="error"]    .state-error { display: block; }
+  body[data-state="loading"] .table-body { opacity: 0.4; pointer-events: none; }
+  body[data-state="loading"] .loading-overlay { display: flex; }
+  .loading-overlay { display: none; padding: 32px; align-items: center; justify-content: center; gap: 10px; color: var(--color-text-muted); font-size: 13px; }
+  .loading-overlay > svg.ico { width: 18px !important; height: 18px !important; animation: spin 0.9s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  body[data-state="default"]  .count-default,
+  body[data-state="filtered"] .count-filtered,
+  body[data-state="empty"]    .count-empty,
+  body[data-state="error"]    .count-error,
+  body[data-state="loading"]  .count-default { display: inline; }
+  .count-default, .count-filtered, .count-empty, .count-error { display: none; }
+
+  .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
+  .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
+  .state-debug-key.is-active { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+</style>
+</head>
+<body data-state="default">
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></symbol>
+  <symbol id="i-check-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="i-excel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="10" y1="13" y2="13"/><line x1="8" x2="10" y1="17" y2="17"/><line x1="14" x2="16" y1="13" y2="13"/><line x1="14" x2="16" y1="17" y2="17"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+  <symbol id="i-alert-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-alert-t" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></symbol>
+</svg>
+
+<div class="app-shell">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="logo"><div class="logo-fallback">F</div><span class="logo-text">플로우상사</span></div></div>
+    <div class="sidebar-menu">
+      <div class="sidebar-section-label">관리자 메뉴</div>
+      <a class="sidebar-item" href="/admin"><svg class="ico" width="18" height="18"><use href="#i-dashboard"/></svg> 대시보드</a>
+      <a class="sidebar-item" href="/admin/employees"><svg class="ico" width="18" height="18"><use href="#i-users"/></svg> 직원</a>
+      <a class="sidebar-item is-active" href="/admin/attendance"><svg class="ico" width="18" height="18"><use href="#i-clock"/></svg> 근태</a>
+      <a class="sidebar-item" href="/admin/leaves"><svg class="ico" width="18" height="18"><use href="#i-calendar-days"/></svg> 휴가</a>
+      <a class="sidebar-item" href="/admin/approvals"><svg class="ico" width="18" height="18"><use href="#i-check-square"/></svg> 결재</a>
+      <a class="sidebar-item" href="/admin/payroll"><svg class="ico" width="18" height="18"><use href="#i-file-text"/></svg> 급여 / 문서</a>
+      <a class="sidebar-item" href="/admin/reports"><svg class="ico" width="18" height="18"><use href="#i-chart"/></svg> 리포트</a>
+      <a class="sidebar-item" href="/admin/settings"><svg class="ico" width="18" height="18"><use href="#i-settings"/></svg> 설정</a>
+    </div>
+    <div class="sidebar-footer">v1.0.0-beta · 테넌트 환경</div>
+  </nav>
+
+  <div class="main">
+
+    <header class="header">
+      <h1 class="page-title">근태 관리</h1>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <svg class="icon" width="16" height="16"><use href="#i-search"/></svg>
+          <input placeholder="검색은 v1.1에서 제공됩니다" disabled />
+          <span class="v11-badge">v1.1</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" data-tooltip="도움말"><svg class="ico" width="18" height="18"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" data-tooltip="알림 (3건 미읽음)"><svg class="ico" width="18" height="18"><use href="#i-bell"/></svg><span class="badge-dot">3</span></button>
+        <button class="profile-trigger"><div class="avatar">정</div><svg class="ico" width="14" height="14"><use href="#i-chevron-down"/></svg></button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- 필터 칩 바 -->
+      <div class="filter-bar" style="margin-bottom: 12px;">
+        <span style="font-size:12px;color:var(--color-text-muted);align-self:center;padding-right:8px;">필터</span>
+        <div class="filter-chip is-active"><svg class="ico ico-sm" width="14" height="14"><use href="#i-calendar-days"/></svg>오늘 (2026-05-17)<svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-down"/></svg></div>
+        <div class="filter-chip"><svg class="ico ico-sm" width="14" height="14"><use href="#i-users"/></svg>전체 부서<svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-down"/></svg></div>
+        <div class="filter-chip"><svg class="ico ico-sm" width="14" height="14"><use href="#i-info"/></svg>전체 상태<svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-down"/></svg></div>
+        <div class="filter-chip"><svg class="ico ico-sm" width="14" height="14"><use href="#i-clock"/></svg>전체 근무형태<svg class="ico ico-sm" width="14" height="14"><use href="#i-chevron-down"/></svg></div>
+      </div>
+
+      <!-- 페이지 액션 바 -->
+      <div class="page-action-bar">
+        <div class="summary">
+          <span class="count-default">오늘 출근 <strong>38</strong> / 결근 <strong>1</strong> / 지각 <strong>3</strong> / 휴가 <strong>5</strong></span>
+          <span class="count-filtered">영업1팀 · 이상자 <strong>4</strong>건 (전체 12명 중)</span>
+          <span class="count-empty">표시할 근태 기록이 없습니다</span>
+          <span class="count-error">근태 조회 실패</span>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost"><svg class="ico" width="14" height="14"><use href="#i-excel"/></svg> 다운로드</button>
+          <button class="btn btn-primary"><svg class="ico" width="14" height="14"><use href="#i-plus"/></svg> 근태 수동 등록</button>
+        </div>
+      </div>
+
+      <!-- KPI 4 카드 -->
+      <section class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-check-circle"/></svg>오늘 출근율</div>
+          <div class="kpi-value">90.5<span style="font-size:14px;color:var(--color-text-muted);">%</span></div>
+          <div class="kpi-sub">38 / 42 · 표준 09:00</div>
+        </div>
+        <div class="kpi-card" style="border-color: var(--color-warning-bg);">
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-alert-t"/></svg>지각자</div>
+          <div class="kpi-value" style="color: var(--color-warning);">3<span style="font-size:14px;color:var(--color-text-muted);">명</span></div>
+          <div class="kpi-sub"><span class="badge badge-warning">즉시 확인</span></div>
+        </div>
+        <div class="kpi-card" style="border-color: var(--color-danger-bg);">
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-alert-c"/></svg>결근자</div>
+          <div class="kpi-value" style="color: var(--color-danger);">1<span style="font-size:14px;color:var(--color-text-muted);">명</span></div>
+          <div class="kpi-sub"><span class="badge badge-danger">사유 확인 필요</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg class="ico" width="16" height="16"><use href="#i-calendar-days"/></svg>휴가 / 외근</div>
+          <div class="kpi-value">5 / 2<span style="font-size:14px;color:var(--color-text-muted);">명</span></div>
+          <div class="kpi-sub">연차 4 · 병가 1 · 외근 2</div>
+        </div>
+      </section>
+
+      <!-- 테이블 -->
+      <div class="card card-flat" style="position: relative;">
+
+        <div class="loading-overlay">
+          <svg class="ico"><use href="#i-loader"/></svg>
+          근태 기록을 불러오는 중…
+        </div>
+
+        <div class="empty-state state-only state-empty" style="padding: 60px 32px;">
+          <svg class="ico ico-empty" width="48" height="48"><use href="#i-clock"/></svg>
+          <div style="font-size: 16px; font-weight: 600; color: var(--color-text);">근태 기록이 없습니다</div>
+          <div style="font-size: 13px; color: var(--color-text-muted);">선택한 기간/필터에 해당하는 출퇴근 기록이 없습니다. 필터를 변경하거나 수동 등록해 주세요.</div>
+        </div>
+
+        <div class="state-only state-error" style="padding: 32px;">
+          <div class="auth-alert auth-alert-error" role="alert">
+            <svg class="ico" width="18" height="18"><use href="#i-alert-c"/></svg>
+            <div>
+              <strong>근태 조회에 실패했습니다.</strong>
+              <span class="auth-alert-meta">코드: ATTENDANCE_FETCH_FAILED · request_id: req_e3f6</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 16px;">
+            <button class="btn btn-primary">재시도</button>
+            <button class="btn btn-ghost">운영팀 문의</button>
+          </div>
+        </div>
+
+        <div class="table-body state-only state-default state-filtered">
+          <table class="table">
+            <colgroup>
+              <col style="width: 12%"><col style="width: 12%"><col style="width: 12%">
+              <col style="width: 9%"><col style="width: 9%"><col style="width: 9%">
+              <col style="width: 9%"><col style="width: 11%"><col style="width: 11%"><col style="width: 6%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>날짜 ↕</th><th>직원명 ↕</th><th>부서 ↕</th>
+                <th>출근</th><th>퇴근</th><th>휴게(분)</th>
+                <th>근무시간 ↕</th><th>상태 ↕</th><th>근무형태</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>2026-05-17</td><td><a href="/admin/employees/E-0042" style="color: var(--color-accent);">윤주임</a></td><td>영업1팀</td><td>09:15</td><td>-</td><td>-</td><td>0:00</td><td><span class="badge badge-warning">지각</span></td><td>고정</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td>2026-05-17</td><td><a href="/admin/employees/E-0017" style="color: var(--color-accent);">강사원</a></td><td>운영팀</td><td>09:08</td><td>-</td><td>-</td><td>0:00</td><td><span class="badge badge-warning">지각</span></td><td>고정</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td>2026-05-17</td><td><a href="/admin/employees/E-0029" style="color: var(--color-accent);">송대리</a></td><td>영업2팀</td><td>09:21</td><td>-</td><td>-</td><td>0:00</td><td><span class="badge badge-warning">지각</span></td><td>시차</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td>2026-05-17</td><td><a href="/admin/employees/E-0033" style="color: var(--color-accent);">임차장</a></td><td>운영팀</td><td>-</td><td>-</td><td>-</td><td>0:00</td><td><span class="badge badge-danger">결근</span></td><td>고정</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td>2026-05-17</td><td><a href="/admin/employees/E-0044" style="color: var(--color-accent);">한직원</a></td><td>영업1팀</td><td>09:00</td><td>-</td><td>-</td><td>0:00</td><td><span class="badge badge-success">정상</span></td><td>고정</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td>2026-05-17</td><td><a href="/admin/employees/E-0012" style="color: var(--color-accent);">최팀장</a></td><td>영업1팀</td><td>08:55</td><td>-</td><td>-</td><td>0:00</td><td><span class="badge badge-success">정상</span></td><td>유연</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td>2026-05-16</td><td><a href="/admin/employees/E-0042" style="color: var(--color-accent);">윤주임</a></td><td>영업1팀</td><td>09:02</td><td>18:30</td><td>60</td><td>8:28</td><td><span class="badge badge-success">정상</span></td><td>고정</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td>2026-05-16</td><td><a href="/admin/employees/E-0017" style="color: var(--color-accent);">강사원</a></td><td>운영팀</td><td>09:00</td><td>18:00</td><td>60</td><td>8:00</td><td><span class="badge badge-success">정상</span></td><td>고정</td><td><button class="icon-btn icon-btn-sm"><svg class="ico" width="16" height="16"><use href="#i-more"/></svg></button></td></tr>
+            </tbody>
+          </table>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--color-border-light); font-size: 13px; color: var(--color-text-muted);">
+            <span>1-8 / 1,247 (페이지당 20)</span>
+            <div style="display: flex; gap: 4px;">
+              <button class="btn btn-ghost btn-sm" disabled><svg class="ico" width="14" height="14"><use href="#i-chevron-left"/></svg></button>
+              <button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">1</button>
+              <button class="btn btn-ghost btn-sm">2</button>
+              <button class="btn btn-ghost btn-sm">3</button>
+              <span style="padding: 0 6px;">…</span>
+              <button class="btn btn-ghost btn-sm">63</button>
+              <button class="btn btn-ghost btn-sm"><svg class="ico" width="14" height="14"><use href="#i-chevron-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div>© 2026 FlowHR</div>
+      <div class="footer-links">
+        <a href="/legal/terms">이용약관</a>
+        <a href="/legal/privacy">개인정보처리방침</a>
+        <a href="/help">도움말</a>
+        <a href="/support">운영팀 문의</a>
+      </div>
+      <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
+    </footer>
+  </div>
+</div>
+
+<div class="state-debug" aria-hidden="true">
+  <span>state</span>
+  <span class="state-debug-key" data-state-key="default"  data-key="1">1 전체</span>
+  <span class="state-debug-key" data-state-key="loading"  data-key="2">2 조회중</span>
+  <span class="state-debug-key" data-state-key="filtered" data-key="3">3 필터</span>
+  <span class="state-debug-key" data-state-key="empty"    data-key="4">4 빈</span>
+  <span class="state-debug-key" data-state-key="error"    data-key="5">5 오류</span>
+</div>
+
+<script>
+(function () {
+  function applyState(s) {
+    document.body.setAttribute('data-state', s);
+    document.querySelectorAll('.state-debug-key').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-state-key') === s);
+    });
+    var params = new URLSearchParams(location.search);
+    params.set('state', s);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+  applyState(new URLSearchParams(location.search).get('state') || 'default');
+  document.querySelectorAll('.state-debug-key').forEach(function (el) {
+    el.addEventListener('click', function () { applyState(el.getAttribute('data-state-key')); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    var map = { '1': 'default', '2': 'loading', '3': 'filtered', '4': 'empty', '5': 'error' };
+    if (map[e.key]) applyState(map[e.key]);
+  });
+})();
+</script>
+
+</body>
+</html>

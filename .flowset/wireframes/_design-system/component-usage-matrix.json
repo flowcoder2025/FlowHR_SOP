@@ -1,7 +1,7 @@
 {
   "$schema": "./component-usage-matrix.schema.json",
-  "version": "1.0.0",
-  "updated_at": "2026-05-16",
+  "version": "1.1.0",
+  "updated_at": "2026-05-18",
   "source_of_truth": ".flowset/wireframes/_design-system/component-usage-matrix.json",
   "spec_ref": ".flowset/contracts/review-system.md §17-4 (Codex 합의안)",
   "description": "PRD 패턴 → 디자인 시스템 컴포넌트 → showcase 앵커 → React 매핑. 화면 작성 시 본 매트릭스 매핑 의무 (CI showcase-coverage-check 검증).",
@@ -114,7 +114,7 @@
     },
     {
       "prd_pattern": "Date Input (DS wrap, native calendar 차단)",
-      "applicable_screens": ["OP-04", "OP-06", "OP-11", "TA-05", "TA-07", "EM-03"],
+      "applicable_screens": ["OP-04", "OP-06", "OP-11", "TA-02", "TA-05", "TA-07", "TA-13", "EM-03"],
       "components": ["date-input"],
       "showcase_anchor": "_showcase.html#section-date-input",
       "allowed_classes": ["date-input", "date-input is-error"],
@@ -129,6 +129,78 @@
       "allowed_classes": ["select", "select-wrap", "select-wrap is-error", "select-wrap is-disabled", "select-sm"],
       "forbidden_patterns": ["<select> 클래스 .select 누락 (bare native chevron 노출)"],
       "react_mapping": "shadcn/ui Select"
+    },
+    {
+      "prd_pattern": "Profile Card + Summary Grid (G3 신규)",
+      "applicable_screens": ["TA-03", "EM-09"],
+      "components": ["profile-card", "profile-avatar-lg", "profile-meta", "summary-grid", "summary-cell", "summary-label", "summary-value"],
+      "showcase_anchor": "_showcase.html#section-profile-card",
+      "allowed_classes": ["profile-card", "profile-avatar-lg", "profile-meta", "summary-grid", "summary-cell", "summary-label", "summary-value", "header-cards"],
+      "react_mapping": "shadcn/ui Card + Avatar — 직원 / 본인 프로필 헤더 카드 표준"
+    },
+    {
+      "prd_pattern": "Org Tree 3-Pane (G3 신규)",
+      "applicable_screens": ["TA-04"],
+      "components": ["org-shell", "org-tree", "tree-node", "tree-children", "tree-meta"],
+      "showcase_anchor": "_showcase.html#section-org-tree",
+      "allowed_classes": ["org-shell", "org-tree", "tree-node", "tree-node is-active", "tree-children", "tree-meta"],
+      "react_mapping": "react-arborist 또는 react-complex-tree (드래그앤드롭) + shadcn/ui Card"
+    },
+    {
+      "prd_pattern": "Calendar Grid (직원×일자, G3 신규)",
+      "applicable_screens": ["TA-07"],
+      "components": ["calendar-grid", "calendar-cell", "calendar-cell day-header", "calendar-cell name-cell", "calendar-cell weekend", "leave-badge"],
+      "showcase_anchor": "_showcase.html#section-calendar",
+      "allowed_classes": ["calendar-grid", "calendar-cell", "calendar-cell day-header", "calendar-cell name-cell", "calendar-cell weekend", "leave-badge", "leave-badge l-full", "leave-badge l-half", "leave-badge l-sick"],
+      "react_mapping": "react-big-calendar 또는 자체 grid — overflow-x 모바일 처리"
+    },
+    {
+      "prd_pattern": "Approval Timeline + Sticky Action (G3 신규, PWA 결재)",
+      "applicable_screens": ["TA-08"],
+      "components": ["info-cards", "info-cell", "info-label", "info-value", "timeline-step", "timeline-marker", "sticky-actions"],
+      "showcase_anchor": "_showcase.html#section-approval-timeline",
+      "allowed_classes": ["info-cards", "card-wide", "info-cell", "info-label", "info-value", "timeline-step", "timeline-marker", "timeline-marker is-done", "timeline-marker is-pending", "sticky-actions"],
+      "react_mapping": "shadcn/ui Card + 커스텀 Timeline + sticky footer (safe-area-inset-bottom)"
+    },
+    {
+      "prd_pattern": "Approval Master-Detail Inbox (G3 신규, PWA 결재)",
+      "applicable_screens": ["TA-09"],
+      "components": ["approval-shell", "inbox-sidebar", "inbox-tabs", "inbox-tab", "count-chip", "approval-row", "row-head", "row-title", "row-meta"],
+      "showcase_anchor": "_showcase.html#section-approval-inbox",
+      "allowed_classes": ["approval-shell", "inbox-sidebar", "inbox-tabs", "inbox-tab", "inbox-tab is-active", "count-chip", "approval-row", "approval-row is-active", "row-head", "row-title", "row-meta"],
+      "react_mapping": "shadcn/ui ResizablePanel + Tabs + Sheet (모바일 drawer 전환) + react-swipeable"
+    },
+    {
+      "prd_pattern": "Report List + Chart Canvas (G3 신규)",
+      "applicable_screens": ["TA-12"],
+      "components": ["report-shell", "report-list", "report-item", "chart-grid"],
+      "showcase_anchor": "_showcase.html#section-report-canvas",
+      "allowed_classes": ["report-shell", "report-list", "report-item", "report-item is-active", "report-item is-disabled", "chart-grid", "card-wide"],
+      "react_mapping": "recharts/visx + shadcn/ui Card — 좌측 카드 list + 우측 chart-grid"
+    },
+    {
+      "prd_pattern": "Settings Vertical Tabs Pane (G3 신규, vert-tabs 변종)",
+      "applicable_screens": ["TA-13"],
+      "components": ["settings-shell", "pane-canvas", "vert-tabs", "vert-tab"],
+      "showcase_anchor": "_showcase.html#section-settings-pane",
+      "allowed_classes": ["settings-shell", "pane-canvas"],
+      "react_mapping": "shadcn/ui Tabs orientation=vertical + react-hook-form per pane"
+    },
+    {
+      "prd_pattern": "Integration Card Grid (G3 신규)",
+      "applicable_screens": ["TA-14"],
+      "components": ["integration-grid", "int-card", "int-head", "int-icon", "int-meta", "seg-btn"],
+      "showcase_anchor": "_showcase.html#section-integration",
+      "allowed_classes": ["integration-grid", "int-card", "int-card is-coming", "int-head", "int-icon", "int-meta", "seg-btn"],
+      "react_mapping": "shadcn/ui Card + Dialog (연결 설정 모달) + Segment toggle (채널 ↔ API Key)"
+    },
+    {
+      "prd_pattern": "Side Detail Drawer with Diff (G3 신규, 결재/감사 공용)",
+      "applicable_screens": ["TA-06", "OP-09"],
+      "components": ["req-shell", "req-drawer", "diff-row", "diff-label"],
+      "showcase_anchor": "_showcase.html#section-side-drawer",
+      "allowed_classes": ["req-shell", "req-drawer", "diff-row", "diff-label"],
+      "react_mapping": "shadcn/ui Sheet (drawer) + URL ?id= 동기화 + diff highlight"
     }
   ],
 
@@ -173,6 +245,16 @@
       "changes": [
         "신규 매트릭스 — 14 PRD 패턴 + 5 forbidden_global 패턴 정의",
         "Codex 협의 합의안 §2-4 반영"
+      ]
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-05-18",
+      "wi": "WI-G3-hotfix1 (G3-CDX-002 + G3-CDX-008 정정)",
+      "changes": [
+        "G3 신규 9 패턴 추가 — Profile Card+Summary Grid, Org Tree 3-Pane, Calendar Grid, Approval Timeline+Sticky, Approval Master-Detail Inbox, Report List+Canvas, Settings Vert-Tabs Pane, Integration Card Grid, Side Detail Drawer with Diff",
+        "Date Input applicable_screens 정정 — TA-02 + TA-13 추가 (기존 1 pattern update만, 신규 카운트 X)",
+        "기존 15 patterns + G3 신규 9 = 24 patterns (15 → 24)"
       ]
     }
   ]

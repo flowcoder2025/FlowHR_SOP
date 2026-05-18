@@ -1,8 +1,8 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **작성**: 2026-05-16 (G2 hotfix2 진행 중 컨텍스트 한계 도달, 다음 세션 인계)
-> **신규 세션 첫 작업**: 본 문서 정독 → §3 "신규 세션 첫 작업"의 agent 결과 파일 확인 → 통합 판정 → 머지/tag 진행
-> **이전 핸드오프**: 2026-05-16 G2 양산 직후 (wf-v0.1.0 머지 + G2 양산 11/11 후 핸드오프) — 본 문서로 갱신.
+> **작성**: 2026-05-17 (G2 wf-v0.2.0 머지 + G3 진입 시점, KI-052 정정 후 TA-01 양산 대기)
+> **신규 세션 첫 작업**: 본 문서 §3 정독 → G3 양산 시작 (TA-01부터 또는 묶음 선택)
+> **이전 핸드오프**: 2026-05-16 G2 hotfix2 진행 중 (현재 본 문서로 갱신, G2 완료 + G3 진입)
 
 ## 1. 현재 상태 요약
 
@@ -15,248 +15,135 @@
 | wf-v0.1.1 | G1 hotfix | state 토글 flex-direction column 7화면 | ✅ 머지 | wf-v0.1.1 |
 | (system-v2) | 평가 시스템 v2 | evaluator + codex 통합 정책 | ✅ 머지 (PR #6) | (tag 없음) |
 | (system-v3) | 평가 시스템 v3 | file:// 호환 + 렌더링 + DS 충실도 5축 | ✅ 머지 (PR #7) | (tag 없음) |
-| **wf-v0.2.0** | **G2 운영** | **OP-02~12 (11) + hotfix2 진행 중** | 🟡 **PR #5 진행, hotfix2 재평가 대기** | — |
-| wf-v0.3.0 | G3 테넌트 매니저 | TA-01~14 (14) | ⏳ 대기 (G2 머지 후) | — |
+| **wf-v0.2.0** | **G2 운영** | **OP-02~12 (11)** + hotfix1/2/3/rev1 | ✅ **머지 (PR #5)** | **wf-v0.2.0** |
+| wf-v0.3.0 | G3 테넌트 매니저 | TA-01~14 (14) | 🟡 **진행 중 (KI-052 정정 완료, TA-01 양산 대기)** | — |
 | wf-v0.4.0 | G4 테넌트 직원 | EM-01~11 (11) | ⏳ 대기 | — |
 | wf-v1.0.0 | Phase 5 전체 | 44 화면 통합 | ⏳ 대기 | — |
 
-**현재 브랜치**: `feature/WI-G2-wireframes-operator` (HEAD: `de2a846` — hotfix2 931539d 이후 codex 결과 + 본 핸드오프 2 commit 포함)
+**현재 브랜치**: `feature/WI-G3-wireframes-tenant` (HEAD: `01c800d` — KI-052 정정 + CI 검사 확장)
 
-## 2. 최근 진행 (2026-05-16)
+## 2. 최근 진행 (2026-05-17)
 
-### system-v2 (PR #6 머지) — 평가 시스템 v2
+### G2 wf-v0.2.0 머지 완료 (PR #5)
 
-evaluator (Claude sub-agent) + codex (gpt-5 MCP) 통합 평가 + KI 트리거 정책 명문화. `.flowset/contracts/review-system.md` SSOT.
+- 머지 commit: `c601d037` (2026-05-17T12:17:18Z, auto-merge --squash --delete-branch)
+- evaluator hotfix3-rev1 PASS 8.90/10 (5축 모두 7.5+, Hard gate 미발동)
+- codex hotfix3 WARNING 8.0 → rev1 4 hotspot 정정 (자체 grep 검증)
+- CI 9/9 PASS (Playwright Smoke 40s 포함)
+- 산출물: OP-02~12 11 화면 + analysis 11 + DS 패턴 6
+- hotfix 누적: P0 5건 + P1 43건 + SSOT 통일 11건
 
-### system-v3 (PR #7 머지) — file:// 호환 + 렌더링 검수 + DS 충실도 5축
+### G2 hotfix 사이클 (3회 한도 사용)
 
-G2 운영 후 사용자 검수에서 아이콘 미표시 + native control + showcase 분리 누락 발견. Codex 협의 합의안 반영:
-- 외부 SVG `<use>` 금지, 인라인 sprite 의무
-- native control DS 패턴 의무 (`.select-wrap` / `.file-input` / `.date-input`)
-- Playwright smoke 즉시 도입 (pixelmatch는 Phase 7)
-- showcase 사용 매트릭스 (`component-usage-matrix.json`)
-- CI 신규 4 job
-- evaluator 5번째 축 "DS 사용 충실도 10%" + Hard gate
-- codex 프롬프트 5항목 의무 체크리스트
+| 차수 | 결과 | 정정 |
+|------|------|------|
+| hotfix1 | FAIL (evaluator 5.29 + codex 4.0) | 외부 use 잔존 / inline 재정의 / variant / href / showcase / 03-components / CI |
+| hotfix2 | evaluator PASS 8.735 + codex FAIL 6.5 (OR → BLOCKED) | 9 P0/P1 정정 (외부 use 0건 / inline 재정의 0건 / 변종 0건 / file input wrap / href 159건 / showcase 15 anchor / 03-components 10 섹션 / CI 보강 / OP-12 session-row→session-card) |
+| hotfix3 | evaluator FAIL 7.375 + codex WARNING 8.0 (사용자 결정 → rev1) | P0-A JS 외부참조 / P0-B Playwright Smoke checkVisibility 가드 / P1 .is-active SSOT 32건 / CI broad화 |
+| hotfix3-rev1 | **evaluator PASS 8.90** (PASS_BOTH 등가) | _showcase.html 8 + _layout-shell.html 1 + matrix.json 1 + CM-21 runtime JS 2 + CHANGELOG 정정 |
 
-### G2 hotfix batch-006 (진행 중, 미머지)
+### KI close-out + G3 진입 (main 직접 push)
 
-**시작**: G2 양산 PASS 8.11 후 사용자 검수에서 아이콘/native/showcase 누락 발견 → system-v3 적용
-**커밋 히스토리** (G2 브랜치, 16fea0c~931539d 7 hotfix 커밋):
-1. `16fea0c` VERSION wf-v0.2.0 + CHANGELOG G2 양산 11 화면
-2. `2165d29` KI-046~049 등록 (P1 trigger 도달)
-3. `040a4f2` components.css 11 G2 컴포넌트 정식 등록 + @media 768px
-4. `44dcb47` DS 보강 v3 — .select chevron + .select-wrap/.file-input/.date-input + 인라인 sprite
-5. `603c7e3` CI 4 신규 job + component-usage-matrix.json
-6. `cdf45e5` 20 화면 v3 patch (sprite + native wrap + href + aria)
-7. `931539d` **hotfix2 — 9 P0/P1 결함 정정** (외부 use 치환 + inline 재정의 제거 + variant + href + showcase + 03-components + CI)
+- KI-046/047/048 (P1) resolved → batch-006-fix3-rev1 / wf-v0.2.0
+- KI-052 (P3) 신규 등록 → `_layout-shell.html` 외부 sprite 20건 (evaluator hotfix3-rev1 발견)
+- close-out commit: `c098272` (사용자 결정 2026-05-17 — 그룹 머지 직후 KI close-out은 main 직접 push 허용, memory: `feedback_main-direct-push-closeout`)
 
-**hotfix1 평가 결과** (직전):
-- evaluator FAIL 5.29/10 (5축 4축 미달 + Hard gate 다중 위반)
-- codex FAIL 4.0/10 (P1 3건 미해결 + §17-7 신규 P1)
-- 핵심 결함: 외부 use 306건 잔존 (patch agent가 sprite 삽입만, use 참조 치환 누락), 9 화면 inline 재정의, OP-04 bare file input, variant drift, 사이드바 href 97건 누락, _showcase.html anchor 부재, 03-components.md 8 컴포넌트 미등록, CI 로직 결함
+### G3 진입 + KI-052 정정 (브랜치 첫 commit `01c800d`)
 
-**hotfix2 정정 (931539d, agent 자기 보고)**:
-- P0-1: 외부 svg use 19 화면 300건 → `#i-...` 0건 잔존
-- P1-2: 9 화면 inline 재정의 제거 (modal/drawer/stepper/switch/toggle-pill/period-chip/diff/tab/vert-tab)
-- P1-3: OP-04 file input `.file-input` wrap
-- P1-4: variant drift 32건 (toggle-pill 13 + switch 14 + step 5) → `.is-*`
-- P1-5: 사이드바 href 159건 추가 (sidebar 97 + dropdown 5 + row 5 + footer 24 + other 28)
-- P1-6: _showcase.html 15 패턴 anchor 신설 (matrix.json 100% 정합)
-- P1-7: 03-components.md 10 신규 섹션 (Modal/Switch/Stepper/Toggle Pill/Period Chip/Drawer/Diff/File Input/Date Input/Select Wrap)
-- P1-8: CI inline-svg-sprite-check 로직 보강 (외부 1건+ fail)
-- P2-9: CI design-system-ssot banned 9 클래스 추가
-- 추가: OP-12 `.session-row` → `.session-card` rename + role/aria-checked
+- `_layout-shell.html` 외부 sprite 20건 → 인라인 #i-... reference
+- `_layout-auth.html` 추가 4건 (사각 발견, 함께 정정)
+- CI `inline-svg-sprite-check` 범위 확장 — `.flowset/wireframes/_design-system/_layout-*.html`도 검사
+- 합계 24건 정정 + SSOT 사각 해소
 
-**검증 (agent 자기보고 100% PASS)**: 외부 svg=0, 변종=0, bare native=0, a 무href=0, banned 정의=0, showcase 15/15.
+## 3. 신규 세션 첫 작업 (G3 TA-01~14 양산)
 
-## 3. 신규 세션 첫 작업 (우선순위 순)
+### 작업 1 — G3 양산 시작 (TA-01부터)
 
-### 작업 1 — 통합 판정 (두 평가 결과 이미 disk 저장 완료)
+`feature/WI-G3-wireframes-tenant` 브랜치 (`01c800d`) 위에서 진행.
 
-**상태 (2026-05-16/17 컨텍스트 종료 시점)**:
-- ✅ **evaluator hotfix2 PASS 8.735/10** → `.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.eval.md` + `.pass` 마커 생성됨
-  - 5축: 완성도 8.5 / 정합성 9.0 / 구체성 8.8 / 실행가능성 9.0 / DS 8.0 (모두 임계 7.5+)
-  - 9 P0/P1 모두 HEAL 검증 통과. 잔존: P2 1건 (_showcase.html markup) + P3 4건
-- ✅ **codex hotfix2 FAIL 6.5/10** → `.flowset/eval-results/WI-G2-codex-review-hotfix2.md` 저장
-  - P0 잔존: CM-01/02/03/OP-12 password toggle JS가 외부참조 재주입 (정적 use 제거됐으나 JS setAttribute로 외부 재주입)
-  - P1 신규: `.active` vs `.is-active` SSOT drift
-  - P2 신규: select-wrap 17건
+**TA 14 화면 목록 (예상)**:
+- TA-01 대시보드
+- TA-02 직원 목록
+- TA-03 직원 상세 (탭: 기본/근태/휴가/결재/급여/문서)
+- TA-04 신규 직원 등록
+- TA-05 부서 / 조직도
+- TA-06 권한 / 역할
+- TA-07 근태 관리 (Master-Detail)
+- TA-08 근태 정정 / 결재
+- TA-09 휴가 신청 / 정책
+- TA-10 결재 대시보드
+- TA-11 결재 라인 / 위임
+- TA-12 급여 / 문서
+- TA-13 시스템 설정 (vert-tabs)
+- TA-14 테넌트 본인 프로필
 
-**통합 판정 (review-system.md §4 OR 원칙)**: evaluator PASS + codex FAIL → **BLOCKED_FOR_HOTFIX_3** (3회 중 마지막)
+**진입 전 PRD 확인 필수**:
+- `.flowset/prd/tenant/` 디렉토리 또는 `docs/FlowHR_screen_spec_v_1.md`에서 정확한 14 화면 명세 확인
+- 화면별 패턴 / 상태 / 컴포넌트 / 권한 매트릭스 추출
 
-**추가 차단 사유**: PR #5 CI **Playwright Smoke FAIL** (8/9 통과, smoke만 fail) — 머지 시퀀스 차단. hotfix3에서 함께 정정.
+### 작업 2 — G3 패턴 의무 (G2와 동일)
 
-### 작업 2 — hotfix3 즉시 진입 (3회 중 마지막)
+- `_layout-shell.html` 복사 (이제 인라인 sprite reference로 안전)
+- 인라인 sprite block은 화면별로 별도 추가 (`<svg xmlns=... style="display:none"><symbol id="i-...">…</symbol></svg>`)
+- DS 컴포넌트만 사용 (`components.css` SSOT)
+- 화면별 inline `<style>`는 page-grid layout만 허용 (컴포넌트 재정의 금지)
+- 5 상태 토글 (state-debug + body data-state 패턴)
+- `.is-active` 변종만 사용 (`.active` 금지)
+- native control DS wrap 의무 (`.select-wrap` / `.file-input` / `.date-input`)
+- 사이드바: tenant 8 메뉴 + 실제 `href` (placeholder 금지)
+- showcase 매핑 (`component-usage-matrix.json` patterns)
 
-codex 결과 FAIL 확정 → review-system.md §4 OR 원칙으로 BLOCKED_FOR_HOTFIX_3.
+### 작업 3 — 평가 절차 (review-system v3)
 
-**hotfix3 정정 사항** (codex 결과 + PR CI 결과 종합):
+그룹 양산 종료 시:
+1. VERSION wf-v0.3.0 갱신 + CHANGELOG hotfix 항목 추가
+2. commit/push
+3. PR draft 생성
+4. evaluator (`subagent_type=evaluator`, run_in_background) + codex (`subagent_type=general-purpose`, run_in_background, mcp__codex__codex 위탁) 병렬 호출
+5. 두 통지 대기 후 통합 판정 (`review-system.md §4` 매트릭스)
+6. PASS_BOTH → ready → CI → auto-merge → tag wf-v0.3.0
+7. hotfix 최대 3회 사이클 (G2 사례 참조)
+8. 그룹 완료 후 KI close-out (main 직접 push OK)
 
-**P0-A (즉시) — JS 외부참조 재주입**:
-- 4 화면 JS sed (CM-01 / CM-02 / CM-03 / OP-12) — Windows Git Bash 또는 PowerShell:
-  ```bash
-  # bash (Git Bash):
-  for f in .flowset/wireframes/html/{CM-01,CM-02,CM-03,OP-12}.html; do
-    sed -i.bak "s|'\.\./_design-system/icons\.svg#|'#|g" "$f" && rm "$f.bak"
-  done
-  ```
-  ```powershell
-  # PowerShell 대안:
-  Get-ChildItem .flowset\wireframes\html\CM-01.html,.flowset\wireframes\html\CM-02.html,.flowset\wireframes\html\CM-03.html,.flowset\wireframes\html\OP-12.html | ForEach-Object {
-    (Get-Content $_ -Raw -Encoding utf8) -replace "'\.\./_design-system/icons\.svg#", "'#" | Set-Content $_ -Encoding utf8 -NoNewline
-  }
-  ```
-- 검증: `grep -rn "'\.\./_design-system/icons\.svg" .flowset/wireframes/html/` 결과 0건
+### 작업 4 — 페이스 옵션
 
-**P0-B (즉시) — PR #5 Playwright Smoke CI FAIL 진단**:
-- 실패 로그 확인: `gh run view 25959214509 --log --job 76311504424 2>&1 | tail -50`
-- 가능한 원인:
-  - 화면 HTML이 file:// 열기 시 svg use bbox 0 (JS 외부참조 + 정적 외부참조 모두 차단됨 — P0-A 정정 후 해소 예상)
-  - `<select>` computed appearance가 'auto' 잔존 (.select 클래스 누락 화면)
-  - console error 발생 화면
-- P0-A 정정 후 재실행하여 결과 확인
+- **권장 (안전)**: 묶음별 양산 (예: 대시보드+직원 3 화면 → 평가 → 다음 묶음). 컨텍스트 보호.
+- **빠름**: 14 화면 일괄 양산 후 1회 평가 (G1/G2 패턴).
+- **세밀**: 1 화면씩 양산 + 화면별 mini-evaluator (구체 검수).
 
-**P1**:
-- `.active` → `.is-active` 전역 통일 (components.css / _showcase.html / 03-components.md / 화면 inline 모두)
-- variant naming v3 표준 (`.is-*`) 적용
-
-**P2 (KI 등록, NON_BLOCKING)**:
-- `.select-wrap` 미적용 17건 — KI 등록 후 다음 batch
-- CI showcase-coverage 강화 — KI 등록
-
-**CI 추가**:
-- JS source 외부 sprite reference 검사 (codex §결론 권장 — codex 5항목 §17-7-1 확장)
-  ```yaml
-  # inline-svg-sprite-check job 보강
-  if grep -nE "'?\\.\\./_design-system/icons\\.svg" *.html | grep -v '<use ' ; then
-    fail=1
-  fi
-  ```
-
-### 작업 3 — hotfix3 evaluator + codex 재평가
-
-**review-system.md §4 매트릭스**:
-- evaluator PASS + codex PASS → **PASS_BOTH** → 즉시 ready/auto-merge
-- evaluator PASS + codex WARNING → **CONDITIONAL** → KI 등록 + 트리거 평가
-- evaluator FAIL OR codex FAIL → **BLOCKED_FOR_HOTFIX_3** (3회 중 마지막)
-
-**3회 중 진행**: hotfix1 FAIL → hotfix2 (현재) → hotfix3는 1회 남음. 3회 연속 FAIL 시 사용자 에스컬레이션.
-
-### 작업 3 — PASS_BOTH 시 머지/tag
-
-```bash
-git checkout main
-git pull --ff-only origin main
-gh pr ready 5
-gh pr merge 5 --auto --squash --delete-branch
-# CI PASS 후 머지 → main 자동 동기화
-sleep 30
-git checkout main && git pull --ff-only origin main
-MERGE_SHA=$(gh pr view 5 --json mergeCommit -q '.mergeCommit.oid')
-git tag -a wf-v0.2.0 "$MERGE_SHA" -m "wf-v0.2.0 — G2 운영 (OP-02~12, 11 화면) + hotfix1/2"
-git push origin wf-v0.2.0
-```
-
-### 작업 4 — 그룹 완료 보고 (사용자)
-
-PASS_BOTH → 머지 → tag 부여 → 사용자에게 보고:
-- 점수 (evaluator + codex)
-- 11 화면 + hotfix1/2 변경 요약
-- 다음 단계 (G3 진입 안내)
-
-### 작업 5 — G3 진입 (사용자 OK 후)
-
-`feature/WI-G3-wireframes-tenant` 브랜치 + TA-01~14 14 화면 양산.
-- 사이드바: tenant 8 메뉴 (대시보드/직원/근태/휴가/결재/급여·문서/리포트/설정)
-- 패턴: G2와 동일 — _layout-shell 인라인 sprite + DS 컴포넌트만 사용 + 5 상태 토글
-- system-v3 의무 (file:// 호환 + native wrap + showcase 매핑 + 5축 평가)
+기본 추천 — G2 패턴 유지 (일괄 양산 → 평가 → hotfix).
 
 ## 4. Known Issues 현황 (활성)
 
 | 심각도 | 활성 | 임계 |
 |--------|------|------|
 | P0 | 0 | 1 |
-| P1 | 3 (KI-046/047/048 batch-006 진행 중) | 3 |
-| P2 | 1 (KI-049 analysis 권한) | 5 |
-| P3 | 17 | 10 (이미 도달) |
+| P1 | 0 | 3 |
+| P2 | 3 (KI-049 analysis 권한 7화면 / KI-050 select-wrap 17건 / KI-051 showcase-coverage 강화) | 5 |
+| P3 | 18 (KI-052 _layout-shell 외부 sprite는 본 commit으로 정정됨, INDEX 표 갱신 미반영 — close-out 시점) | 10 (이미 도달) |
 
-**KI-046~049**: hotfix2 진행 중 — 재평가 PASS 시 archive로 이동. PASS 못 하면 hotfix3로 정정.
+**KI-052 상태 관리 메모**: 본 commit (`01c800d`)으로 정정 완료. G3 그룹 PR 머지 후 close-out 시 `~~KI-052~~ resolved` 처리.
+
+**남은 .md 외부 sprite 후보 (KI-053 등록 검토)**:
+- `_design-system/02-icons.md` L2 + `06-states.md` 10건 + `README.md` L32: 코드 예제 외부 sprite 참조 (사용자 copy 시 file:// 차단). NON_BLOCKING.
 
 ## 5. 핵심 정책 결정 (변경 금지)
 
 | 결정 | 출처 |
 |------|------|
-| 평가 시스템 v3 (evaluator + codex 통합 + 5축 + Hard gate + Playwright smoke) | review-system.md §17 |
+| 평가 시스템 v3 (evaluator + codex + 5축 + Hard gate + Playwright smoke) | review-system.md §17 |
 | KI 트리거 (P0=1, P1=3, P2=5, P3=10) | triggers.md §2 |
 | PR auto-merge --squash --delete-branch | project.md §6 |
 | 그룹별 단일 브랜치 + commit/push 후 그룹 PR | project.md §6 |
+| **그룹 머지 직후 KI close-out은 main 직접 push 허용** | 사용자 결정 2026-05-17 |
 | 화면별 inline `<style>` 컴포넌트 재정의 금지 (DS SSOT) | design-system-ssot CI + 03-components.md |
-| 외부 SVG `<use>` 금지 → 인라인 sprite + #i-... reference 의무 (file:// 호환) | review-system.md §17-1 + CI inline-svg-sprite-check |
+| 외부 SVG `<use>` 금지 → 인라인 sprite + #i-... reference 의무 (HTML + JS literal) | review-system.md §17-1 + CI inline-svg-sprite-check (확장: _layout-*.html 포함) |
 | native control DS wrap 의무 (`.select-wrap` / `.file-input` / `.date-input`) | review-system.md §17-2 + CI native-element-wrap-check |
+| **variant naming `.is-*` 표준 (`.active` 금지, runtime JS classList도)** | hotfix3-rev1 SSOT 통일 |
 | 사용자 개입 6개 시점만 (P0/P1 trigger/downgrade/contract/충돌/3회 FAIL) | review-system.md §10 |
 | 그룹 완료 시에만 사용자 보고 (능동 진행) | 사용자 결정 2026-05-16 |
 
-## 6. evaluator + codex agent 재호출 prompt (요약)
-
-agent 재호출이 필요한 경우 (작업 1에서 결과 파일 없을 때):
-
-### evaluator hotfix2
-- subagent_type: `evaluator`
-- 라벨: WI-G2-wireframes-operator-hotfix2
-- v3 5축 (review-rubric.md §10) + Hard gate
-- 직전 hotfix1 P0/P1 9건 HEAL 검증 (본 문서 §2 hotfix2 변경 표 참조)
-- 출력: `.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.eval.md` + `.pass` (PASS 시)
-
-### codex hotfix2
-- subagent_type: `general-purpose`
-- prompt 내 `mcp__codex__codex` 호출 (sandbox: read-only)
-- 의무 체크 §17-7 5항목
-- 출력: `.flowset/eval-results/WI-G2-codex-review-hotfix2.md`
-
-## 7. 디렉토리 / 파일 인덱스 (변경분 위주)
-
-```
-.flowset/
-├── HANDOFF.md (본 문서)
-├── VERSION (wf-v0.2.0)
-├── CHANGELOG.md (wf-v0.2.0 + system-v3 + wf-v0.1.1 + wf-v0.1.0 + wf-v0.0.0)
-├── contracts/
-│   ├── review-system.md (v3 SSOT, §17 추가)
-│   ├── review-system-v2-draft.md (Codex 협의 원본)
-│   ├── review-system-v3-draft.md (Codex v3 협의 원본)
-│   ├── review-rubric.md (§10 5번째 축 추가)
-│   └── api-standard.md
-├── known-issues/
-│   ├── INDEX.md (KI-046~049 진행 중)
-│   └── triggers.md
-├── eval-results/
-│   ├── WI-G2-wireframes-operator.eval.md + .pass (G2 양산 PASS 8.11)
-│   ├── WI-G2-codex-review.md (G2 양산 WARNING 6.8)
-│   ├── WI-G2-wireframes-operator-hotfix1.eval.md (hotfix1 FAIL 5.29 — Read 또는 Write 가능)
-│   ├── WI-G2-codex-review-hotfix1.md (hotfix1 FAIL 4.0)
-│   ├── WI-G2-wireframes-operator-hotfix2.eval.md (작성 대기 — 신규 세션 확인)
-│   ├── WI-G2-wireframes-operator-hotfix2.pass (작성 대기)
-│   └── WI-G2-codex-review-hotfix2.md (작성 대기)
-└── wireframes/
-    ├── _design-system/
-    │   ├── components.css (G2 11 컴포넌트 + .select-wrap/.file-input/.date-input 정식 등록)
-    │   ├── _layout-shell.html + _layout-auth.html (인라인 sprite 통합)
-    │   ├── component-usage-matrix.json (신규, 14 패턴 + 5 forbidden_global)
-    │   ├── 03-components.md (G2 10 섹션 추가)
-    │   └── _showcase.html (15 패턴 anchor 신설)
-    └── html/
-        ├── CM-01.html ~ CM-21.html (G1 8 + 인라인 sprite)
-        └── OP-01.html ~ OP-12.html (G2 12 + hotfix2 정정)
-
-.github/workflows/pr-checks.yml (9 job: commit-msg + utf8 + html-syntax + design-system-ssot + version + inline-svg-sprite + native-element-wrap + showcase-coverage + playwright-smoke)
-
-.claude/
-├── agents/evaluator.md (5번째 축 + Codex 협업 명시)
-└── rules/project.md §7 (자동화 v3 시퀀스 + 사용자 개입 + Playwright)
-```
-
-## 8. PR 현황
+## 6. PR 현황
 
 | PR | 제목 | 상태 |
 |----|------|------|
@@ -264,36 +151,39 @@ agent 재호출이 필요한 경우 (작업 1에서 결과 파일 없을 때):
 | #2 | WI-G1-docs G1 최초 진입점 (wf-v0.1.0) | ✅ MERGED |
 | #3 | WI-G1eval-docs G1 fix1 평가 결과 | ✅ MERGED |
 | #4 | WI-G1hotfix-fix CM-02~06+20+21 state column | ✅ MERGED |
-| #5 | **WI-G2-docs G2 운영 (wf-v0.2.0)** | 🟡 **OPEN (draft, hotfix2 재평가 대기)** |
+| #5 | WI-G2-docs G2 운영 (wf-v0.2.0) | ✅ **MERGED 2026-05-17** |
 | #6 | WI-RSv2-feat 평가 시스템 v2 | ✅ MERGED |
 | #7 | WI-RSv3-feat 평가 시스템 v3 | ✅ MERGED |
+| #(미생성) | G3 wf-v0.3.0 | ⏳ 양산 완료 후 생성 |
 
-## 9. Task 상태 (다음 세션 인계)
+## 7. Task 상태 (이전 세션 → 신규 세션)
 
-| ID | 상태 | 비고 |
-|----|------|------|
-| T1~T6 | completed | G0 + G1 + G1 hotfix |
-| T7 | completed | G2 양산 11/11 |
-| T8 | in_progress | G2 evaluator + PR + tag wf-v0.2.0 (그룹 사이클) |
-| T14 | completed | 시스템 v2 |
-| T15, T16, T18 | completed | G2 hotfix DS 보강 / CI 4 job / 19 화면 patch |
-| T17 | in_progress | G2 hotfix 재평가 (evaluator + codex hotfix2 background, 본 세션 종료 시점) |
-| T9~T13 | pending | G3 / G4 / Phase 5 전체 evaluator |
+| 영역 | 상태 |
+|------|------|
+| T1~T8 (G0/G1/G2 양산 + 평가) | ✅ completed |
+| T9 (G2 hotfix3-rev1) | ✅ completed (evaluator PASS 8.90) |
+| T10 (G2 머지 + ready/tag) | ✅ completed (`wf-v0.2.0` 부여) |
+| KI-052 정정 (G3 첫 commit) | ✅ completed (`01c800d`) |
+| **G3 TA-01~14 양산** | ⏳ **신규 세션 시작** |
+| G4 EM-01~11 양산 | ⏳ 대기 |
+| Phase 5 전체 evaluator (44 화면) | ⏳ 대기 |
 
-## 10. 컨텍스트 압축 시 우선 보존
+## 8. 컨텍스트 압축 시 우선 보존
 
 신규 세션 컨텍스트 압축 시 가장 먼저 다시 로드되어야:
 - **본 HANDOFF.md (필수 첫 작업)**
 - `.flowset/contracts/review-system.md` (§17 v3 SSOT)
-- `.flowset/eval-results/WI-G2-wireframes-operator-hotfix2.eval.md` (작성되어 있다면)
-- `.flowset/eval-results/WI-G2-codex-review-hotfix2.md` (작성되어 있다면)
+- `.flowset/contracts/review-rubric.md` (§10 5축)
 - `.flowset/known-issues/INDEX.md`
 - `.flowset/wireframes/_design-system/component-usage-matrix.json`
+- `docs/FlowHR_screen_spec_v_1.md` (TA-01~14 명세)
 
-## 11. 변경 이력
+## 9. 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — Phase 5 PRD 결함 발견 시 batch-003 진행 가이드 | KI-027~031 |
 | 2026-05-16 | 갱신 — G1 완료 + G2 양산 직전 | wf-v0.1.0 + 4 그룹 분할 |
-| 2026-05-16 | **본 갱신 — G2 hotfix2 진행 중 컨텍스트 한계 도달, 다음 세션 인계** | 능동 진행 중 evaluator + codex 재평가 background 대기 |
+| 2026-05-16 | 갱신 — G2 hotfix2 진행 중 다음 세션 인계 | 컨텍스트 한계 |
+| 2026-05-16 | 갱신 — codex hotfix2 결과 + hotfix3 진입 안내 | OR 원칙 BLOCKED |
+| **2026-05-17** | **본 갱신 — G2 wf-v0.2.0 머지 완료 + G3 진입 (KI-052 정정 후 TA-01 양산 대기)** | 신규 세션에서 G3 양산 시작 |

@@ -405,7 +405,7 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .vert-tabs { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 8px; box-shadow: var(--shadow-sm); }
 .vert-tab { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 13px; color: var(--color-text); border-radius: var(--r-sm); cursor: pointer; line-height: 1.4; }
 .vert-tab:hover { background: var(--color-surface); }
-.vert-tab.is-active { background: var(--color-accent-light); color: var(--color-primary); font-weight: 600; }
+/* .vert-tab.is-active SSOT는 §G3 신규 섹션에 정의 (border-left-color accent + accent-bg + accent color). G3 hotfix3 KI-059 중복 제거 */
 .vert-tab > svg { width: 16px !important; height: 16px !important; opacity: 0.7; flex-shrink: 0; }
 
 /* Breadcrumb */
@@ -868,3 +868,121 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
   pointer-events: none;
 }
 .date-input.is-error > .input { border-color: var(--color-danger); }
+
+/* ============================================================================
+   G3 신규 패턴 (wf-v0.3.0 hotfix1, 2026-05-18)
+   component-usage-matrix.json v1.1.0 §G3 신규 8 패턴 SSOT 등록
+   화면별 grid template-columns은 페이지 한정 (.kpi-row repeat(N,1fr) 등)
+   ============================================================================ */
+
+/* === KPI Row base (페이지별 column 수는 화면 inline의 grid-template-columns만 override) ===
+   TA-01 dashboard 6-col / TA-05 attendance 4-col / TA-07 leave 5-col 등 화면별 다름
+   화면 inline 잔존 허용: .kpi-row { grid-template-columns: repeat(N, 1fr) } */
+.kpi-row { display: grid; gap: 12px; margin-bottom: 16px; }
+
+/* .vert-tab.is-active는 §Vertical Tabs (L765-768)에 단일 SSOT 정의. G3 hotfix3 KI-059 중복 제거 (hotfix2가 잘못 추가한 L885 제거). 화면은 markup에 .is-active 부착 또는 body[data-state] CSS 사용. */
+
+/* === Profile Card + Summary Grid (TA-03, EM-09) === */
+.header-cards { display: grid; grid-template-columns: 280px 1fr; gap: 16px; margin-bottom: 16px; }
+.profile-card { display: flex; gap: 14px; align-items: center; padding: 16px; }
+.profile-avatar-lg { width: 64px; height: 64px; border-radius: 50%; background: var(--color-accent); color: white; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.profile-meta { font-size: 13px; color: var(--color-text-muted); line-height: 1.6; }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px; }
+.summary-cell { display: flex; flex-direction: column; gap: 4px; }
+.summary-label { font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-value { font-size: 16px; font-weight: 600; color: var(--color-text); }
+
+/* === Org Tree 3-Pane (TA-04) === */
+.org-shell { display: grid; grid-template-columns: 280px 1fr 1.2fr; gap: 16px; align-items: start; }
+.org-tree { padding: 12px; min-height: 480px; }
+.tree-node { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 13px; color: var(--color-text); }
+.tree-node:hover { background: var(--color-surface-2); }
+.tree-node.is-active { background: var(--color-accent); color: white; font-weight: 600; }
+.tree-node.is-active .tree-meta { color: rgba(255,255,255,0.85); }
+.tree-meta { font-size: 11px; color: var(--color-text-muted); margin-left: auto; }
+.tree-children { padding-left: 14px; border-left: 1px dashed var(--color-border-light); margin-left: 12px; }
+
+/* === Calendar Grid (TA-07) === */
+.calendar-grid { display: grid; gap: 1px; background: var(--color-border-light); border: 1px solid var(--color-border-light); }
+.calendar-cell { background: var(--color-bg); padding: 6px 4px; font-size: 11px; min-height: 30px; }
+.calendar-cell.day-header { background: var(--color-surface-2); color: var(--color-text-muted); text-align: center; font-weight: 600; padding: 8px 2px; }
+.calendar-cell.name-cell { font-size: 12px; font-weight: 500; color: var(--color-text); padding: 8px 12px; }
+.calendar-cell.weekend { background: var(--color-surface-2); color: var(--color-text-muted); }
+.leave-badge { display: inline-block; height: 16px; border-radius: 2px; font-size: 10px; padding: 1px 4px; color: white; line-height: 14px; white-space: nowrap; }
+.leave-badge.l-full { background: #3B82F6; width: 100%; }
+.leave-badge.l-half { background: #10B981; width: 50%; }
+.leave-badge.l-sick { background: #F59E0B; width: 100%; }
+
+/* === Approval Timeline + Sticky (TA-08, PWA 결재) === */
+.info-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+.info-cards > .card-wide { grid-column: span 2; }
+.info-cell { padding: 8px 0; display: flex; gap: 12px; font-size: 13px; }
+.info-cell > .info-label { width: 90px; color: var(--color-text-muted); }
+.info-cell > .info-value { color: var(--color-text); flex: 1; }
+.timeline-step { display: flex; gap: 12px; padding: 10px 0; align-items: flex-start; font-size: 13px; border-bottom: 1px solid var(--color-border-light); }
+.timeline-step:last-child { border-bottom: none; }
+.timeline-marker { width: 28px; height: 28px; border-radius: 50%; background: var(--color-surface-2); color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.timeline-marker.is-done { background: var(--color-success); color: white; }
+.timeline-marker.is-pending { background: var(--color-warning); color: white; }
+.sticky-actions { position: sticky; bottom: 16px; display: flex; gap: 8px; padding: 12px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); box-shadow: var(--shadow-md); }
+
+/* === Approval Master-Detail Inbox (TA-09, PWA 결재) === */
+.approval-shell { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; min-height: 600px; }
+.inbox-sidebar { padding: 0; }
+.inbox-tabs { display: flex; border-bottom: 1px solid var(--color-border-light); }
+.inbox-tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 13px; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+.inbox-tab.is-active { color: var(--color-accent); border-bottom-color: var(--color-accent); font-weight: 600; }
+.inbox-tab .count-chip { display: inline-block; background: var(--color-warning); color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; font-weight: 600; margin-left: 4px; }
+.approval-row { padding: 12px; border-bottom: 1px solid var(--color-border-light); cursor: pointer; font-size: 13px; }
+.approval-row:hover { background: var(--color-surface-2); }
+.approval-row.is-active { background: var(--color-accent-bg); border-left: 3px solid var(--color-accent); padding-left: 9px; }
+.approval-row .row-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 4px; }
+.approval-row .row-title { font-weight: 600; color: var(--color-text); }
+.approval-row .row-meta { font-size: 11px; color: var(--color-text-muted); }
+
+/* === Report List + Chart Canvas (TA-12) === */
+.report-shell { display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: start; }
+.report-list { padding: 8px; }
+.report-item { padding: 12px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--color-text); display: flex; gap: 10px; align-items: center; margin-bottom: 4px; }
+.report-item:hover { background: var(--color-surface-2); }
+.report-item.is-active { background: var(--color-accent-bg); color: var(--color-accent); font-weight: 600; }
+.report-item.is-disabled { color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chart-grid > .card-wide { grid-column: span 2; }
+
+/* === Settings Vertical Tabs Pane (TA-13, vert-tabs 변종 — settings 전용 shell) === */
+.settings-shell { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: start; }
+.pane-canvas { position: relative; }
+
+/* === Integration Card Grid (TA-14) === */
+.integration-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.int-card { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.int-card .int-head { display: flex; gap: 10px; align-items: center; }
+.int-card .int-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.int-card.is-coming { opacity: 0.65; }
+.int-card .int-meta { font-size: 12px; color: var(--color-text-muted); }
+.seg-btn { padding: 6px 14px; font-size: 13px; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer; }
+.seg-btn:first-child { border-radius: 6px 0 0 6px; border-right: none; }
+.seg-btn:last-child { border-radius: 0 6px 6px 0; }
+
+/* === Side Detail Drawer with Diff (TA-06, OP-09) === */
+.req-shell { display: grid; grid-template-columns: 1fr; gap: 16px; transition: grid-template-columns 0.2s; }
+.req-drawer { display: none; }
+.diff-row { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; font-size: 13px; }
+.diff-row > .diff-label { width: 64px; color: var(--color-text-muted); font-size: 12px; }
+
+/* === 모바일 override (G3 신규 grid 패턴 — ≤768px, G3-CDX-007 정정) === */
+@media (max-width: 768px) {
+  .header-cards,
+  .summary-grid,
+  .org-shell,
+  .approval-shell,
+  .report-shell,
+  .settings-shell,
+  .integration-grid,
+  .info-cards,
+  .chart-grid { grid-template-columns: 1fr !important; }
+  .info-cards > .card-wide,
+  .chart-grid > .card-wide { grid-column: span 1; }
+  .calendar-grid { overflow-x: auto; }
+}
