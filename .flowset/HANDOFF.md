@@ -34,7 +34,7 @@
 | wf-v0.4.3 | audit hotfix3 | evaluator FAIL 7.84 증적 기반 정정 | ✅ 머지 (PR #15) | wf-v0.4.3 |
 | **wf-v1.0.0** | **Phase 5 정식 종료** | **45 화면 + 4 그룹 codex 검증 + evaluator PASS 8.13** | ✅ **재부여 (commit ba183a5)** | **wf-v1.0.0** |
 
-**현재 브랜치**: `main` (HEAD `de6e925` — 본 HANDOFF commit. wf-v1.0.0 tag는 ba183a5에 부여)
+**현재 브랜치**: `main` (wf-v1.0.0 tag 부여 commit: `ba183a5`. 최근 commit hash는 본 문서 작성 후 push 시점 갱신되므로 `git log -1 --format=%h main`으로 확인. HANDOFF 자체 hash 표기 stale 방지 정책)
 
 **Phase 5 화면 합계**: CM 8 + OP 12 + TA 14 + EM 11 = **45 화면**
 

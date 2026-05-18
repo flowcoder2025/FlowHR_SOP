@@ -1,0 +1,10 @@
+HANDOFF.md commit 430de52 — PASS marker
+
+evaluator: PASS 8.58/10 (5축 모두 8.5+)
+codex: CONDITIONAL 8.4/10 (6/6 정정 PASS, P2 1건 HOF-FC-007 정정 완료)
+
+통합 매트릭스 (review-system §4): PASS_WITH_KI → P3 NON_BLOCKING 정리 → PASS
+
+평가 사이클 (HANDOFF 한정): de6e925 FAIL 7.20 → ee67a12 CONDITIONAL 8.15 → 430de52 PASS 8.58
+
+HANDOFF.md 일관성 공식 회복 (2026-05-19).
