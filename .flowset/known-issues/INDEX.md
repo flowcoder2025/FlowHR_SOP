@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
-| P2 Medium | **6** | 5 | ✅ 트리거 도달 — KI-049 analysis 권한 매트릭스 7화면 누락 + KI-050 select-wrap 17건 + KI-051 showcase-coverage CI 강화 + KI-054 icon-only aria-label 누락 + **KI-060 TA-13 vert-tab font-weight drift** + **KI-061 components.css 7 base 셀렉터 중복 systemic** (G3 hotfix3 evaluator + codex CONDITIONAL). KI-053/058 G3 hotfix2~3로 resolved. |
-| P3 Low | **20** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055 가짜 base path + KI-056 footer SSOT + KI-057 G2 모바일 미디어 쿼리 + KI-059 (G3 hotfix3 resolved) + **KI-062 Playwright 렌더 증거 의무 명시** |
+| P2 Medium | **7** | 5 | ✅ 트리거 도달 — KI-049/050/051/054/060/061 + **KI-063 sprite use ↔ symbol cross-check CI 강화 (G4 진입 전 의무)**. KI-053/058 G3 hotfix2~3로 resolved. |
+| P3 Low | **24** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055/056/057/062 G3 hotfix1~3 신규 + ~~KI-015~~ resolved (estimation.md 정책 명시) + ~~KI-041~~ resolved (G0 archive 처리) — 표기 정정 |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -31,7 +31,7 @@
 | ~~KI-012~~ | P3 | 1 | PRD | ~~03-tech-architecture.md i18n "en 추후"~~ | — | — | **resolved (batch-001)** |
 | KI-013 | P3 | 2 | Backlog | EP-03/04/05/09/10/11/12 7 Epic Task 분해 미완 — Phase 6 스프린트 계획 진입 전에 완전 분해 필요 | evaluator Phase 2 attempt 1 | 2026-05-15 | scheduled (Phase 6) |
 | ~~KI-014~~ | P3 | 2 | Backlog | ~~EP-08 AttendanceModification routing~~ | — | — | **resolved (Phase 3 rls.md §4 Approval polymorphic)** |
-| KI-015 | P3 | 2 | Backlog | estimation.md 200 MD vs tasks.md 739 MD 환산 차이는 명시되어 있으나 외부 견적 시 어느 기준 사용할지 정책 명확화 권장 | evaluator Phase 2 attempt 1 | 2026-05-15 | resolved (estimation.md L60-63에 정책 명시) |
+| ~~KI-015~~ | P3 | 2 | Backlog | ~~estimation.md 200 MD vs tasks.md 739 MD 환산 차이~~ | evaluator Phase 2 attempt 1 | 2026-05-15 | **resolved (estimation.md L60-63에 정책 명시)** |
 | KI-016 | P3 | 2 | Backlog | dependency-graph.md NHN Cloud 30~60일 출처 URL/발행일 부재 — 운영사가 실제 신청 시 NHN Cloud 공식 가이드 URL 인용 보강 | evaluator Phase 2 attempt 2 | 2026-05-15 | scheduled (Phase 9 베타 진입 전 NHN Cloud 신청 시점) |
 | KI-017 | P3 | 3 | DB | rls.md §3 37 테이블 정책 표가 "패턴 A/B/C + 자연어" 형식 — 일부 항목 실제 CREATE POLICY SQL 코드 미작성. Phase 7 마이그레이션 00000000000020_rls_policies.sql 작성 시 패턴 변형 SQL 생성 작업 필요 | evaluator Phase 3 | 2026-05-15 | scheduled (Phase 7 마이그레이션 변환) |
 | ~~KI-018~~ | P3 | 3 | DB | ~~clock_in_location postgis vs jsonb~~ | — | — | **resolved (Phase 4 schemas.md LocationSchema jsonb)** |
@@ -57,7 +57,7 @@
 | KI-038 | P3 | 5 | Wireframe | OP-01.html icon-btn/sidebar-item/profile-trigger svg attribute가 컴포넌트 강제 사이즈와 불일치 — _layout-shell 갱신 따라 화면별 attribute 일치 필요 (차기 batch-005에서 OP-02~12 + TA + EM + CM 일괄) | evaluator batch-004 | 2026-05-16 | open (batch-005) |
 | ~~KI-039~~ | P3 | 5 | Wireframe | ~~_showcase.html 누락 컴포넌트~~ | evaluator batch-004 | 2026-05-16 | **resolved (12 컴포넌트 시연 추가: Checkbox/Breadcrumb/Tooltip/Popover/FormRow+FormSection+InfoRow/Sidebar 미니어처 3 역할/Header AppShell/Footer/MaintenanceBanner/SessionRow/Code, 사용자 우려 후 추가 4 = batch-005-i18n과 함께 처리 2026-05-16)** |
 | KI-040 | P3 | 5 | Wireframe | wireframes/README.md L19~L21/L37/L64 구 SSOT(`_design-tokens.css`/`_icons.css`/`_icons.svg`) 참조 잔존 — `_design-system/` 신 SSOT로 갱신 필요 | evaluator batch-004 | 2026-05-16 | open (batch-005) |
-| KI-041 | P3 | 5 | Wireframe | html/ 디렉토리 구 _design-tokens.css/_icons.css/_icons.svg + OP-02~12 12 HTML 잔존 — 차기 batch에서 신 SSOT 적용 후 archive 이동 | evaluator batch-004 | 2026-05-16 | open (resolved at G0 baseline — archive 처리 완료) |
+| ~~KI-041~~ | P3 | 5 | Wireframe | ~~html/ 디렉토리 구 _design-tokens.css/_icons.css/_icons.svg + OP-02~12 12 HTML 잔존~~ | evaluator batch-004 | 2026-05-16 | **resolved (G0 baseline — archive 처리 완료)** |
 | KI-042 | P3 | 5 | Wireframe | 08-i18n.md L58 §2 키 컨벤션 예시 표에 `system.error.403.title` deprecated 키 한 줄 잔존 — §4 catalog L157 정식 키 + §9 deprecation note와 미세 불일치. 예시 표 성격으로 차단 사유 아님 | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1 또는 G2 작업 시) |
 | KI-043 | P3 | 5 | Wireframe | CM-21.html L97 `<span class="version-change">하이라이트</span>` i18n 매핑 누락 — `legal.terms.version_change_label` 키 추가 권장 | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1 hotfix) |
 | KI-044 | P3 | 5 | Wireframe | CM-04.html .state-error-alert / .state-loading-spinner 가 .state-otp-form 자손 → 부모 hidden 시 ancestor 가시성에 의존. CSS selector 명시성 보강 권장 (`body[data-state="error"] .state-otp-form .state-error-alert`) | evaluator G1-fix1 | 2026-05-16 | open (wf-v0.1.1) |
@@ -79,6 +79,7 @@
 | KI-060 | P2 | 5 | Wireframe | TA-13.html:40 font-weight: 600 vs components.css L766 `.vert-tab.is-active { font-weight: 700 }` declaration drift. TA-13 L31 주석 "components.css에 등록된 .is-active 4 속성을 그대로 합성" 단언이 1 속성 (font-weight) 불일치. 정정: TA-13 L40 700 통일 또는 declaration 자체 제거 + body[data-state] selector + .is-active class 토글. | evaluator G3 hotfix3 + codex (CONDITIONAL) | 2026-05-18 | open (차기 docs batch) |
 | KI-061 | P2 | 5 | Wireframe | components.css L399~L510 vs L683~L770 — 7 base 셀렉터 (.tab/.vert-tab/.vert-tabs/.modal-header/.modal-footer/.step/.stepper) 중복 정의 systemic 잔존. `.tab.is-active` L402(600+primary) vs L754(700+accent) 명확한 4 속성 충돌. cascade로 G3 후자 승리하나 SSOT 위반. KI-059는 `.vert-tab.is-active` 변종만 해소. | evaluator G3 hotfix3 + codex (P2 격상) | 2026-05-18 | open (G4 또는 차기 docs batch) |
 | KI-062 | P3 | 5 | Wireframe | .pass marker 0 bytes (의도된 빈 마커이나 codex 지적) + Playwright 렌더 증거는 CI playwright-smoke 결과 (PR merge 시점 자동 생성)로 충족 — analysis md에 "Playwright smoke 결과 의무" 명시 권장. | codex G3 hotfix3 | 2026-05-18 | open (차기 docs batch) |
+| KI-063 | P2 | 5 | Process | CI `inline-svg-sprite-check`가 sprite block 존재만 검사하고 사용된 use href ↔ 정의된 symbol id cross-check 미실시. PR #8/#9 Playwright iconInvisible 13/34 FAIL 원인 (TA-03 sprite 4 symbol 누락 — i-arrow-right/download/eye/pdf). 강화: `comm -23 <(grep -oE 'use href="#i-[a-z-]+"' file) <(grep -oE '<symbol id="i-[a-z-]+"' file)` 결과 0건 의무. | G3 PR #9/#10 사고 교훈 | 2026-05-18 | open (G4 진입 전 CI workflow 강화 의무) |
 
 ## 등록 형식
 

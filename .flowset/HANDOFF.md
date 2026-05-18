@@ -20,7 +20,7 @@
 | wf-v0.4.0 | G4 테넌트 직원 | EM-01~11 (11) | 🟡 **신규 세션 양산 대기** | — |
 | wf-v1.0.0 | Phase 5 전체 | 44 화면 통합 | ⏳ 대기 | — |
 
-**현재 브랜치**: `main` (HEAD: `af4c149` — PR #10 머지 직후)
+**현재 브랜치**: `main` (HEAD: `c5542d0` — HANDOFF 갱신 commit. 직전 코드 변경 commit은 `af4c149` PR #10 merge)
 
 ## 2. 최근 진행 (2026-05-17 ~ 2026-05-18)
 
@@ -31,15 +31,15 @@
 - **PR #9** (commit `034bad8`, 2026-05-18T09:17:44Z) — TA-03 use width/height (효과 없음, 진단 commit)
 - **PR #10** (commit `af4c149`, 2026-05-18T09:24:44Z) — TA-03 inline sprite 4 symbol 추가 (진짜 정정, Playwright PASS)
 
-**평가 결과 (3 사이클)**:
+**평가 결과 (4 사이클)**:
 
-| 사이클 | evaluator | codex | 통합 |
-|--------|----------:|------:|------|
-| 양산 직후 | PASS 9.22 | FAIL 6.1 | BLOCKED |
-| hotfix1 | PASS 8.48 | FAIL 7.0 | BLOCKED |
-| hotfix2 | PASS 8.65 | FAIL 7.3 | BLOCKED |
-| hotfix3 | PASS 8.475 | CONDITIONAL 8.1 (gpt-5.5) | MERGE_WITH_KI |
-| hotfix4 | (별도 PR — Playwright만 정정) | — | PASS (CI) |
+| 사이클 | evaluator | codex | 통합 | PR |
+|--------|----------:|------:|------|----|
+| 양산 직후 | PASS 9.22 | FAIL 6.1 | BLOCKED | #8 (draft) |
+| hotfix1 | PASS 8.48 | FAIL 7.0 | BLOCKED | #8 (draft) |
+| hotfix2 | PASS 8.65 | FAIL 7.3 | BLOCKED | #8 (draft) |
+| hotfix3 | PASS 8.475 | CONDITIONAL 8.1 (gpt-5.5) | MERGE_WITH_KI | **#8 머지** |
+| hotfix4 (Playwright sprite symbol 누락 정정) | — | — | PASS (CI Playwright) | **#9 진단** → **#10 정정 머지** |
 
 **Codex MCP hang 사고**: hotfix3 1차 호출 1시간6분 hang, 2차 38분 hang. 사용자 결정으로 gpt-5.5 모델 명시 후 12분 만에 정상 응답 (CONDITIONAL 8.1).
 
@@ -76,7 +76,22 @@ git checkout -b feature/WI-G4-wireframes-employee
 
 **EM 11 화면 (PRD 기준)**:
 - `.flowset/prd/domains/employee/EM-01~11.md` 정확히 확인 (HANDOFF 예상 X)
-- PRD `prd/domains/employee/README.md` 인덱스 + 권한 매트릭스 + 사이드바 구조 (8 메뉴, 05-layouts.md §employee)
+- PRD `prd/domains/employee/README.md` 인덱스 + 권한 매트릭스
+
+**Employee 사이드바 8 메뉴 (`05-layouts.md` §employee SSOT, L66~76)**:
+
+```
+대시보드 (i-dashboard)         → /me → EM-01
+출퇴근 (i-clock)               → /me/attendance → EM-02
+휴가 (i-calendar-days)         → /me/leaves → EM-04 (+EM-03)
+결재 (i-check-square)          → /me/approvals → EM-05 (+EM-11)
+급여 (i-file-text)             → /me/payslips → EM-06
+문서 (i-file-text)             → /me/documents → EM-07 (+EM-08)
+알림 (i-bell)                  → /me/notifications → EM-10
+내 정보 (i-user)               → /me/profile → EM-09
+```
+
+footer: `v1.0.0-beta · 직원 환경`. sidebar-section-label: `내 메뉴`.
 
 ### 작업 2 — G4 패턴 의무 (G3와 동일)
 
@@ -114,18 +129,20 @@ git checkout -b feature/WI-G4-wireframes-employee
 |--------|------|------|--------|
 | P0 | 0 | 1 | ❌ |
 | P1 | 0 | 3 | ❌ |
-| P2 | 6 (KI-049/050/051/054/060/061) | 5 | 도달 |
-| P3 | 20 (KI-005/006/007/013/015/016/017/020/023/025/032~036/038/040/041~045/055/056/057/062) | 10 | 도달 |
+| P2 | 7 (KI-049/050/051/054/060/061 + **KI-063 sprite cross-check CI 강화 — G4 진입 전 의무**) | 5 | 도달 |
+| P3 | 24 (KI-005/006/007/013/016/017/020/023/025/032~036/038/040/042~045/055/056/057/062 / KI-015/041 INDEX strike resolved 정정 완료) | 10 | 도달 |
 
 **G3 resolved**: KI-046/047/048/052/053/058/059 (P1/P2/P3 일부)
 
-**G4 진입 전 또는 차기 batch 권고**:
+**G4 진입 전 의무 (KI-063 P2)**:
+- **KI-063** CI `inline-svg-sprite-check` 강화 — `comm -23 <(grep use href) <(grep symbol id)` 0건 의무 (PR #9/#10 사고 재발 방지). `.github/workflows/pr-checks.yml` 신규 step 추가.
+
+**차기 batch 권고 (G4 또는 후속)**:
 - KI-049 analysis 권한 매트릭스 7화면 누락 (OP-04/05/06/08/10/11/12)
 - KI-050 .select-wrap 17건 미적용
 - KI-054 icon-only aria-label (WCAG 2.1 AA)
 - KI-060 TA-13 vert-tab font-weight drift (600 vs 700 SSOT)
 - KI-061 components.css 7 base 셀렉터 중복 systemic
-- KI-063 (신규 후보) CI inline-svg-sprite-check를 use href ↔ symbol id cross-check 강화
 
 ## 5. 핵심 정책 결정 (변경 금지)
 
