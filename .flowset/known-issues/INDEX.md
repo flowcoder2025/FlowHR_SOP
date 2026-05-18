@@ -8,7 +8,7 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
-| P2 Medium | **7** | 5 | ✅ 트리거 도달 — KI-049/050/051/054/060/061 + **KI-063 sprite use ↔ symbol cross-check CI 강화 (G4 진입 전 의무)**. KI-053/058 G3 hotfix2~3로 resolved. |
+| P2 Medium | **6** | 5 | ✅ 트리거 도달 — KI-049/050/051/054/060/061. KI-053/058 G3 hotfix2~3로 resolved + **KI-063 WI-G4prep-ci resolved 2026-05-18 (CI inline-svg-sprite-check §3 cross-check 강화, 34/34 화면 PASS)**. |
 | P3 Low | **24** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055/056/057/062 G3 hotfix1~3 신규 + ~~KI-015~~ resolved (estimation.md 정책 명시) + ~~KI-041~~ resolved (G0 archive 처리) — 표기 정정 |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
@@ -79,7 +79,7 @@
 | KI-060 | P2 | 5 | Wireframe | TA-13.html:40 font-weight: 600 vs components.css L766 `.vert-tab.is-active { font-weight: 700 }` declaration drift. TA-13 L31 주석 "components.css에 등록된 .is-active 4 속성을 그대로 합성" 단언이 1 속성 (font-weight) 불일치. 정정: TA-13 L40 700 통일 또는 declaration 자체 제거 + body[data-state] selector + .is-active class 토글. | evaluator G3 hotfix3 + codex (CONDITIONAL) | 2026-05-18 | open (차기 docs batch) |
 | KI-061 | P2 | 5 | Wireframe | components.css L399~L510 vs L683~L770 — 7 base 셀렉터 (.tab/.vert-tab/.vert-tabs/.modal-header/.modal-footer/.step/.stepper) 중복 정의 systemic 잔존. `.tab.is-active` L402(600+primary) vs L754(700+accent) 명확한 4 속성 충돌. cascade로 G3 후자 승리하나 SSOT 위반. KI-059는 `.vert-tab.is-active` 변종만 해소. | evaluator G3 hotfix3 + codex (P2 격상) | 2026-05-18 | open (G4 또는 차기 docs batch) |
 | KI-062 | P3 | 5 | Wireframe | .pass marker 0 bytes (의도된 빈 마커이나 codex 지적) + Playwright 렌더 증거는 CI playwright-smoke 결과 (PR merge 시점 자동 생성)로 충족 — analysis md에 "Playwright smoke 결과 의무" 명시 권장. | codex G3 hotfix3 | 2026-05-18 | open (차기 docs batch) |
-| KI-063 | P2 | 5 | Process | CI `inline-svg-sprite-check`가 sprite block 존재만 검사하고 사용된 use href ↔ 정의된 symbol id cross-check 미실시. PR #8/#9 Playwright iconInvisible 13/34 FAIL 원인 (TA-03 sprite 4 symbol 누락 — i-arrow-right/download/eye/pdf). 강화: `comm -23 <(grep -oE 'use href="#i-[a-z-]+"' file) <(grep -oE '<symbol id="i-[a-z-]+"' file)` 결과 0건 의무. | G3 PR #9/#10 사고 교훈 | 2026-05-18 | open (G4 진입 전 CI workflow 강화 의무) |
+| ~~KI-063~~ | P2 | 5 | Process | ~~CI `inline-svg-sprite-check`가 sprite block 존재만 검사하고 사용된 use href ↔ 정의된 symbol id cross-check 미실시~~ | G3 PR #9/#10 사고 교훈 | 2026-05-18 | **resolved (WI-G4prep-ci 2026-05-18 — pr-checks.yml `inline-svg-sprite-check` §3 cross-check 추가, 로컬 34/34 화면 PASS)** |
 
 ## 등록 형식
 
