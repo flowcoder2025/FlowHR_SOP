@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
-| P2 Medium | **4** | 5 | ❌ — KI-049 analysis 권한 매트릭스 7화면 누락 + KI-050 select-wrap 17건 + KI-051 showcase-coverage CI 강화 + KI-054 icon-only aria-label 누락. KI-053/058 G3 hotfix2~3로 resolved. |
-| P3 Low | **19** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055 가짜 base path + KI-056 footer SSOT + KI-057 G2 모바일 미디어 쿼리 + KI-059 (G3 hotfix3 resolved) |
+| P2 Medium | **6** | 5 | ✅ 트리거 도달 — KI-049 analysis 권한 매트릭스 7화면 누락 + KI-050 select-wrap 17건 + KI-051 showcase-coverage CI 강화 + KI-054 icon-only aria-label 누락 + **KI-060 TA-13 vert-tab font-weight drift** + **KI-061 components.css 7 base 셀렉터 중복 systemic** (G3 hotfix3 evaluator + codex CONDITIONAL). KI-053/058 G3 hotfix2~3로 resolved. |
+| P3 Low | **20** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055 가짜 base path + KI-056 footer SSOT + KI-057 G2 모바일 미디어 쿼리 + KI-059 (G3 hotfix3 resolved) + **KI-062 Playwright 렌더 증거 의무 명시** |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -76,6 +76,9 @@
 | KI-057 | P3 | 5 | Wireframe | G2 화면 OP-02~12의 모바일 미디어 쿼리 부재 (G3 패턴만 components.css `@media (max-width: 768px)` 단열). G4 또는 Phase 5 전체에서 일괄 보강. | claude G3 hotfix1 partial resolve | 2026-05-18 | open (G4 또는 Phase 5 전체) |
 | ~~KI-058~~ | P2 | 5 | Wireframe | ~~`--color-accent-bg` 토큰 미정의 — components.css 8 클래스 참조 fallback 없음 (.vert-tab.is-active / .approval-row.is-active / .report-item.is-active / .step.is-active / .master-item.is-active / .auth-alert-info / .install-card.is-active / .config-card.is-active)~~ | evaluator G3 hotfix2 | 2026-05-18 | **resolved (G3 hotfix3 — tokens.css L14 `--color-accent-bg: #EFF6FF;` 1줄 추가)** |
 | ~~KI-059~~ | P3 | 5 | Wireframe | ~~`.vert-tab.is-active` 중복 정의 (components.css L408 light vs L885 bg) — cascade 충돌~~ | evaluator G3 hotfix2 | 2026-05-18 | **resolved (G3 hotfix3 — L408 기존 정의 제거, L885 §G3 SSOT 유지)** |
+| KI-060 | P2 | 5 | Wireframe | TA-13.html:40 font-weight: 600 vs components.css L766 `.vert-tab.is-active { font-weight: 700 }` declaration drift. TA-13 L31 주석 "components.css에 등록된 .is-active 4 속성을 그대로 합성" 단언이 1 속성 (font-weight) 불일치. 정정: TA-13 L40 700 통일 또는 declaration 자체 제거 + body[data-state] selector + .is-active class 토글. | evaluator G3 hotfix3 + codex (CONDITIONAL) | 2026-05-18 | open (차기 docs batch) |
+| KI-061 | P2 | 5 | Wireframe | components.css L399~L510 vs L683~L770 — 7 base 셀렉터 (.tab/.vert-tab/.vert-tabs/.modal-header/.modal-footer/.step/.stepper) 중복 정의 systemic 잔존. `.tab.is-active` L402(600+primary) vs L754(700+accent) 명확한 4 속성 충돌. cascade로 G3 후자 승리하나 SSOT 위반. KI-059는 `.vert-tab.is-active` 변종만 해소. | evaluator G3 hotfix3 + codex (P2 격상) | 2026-05-18 | open (G4 또는 차기 docs batch) |
+| KI-062 | P3 | 5 | Wireframe | .pass marker 0 bytes (의도된 빈 마커이나 codex 지적) + Playwright 렌더 증거는 CI playwright-smoke 결과 (PR merge 시점 자동 생성)로 충족 — analysis md에 "Playwright smoke 결과 의무" 명시 권장. | codex G3 hotfix3 | 2026-05-18 | open (차기 docs batch) |
 
 ## 등록 형식
 

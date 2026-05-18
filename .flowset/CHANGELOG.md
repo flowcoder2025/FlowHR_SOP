@@ -46,10 +46,33 @@ evaluator PASS 8.65 + codex FAIL 7.3 → BLOCKED_FOR_HOTFIX → codex 권고 "�
 - TA-01 .kpi-row margin-bottom 0건 (base components.css 16px 통일)
 - _showcase G3 9/9 + 03-components §G3.1~G3.9 9/9
 
-### 다음
+### 재평가 통합 판정 (2026-05-18)
 
-- 재평가 (evaluator + codex 병렬, hotfix 3회차 마지막) → PASS_BOTH 시 ready → CI → auto-merge → tag wf-v0.3.0
-- 만약 codex 잔존 FAIL 시 review-system.md §10-6 "3회 연속 FAIL → 스코프 재검토" 사용자 결정
+| 평가자 | 결과 | 점수 |
+|--------|------|------|
+| evaluator hotfix3 | PASS | 8.475 |
+| codex hotfix3 (gpt-5.5) | CONDITIONAL | 8.1 |
+| 통합 (review-system.md §4 OR) | **CONDITIONAL_MERGE_WITH_KI** | — |
+
+- evaluator 3회 연속 PASS (8.48 → 8.65 → 8.475)
+- codex FAIL 7.0 → FAIL 7.3 → CONDITIONAL 8.1 (개선)
+- codex MCP hang 2회 (1시간6분 + 38분) → gpt-5.5 모델 명시로 해소 (사용자 결정)
+
+### 잔존 NON_BLOCKING (KI-060/061/062 신규 등록)
+
+- **KI-060 (P2)** TA-13.html:40 vert-tab font-weight: 600 vs components.css L766 700 declaration drift
+- **KI-061 (P2)** components.css 7 base 셀렉터 중복 systemic (.tab/.vert-tab/.vert-tabs/.modal-header/.modal-footer/.step/.stepper) — KI-059는 .vert-tab.is-active 변종만 잡음
+- **KI-062 (P3)** .pass marker 0 bytes + Playwright 렌더 증거 analysis 명시 권장
+
+카운트 갱신: P2 4 → 6 (KI-060/061 신규) / P3 19 → 20 (KI-062 신규)
+
+### 머지 진행
+
+- PR draft → ready 변환
+- CI 9 job 통과 대기 (Playwright Smoke 포함)
+- auto-merge --squash --delete-branch
+- tag wf-v0.3.0
+- main 동기화 + KI close-out
 
 ## [wf-v0.3.0-hotfix2] — 2026-05-18 (G3 hotfix2 — 완전 SSOT 동기화)
 
