@@ -216,6 +216,23 @@ jobs:
               fail=1
             fi
           done
+          # 3. KI-063 — 화면 HTML의 use href ↔ symbol id cross-check.
+          #    G3 PR #9/#10 사고 (TA-03 sprite 4 symbol 누락) 재발 방지.
+          #    화면이 `<use href="#i-X">`로 참조했는데 인라인 sprite에 `<symbol id="i-X">` 정의가 없으면 fail.
+          #    (#으로 시작하지 않는 외부 참조는 §1에서 차단되므로 본 단계는 fragment-only ref만 대상)
+          for f in .flowset/wireframes/html/*.html; do
+            [ ! -f "$f" ] && continue
+            used=$(grep -oE 'use href="#i-[a-z0-9-]+"' "$f" | sed 's/use href="#//;s/"$//' | sort -u)
+            defined=$(grep -oE '<symbol id="i-[a-z0-9-]+"' "$f" | sed 's/<symbol id="//;s/"$//' | sort -u)
+            [ -z "$used" ] && continue
+            missing=$(comm -23 <(echo "$used") <(echo "$defined"))
+            if [ -n "$missing" ]; then
+              count=$(echo "$missing" | wc -l)
+              echo "::error file=$f::sprite cross-check 실패 — use에 있으나 symbol 정의 누락 ${count}건 (Playwright iconInvisible 원인):"
+              echo "$missing" | sed 's/^/    - /'
+              fail=1
+            fi
+          done
           exit $fail
 
   native-element-wrap-check:
