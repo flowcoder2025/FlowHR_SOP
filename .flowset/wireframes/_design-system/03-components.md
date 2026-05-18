@@ -1303,3 +1303,111 @@ interface StepperProps {
   .calendar-grid { overflow-x: auto; }
 }
 ```
+
+## G4 신규 6 패턴 사양 (wf-v0.4.0 — Employee 도메인, 2026-05-18)
+
+### G4.1 ClockCard — 출퇴근 시계 + 액션 그룹
+
+**Anatomy** (EM-01 / EM-02):
+- `.clock-card` — flex column gap 12px (card 내부)
+- `.clock-display` — 중앙 정렬 — `.clock-now` (36px 700 mono) + `.clock-date` (12px muted)
+- `.clock-meta` — 4-col grid, 8px gap — `.clock-meta-item` (surface-2 bg, r-sm, 8/10 padding) × 4 (출근/퇴근/휴게/근무)
+- `.clock-meta-label` — 11px muted with 4px gap (icon optional)
+- `.clock-meta-value` — 13px 600 with 4px gap (success check-circle optional)
+- `.clock-actions` — auto-fit minmax(120px, 1fr) — `.btn.btn-lg` 액션 그룹 (상태별 활성)
+
+**Props (Phase 7 React)**:
+- `state`: `'unclocked' | 'working' | 'on_break' | 'clocked_out' | 'missing'`
+- `now`: Date — 현재 시각 (실시간)
+- `attendance`: `{ clockIn, clockOut, breakMinutes, workHours, location }`
+- `onClockIn`/`onClockOut`/`onBreakStart`/`onBreakEnd`: () => void
+
+**Phase 7**: PWA 모바일 GPS — `navigator.geolocation.getCurrentPosition` + 회사 좌표 비교 + 오프라인 IndexedDB 큐 (`workbox-background-sync`).
+
+### G4.2 LeaveBalanceCard — 잔여 휴가 강조
+
+**Anatomy** (EM-01 / EM-04):
+- `.leave-balance-card` — flex column gap 12px
+- `.leave-balance-main` — 중앙 정렬, 12px padding — `.leave-balance-num` (48px 700 accent) + `.leave-balance-unit` (18px 600 muted "일")
+- `.leave-balance-sub` — 12px muted ("사용 5 / 총 15")
+- `.leave-balance-row` — flex justify-between, border-bottom — `.leave-balance-key` (muted) + `.leave-balance-val` (600)
+- 하단 풀폭 CTA `.btn.btn-primary` ("휴가 신청" — 100% width, center justify)
+
+**Props**:
+- `balance`: number — 잔여 일수
+- `granted`: number — 총 부여
+- `used`: number — 사용
+- `nextLeave?`: string — 다음 휴가 일자
+- `monthUsed?`: number — 이번달 사용
+
+**모바일 ≤768px**: leave-balance-num 40px.
+
+### G4.3 StatMiniList — 미니 리스트 (요청/알림/일정 3건)
+
+**Anatomy** (EM-01 3-col dash-row):
+- `.stat-mini-list` — flex column gap 4px (card 내부)
+- `.stat-mini-row` — flex 8px gap, 8/10 padding, surface-2 bg, r-sm, 13px, decoration-none color text
+- `a.stat-mini-row:hover` — accent-bg transition
+- 내부 옵션 1: `.stat-mini-type` (11px badge info-bg, "휴가"/"증명서"/...) + `.stat-mini-title` (ellipsis flex 1) + `.badge` (상태)
+- 내부 옵션 2: `.stat-mini-icon` (muted, flex-shrink 0) + `.stat-mini-title` + `.stat-mini-time` (11px muted "3시간 전")
+
+**Props**:
+- `items`: `Array<{ id, type?, icon?, title, badge?, time?, href? }>`
+- 최대 3건 (PRD §3 명세) — 초과 시 "전체 →" CTA card-head
+
+### G4.4 CalcSummary — 자동 계산 박스
+
+**Anatomy** (EM-03 우측):
+- `.calc-summary` — flex column gap 6px
+- `.calc-row` — flex justify-between, 6px padding, 13px
+- `.calc-key` — muted with icon optional
+- `.calc-val` — 600 — 사용일수 row의 calc-val 22px 700 accent (강조)
+- 신청 후 잔여 row — border-top + bold
+- 하단 calc-row 12px muted info — "주말/공휴일 제외 (회사 설정)"
+
+**Variant**:
+- default — calc-val accent
+- error — 잔여 부족 시 calc-val color danger + "-N일 (부족)"
+
+**Phase 7**: server-side `POST /leaves/calculate-days` debounce 500ms 또는 client-side date-fns + work_policy.
+
+### G4.5 ChartPlaceholder — Donut 차트 placeholder
+
+**Anatomy** (EM-04 좌측 1.2fr):
+- `.chart-placeholder` — 140px/1fr grid, 20px gap, align-center
+- `.chart-placeholder-donut` — 140×140 relative
+  - `.chart-donut-svg` — inline SVG viewBox 36 36, stroke-dasharray "X,Y" (사용/잔여) + transform rotate(-90)
+  - `.chart-placeholder-donut-inner` — absolute inset 0, center — `.chart-placeholder-num` (28px 700 accent) + `.chart-placeholder-sub` (11px muted "일 사용")
+- `.chart-placeholder-legend` — flex column 6px gap
+  - `.legend-row` × N (4종 — 연차/병가/경조사/공가) — `.legend-dot` (10px, color별) + `.legend-label` + `.legend-val` (muted 600 우측)
+- `.chart-placeholder-note` — grid-column 1/-1, 11px muted, dashed border-top, 8px padding — "Phase 7 chart lib 교체 예정"
+
+**Phase 7 교체**: recharts `<PieChart>` 또는 visx `<Pie>` — 본 placeholder는 시각 검수용. 동일 grid + legend 유지.
+
+### G4.6 NotifRow — 알림 카드 리스트
+
+**Anatomy** (EM-10):
+- `.notif-card` — padding 0 (card variant)
+- `.notif-row` — flex 10px gap, align-center, 12/16 padding, border-bottom, decoration-none text color, cursor-pointer
+- variant `.notif-row.is-unread` — bg info-bg, hover accent-bg
+- 내부:
+  - `.notif-row-dot` — is-unread 시만, absolute left 6px center, 6×6 accent dot
+  - `.notif-row-icon` — 32×32 circle, surface-2 bg muted color, is-unread 시 white bg accent color
+  - `.notif-row-body` — flex 1 column 2px gap — `.notif-row-title` (13px 600) + `.notif-row-desc` (12px muted, ellipsis nowrap)
+  - `.notif-row-type` — flex-shrink 0, 11px badge (결재 info / 시스템 warning / 공지 neutral)
+  - `.notif-row-time` — 11px muted
+
+**Props**:
+- `notification`: `{ id, type, title, desc, time, isRead, href? }`
+- `onClick`: () => void — 자동 read mark + navigate
+
+**Realtime**: `realtime:notifications:user-{id}` 구독 → 새 알림 prepend + 헤더 종 배지 갱신 + PWA push 발송.
+
+### G4 모바일 override
+
+`components.css` 끝 `@media (max-width: 768px)` 신규 5 규칙:
+- `.clock-meta` → 2-col
+- `.clock-actions` → 1-col stack
+- `.chart-placeholder` → 1-col + donut 가운데 정렬
+- `.notif-row` → flex-wrap + desc nowrap 해제
+- `.leave-balance-num` → 40px (48 → 40 축소)

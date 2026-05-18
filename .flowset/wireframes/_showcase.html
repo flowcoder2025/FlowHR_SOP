@@ -1117,8 +1117,54 @@
   <p>샘플: TA-06.html L189-237. 결재 라인 timeline 재사용.</p>
 </section>
 
+<!-- ============================================================================
+     G4 신규 컴포넌트 (wf-v0.4.0 — Employee 도메인)
+     ============================================================================ -->
+
+<section class="showcase-section" id="section-clock-card">
+  <h2>G4.1 — ClockCard (출퇴근 시계 + 액션 그룹)</h2>
+  <p>적용 화면: EM-01 대시보드, EM-02 출퇴근. PWA 모바일이 주 사용 환경.</p>
+  <p>구조: <code>.clock-card</code> = <code>.clock-display</code> (36px clock-now mono + 12px clock-date) + <code>.clock-meta</code> 4-col grid (.clock-meta-item × 4 with label+value) + <code>.clock-actions</code> auto-fit minmax(120px,1fr) 큰 버튼 그룹 (출근/휴게/퇴근 상태별 활성화).</p>
+  <p>모바일 ≤768px — clock-meta 2-col + clock-actions 1-col stack.</p>
+</section>
+
+<section class="showcase-section" id="section-leave-balance">
+  <h2>G4.2 — LeaveBalanceCard (잔여 휴가 강조)</h2>
+  <p>적용 화면: EM-01 대시보드 (5-col KPI 우측 큰 카드), EM-04 휴가 현황 (분포 카드).</p>
+  <p>구조: <code>.leave-balance-card</code> = <code>.leave-balance-main</code> (48px accent num + 18px unit + 12px sub) + <code>.leave-balance-row</code> 2~3 (border-bottom, key/val justify-between) + 하단 풀폭 CTA "휴가 신청".</p>
+  <p>tokens: leave-balance-num color = var(--color-accent). 모바일 ≤768px → num 40px.</p>
+</section>
+
+<section class="showcase-section" id="section-stat-mini">
+  <h2>G4.3 — StatMiniList (미니 리스트 3건)</h2>
+  <p>적용 화면: EM-01 대시보드 3-col (진행중 요청 / 최근 알림 / 다가오는 일정).</p>
+  <p>구조: <code>.stat-mini-list</code> = <code>.stat-mini-row</code> × 2~3 (surface-2 bg + r-sm + hover accent-bg). row 내부 = optional <code>.stat-mini-type</code> badge (info-bg 11px) 또는 <code>.stat-mini-icon</code> + <code>.stat-mini-title</code> (ellipsis flex 1) + <code>.stat-mini-time</code> (11px muted right).</p>
+  <p>a 태그로 wrapping 시 hover transition accent-bg.</p>
+</section>
+
+<section class="showcase-section" id="section-calc-summary">
+  <h2>G4.4 — CalcSummary (자동 계산 박스)</h2>
+  <p>적용 화면: EM-03 휴가 신청 우측 (사용일수 / 현재 잔여 / 신청 후 잔여).</p>
+  <p>구조: <code>.calc-summary</code> = <code>.calc-row</code> × 3 (justify-between, 6px padding) — 사용일수 row의 calc-val 22px accent bold (강조), 신청 후 잔여 row border-top + bold.</p>
+  <p>error 변종 — 잔여 부족 시 calc-val color = var(--color-danger) + "-N일 (부족)" 텍스트.</p>
+</section>
+
+<section class="showcase-section" id="section-chart-placeholder">
+  <h2>G4.5 — ChartPlaceholder (Donut 차트 placeholder)</h2>
+  <p>적용 화면: EM-04 휴가 현황 (유형별 사용량). Phase 7 chart lib (recharts/visx) 교체 전 시각 검수용.</p>
+  <p>구조: <code>.chart-placeholder</code> = 140px/1fr grid → 좌측 <code>.chart-placeholder-donut</code> (140×140 relative) with inline SVG (stroke-dasharray donut) + 절대위치 <code>.chart-placeholder-donut-inner</code> (28px accent num + 11px sub) / 우측 <code>.chart-placeholder-legend</code> (.legend-row × N with .legend-dot + .legend-label + .legend-val).</p>
+  <p>하단 dashed border <code>.chart-placeholder-note</code> — "Phase 7 chart lib 교체 예정" 명시.</p>
+</section>
+
+<section class="showcase-section" id="section-notif-row">
+  <h2>G4.6 — NotifRow (알림 카드 리스트)</h2>
+  <p>적용 화면: EM-10 알림함 (헤더 종 드롭다운 + 본 페이지 통합 리스트).</p>
+  <p>구조: <code>.notif-card</code> padding 0 → <code>.notif-row</code> × N (12px/16px padding, border-bottom). row 내부: optional <code>.notif-row-dot</code> (is-unread 시 accent dot 좌측) + <code>.notif-row-icon</code> (32×32 circle, is-unread 시 white bg) + <code>.notif-row-body</code> (title 13px bold + desc 12px muted ellipsis) + <code>.notif-row-type</code> badge + <code>.notif-row-time</code> (11px muted).</p>
+  <p>variant: <code>.notif-row.is-unread</code> background var(--color-info-bg), hover accent-bg.</p>
+</section>
+
 <div style="text-align:center;color:var(--color-text-muted);font-size:12px;padding:24px;">
-  FlowHR 디자인 시스템 v1.1 — KI-037 batch-004 + KI-039 batch-005 + KI-batch-006-fix2 hotfix2 (2026-05-16) + KI-053 G3 신규 9 패턴 (2026-05-18 hotfix2)
+  FlowHR 디자인 시스템 v1.2 — G0~G3 + G4 신규 6 패턴 (Employee 도메인, wf-v0.4.0, 2026-05-18)
 </div>
 
 </body>

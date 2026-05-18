@@ -8,6 +8,59 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.0] — 2026-05-18 (G4 Employee 와이어프레임 11 화면 양산)
+
+G3 wf-v0.3.0 + KI-063 CI sprite cross-check 강화 (PR #11) 이후 G4 진입. PRD `prd/domains/employee/EM-01~11.md` 11 화면 일괄 양산. PWA 모바일이 주 사용 환경.
+
+### 신규 화면 (EM-01 ~ EM-11)
+
+| ID | 화면 | 라우트 | 패턴 |
+|----|------|--------|------|
+| EM-01 | 내 대시보드 | `/me` | KPI 5 + Clock Card + Leave Balance Card + Mini Lists 3 |
+| EM-02 | 출퇴근 | `/me/attendance` | Clock Card (full) + Policy Info + History Table + Modification Modal |
+| EM-03 | 휴가 신청 | `/me/leaves/new` | Form (좌) + Calc Summary + Approval Line Preview (우) |
+| EM-04 | 내 휴가 현황 | `/me/leaves` | KPI 4 + Donut Chart Placeholder + Balance Distribution + History |
+| EM-05 | 내 결재 / 진행현황 | `/me/approvals` | Tab Filter (5) + Unified Approval Table + Detail Drawer (timeline) |
+| EM-06 | 급여명세서 | `/me/payslips` | Year Filter + Payslip Table + Detail Modal (지급/공제 표) |
+| EM-07 | 문서 조회 | `/me/documents` | Tab (내 문서/회사 문서) + Filter + Document Table |
+| EM-08 | 증명서 요청 | `/me/documents/certificate-request` | Form + Process Stepper + History Table |
+| EM-09 | 내 정보 / 프로필 | `/me/profile` | Profile Card + 7 Vert Tabs + Form + Security Tab (2FA + Sessions) |
+| EM-10 | 알림함 | `/me/notifications` | Tab Filter + Type Filter + Notification Row List + PWA Push Banner |
+| EM-11 | 요청 내역 (v1.1) | `/me/requests` | Unified Request Table + MVP Redirect Notice |
+
+### G4 신규 컴포넌트 (components.css §G4.1~G4.6)
+
+1. **ClockCard** — `.clock-card` + display/now/date/meta/actions (36px mono 시계 + 4-col meta + 상태별 큰 버튼 그룹)
+2. **LeaveBalanceCard** — `.leave-balance-card` + main/num(48px accent)/unit/sub/row/key/val (잔여 휴가 강조)
+3. **StatMiniList** — `.stat-mini-list` + row/type/icon/title/time (미니 리스트 3건, surface-2 + hover accent-bg)
+4. **CalcSummary** — `.calc-summary` + row/key/val (자동 계산 박스, 사용일수 22px accent + error variant danger)
+5. **ChartPlaceholder** — `.chart-placeholder` + donut/legend/note (140px Donut SVG placeholder + 4 legend + Phase 7 교체 note)
+6. **NotifRow** — `.notif-card` + `.notif-row.is-unread` + dot/icon/body/type/time (32×32 circle icon, is-unread info-bg)
+
+기존 G3 컴포넌트 100% 재사용 — vert-tabs (EM-09), approval-timeline (EM-05 drawer), profile-card (EM-09), stepper (EM-03/EM-08), drawer (EM-05), modal-overlay (EM-02/EM-06), tabs (EM-05/EM-07/EM-10), select-wrap, date-input, file-input 등.
+
+### 문서 갱신
+
+- `_design-system/components.css` 988 → 1086+ lines (G4 6 컴포넌트 §G4 + 모바일 override 5 규칙)
+- `_design-system/03-components.md` 1305 → 1430+ lines (§G4.1~G4.6 Anatomy + Props + Phase 7)
+- `_design-system/_showcase.html` 1125 → 1180+ lines (G4 6 신규 demo section)
+- `_design-system/component-usage-matrix.json` v1.1.0 → v1.2.0 (24 → 30 patterns, 신규 6 + applicable_screens 확장)
+- `wireframes/analysis/EM-01~11.md` 신규 11 (PRD 매핑 + 5상태 + i18n + API + 권한 + 검증 + Phase 7 + 의존성)
+
+### 사이드바 employee 8 메뉴 (05-layouts.md §employee SSOT 정합)
+
+```
+대시보드 / 출퇴근 / 휴가 / 결재 / 급여 / 문서 / 알림 / 내 정보
+```
+footer: `v1.0.0-beta · 직원 환경`. sidebar-section-label: `내 메뉴`.
+
+### CI 검증
+
+- inline-svg-sprite-check (KI-063 강화) — 11/11 화면 cross-check PASS (used IDs ⊆ defined IDs)
+- design-system-ssot — inline 정의 0건 (페이지 한정 grid layout만)
+- native-element-wrap-check — select/file/date 모두 wrap
+- showcase-coverage-check — matrix.json v1.2.0 30 patterns 매핑
+
 ## [wf-v0.3.0-hotfix3] — 2026-05-18 (G3 hotfix3 — codex mechanical fix 능동 정정)
 
 evaluator PASS 8.65 + codex FAIL 7.3 → BLOCKED_FOR_HOTFIX → codex 권고 "모두 mechanical fix — 사용자 결정 불필요" → 능동 정정.
