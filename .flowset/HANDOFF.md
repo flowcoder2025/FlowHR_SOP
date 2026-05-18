@@ -34,7 +34,7 @@
 | wf-v0.4.3 | audit hotfix3 | evaluator FAIL 7.84 증적 기반 정정 | ✅ 머지 (PR #15) | wf-v0.4.3 |
 | **wf-v1.0.0** | **Phase 5 정식 종료** | **45 화면 + 4 그룹 codex 검증 + evaluator PASS 8.13** | ✅ **재부여 (commit ba183a5)** | **wf-v1.0.0** |
 
-**현재 브랜치**: `main` (HEAD `ba183a5`)
+**현재 브랜치**: `main` (HEAD `de6e925` — 본 HANDOFF commit. wf-v1.0.0 tag는 ba183a5에 부여)
 
 **Phase 5 화면 합계**: CM 8 + OP 12 + TA 14 + EM 11 = **45 화면**
 
@@ -49,28 +49,37 @@
 | h1.2 (PR #13 commit) | (생략) | (생략) | MERGE_WITH_KI | 1차 wf-v1.0.0 부여 → 사용자 지적 → 철회 |
 | h2 (PR #14 commit) | 미평가 | G1 8.1 + G2 6.8 + G3 8.8 + G4 8.7 | 가중 8.12 | h2 codex KI-050 P0 잔존 |
 | h2 (PR #14 재평가) | FAIL 7.84 (Hard gate 미달) | G2 FAIL 7.2 | FAIL | h3 증적 정정 |
-| **h3 (PR #15)** | **PASS 8.13** | G1 9.2 + G2 8.1 + G3 8.8 + G4 9.0 (평균 8.78) | **MERGE_WITH_KI → PASS** | **wf-v1.0.0 재부여** |
+| **h3 (PR #15)** | **PASS 8.13** | G2 hotfix3 재평가 8.1 (G1/G3/G4는 hotfix2 평가 유지: 9.2/8.8/9.0) — **가중 평균 8.73** | **MERGE_WITH_KI → PASS** | **wf-v1.0.0 재부여** |
 
-### codex 4 그룹 분할 검증 (45 화면 전수, audit hotfix3 후)
+### codex 4 그룹 분할 검증 (45 화면 전수)
 
-| 그룹 | 화면 | 점수 | 판정 |
-|------|-----:|-----:|------|
-| G1 CM | 8 | 9.2 | PASS |
-| G2 OP | 12 | 8.1 | CONDITIONAL (P3 INDEX 중복 → 정리 완료) |
-| G3 TA | 14 | 8.8 | PASS |
-| G4 EM | 11 | 9.0 | PASS |
-| **가중 평균** | **45** | **8.78** | |
+| 그룹 | 화면 | 점수 | 판정 | 평가 시점 |
+|------|-----:|-----:|------|----------|
+| G1 CM | 8 | 9.2 | PASS | hotfix2 재평가 |
+| G2 OP | 12 | 8.1 | CONDITIONAL (P2 정합성 결함 2건 → 정리 완료) | hotfix3 재평가 |
+| G3 TA | 14 | 8.8 | PASS | hotfix2 재평가 |
+| G4 EM | 11 | 9.0 | PASS | hotfix2 재평가 |
+| **가중 평균** | **45** | **8.73** | (= (9.2×8 + 8.1×12 + 8.8×14 + 9.0×11) / 45 = 393.0/45) | |
 
-### 사용자 시각 검수 9 화면 결함 해소율
+### 사용자 시각 검수 결함 해소 (11 화면)
 
-**9/9 완전 해소** (audit hotfix1+2+3):
-- TA-03/10/13 탭 — h1 (tabs/tabs-row alias + button reset)
-- TA-06 상태버튼 — h1.2 (page-btn SSOT)
-- TA-07 캘린더 정렬 + 반차 — h1 (page-action-bar flex + leave-badge ellipsis + "½" 단축)
-- TA-09 에러 메시지 반응형 — KI-057 (Phase 7 분리, 시각 검수 PASS)
-- OP-02/05/06 테이블 정렬 + DS — h2 (KI-050 17건 + h3 OP-04 select-wrap)
-- OP-10 디자인 시스템 — h1 (kpi-meta selector)
-- EM-10 배지 — h1 (badge variant CSS 288건 해소)
+사용자 직접 시각 검수로 지적한 11 화면 (TA 6 + OP 4 + EM 1):
+
+| 화면 | 결함 | 해소 사이클 | 비고 |
+|------|------|------------|------|
+| TA-03 | 탭 디자인 시스템 미준수 | h1 (tabs/tabs-row alias + button reset) | codex G3 hotfix2 verification PASS |
+| TA-06 | 상태버튼 (페이지네이션 정정) | h1.2 (page-btn SSOT) | codex G3 verification PASS |
+| TA-07 | 캘린더 정렬 + 반차 잘림 | h1 (page-action-bar flex + leave-badge ellipsis + "½") | codex G3 verification PASS |
+| TA-09 | 에러 메시지 반응형 | **시각 결함 직접 정정 없음 — codex G3 audit_hotfix_verification 항목 PASS 보고 (TA-09_error_responsive: PASS)** | 시각 검수 vs 코드 분석 결과 차이 가능. 사용자 추가 검수 권장. KI 등록 없음. |
+| TA-10 | 탭 디자인 시스템 미준수 | h1 (동일 audit fix) | codex G3 verification PASS |
+| TA-13 | vert-tabs UA 시각 | h1 (button.vert-tab reset) | codex G3 verification PASS |
+| OP-02 | 테이블 정렬 + DS 일부 적용 | h2 (KI-050 3건 select-wrap) + h3 OP-04 무관 | codex G2 hotfix3 PASS |
+| OP-05 | 테이블 정렬 + DS 일부 | h2 (KI-050 3건 select-wrap) | codex G2 hotfix3 PASS |
+| OP-06 | 테이블 정렬 + DS 일부 | h2 (KI-050 3건 select-wrap) | codex G2 hotfix3 PASS |
+| OP-10 | 디자인 시스템 미준수 | h1 (kpi-meta selector 통합) | codex G2 1차 PASS |
+| EM-10 | 배지 적용 안됨 | h1 (badge variant CSS 양 패턴 — 288건 색상 해소) | codex G4 verification PASS |
+
+**해소율**: 10/11 코드 정정 + codex verification PASS. 1건 (TA-09)은 코드 정정 없이 codex가 PASS 보고 — 사용자 실제 시각 결과와 차이 가능, 추가 검수 시 hotfix.
 
 ## 3. 신규 세션 첫 작업 — Phase 6 진입
 
@@ -85,8 +94,10 @@ Phase 5 정식 종료. Phase 6 (스프린트 계획) 진입.
 
 ### 작업 2 — Phase 6 진입 전 의무 (KI-013/034 정리)
 
-- **KI-013** (P3) — Phase 2 7 Epic Task 분해 미완 — Phase 6 진입 전 완료 의무
-- **KI-034** (P3) — tasks.md / estimation.md / dependency-graph.md stale (ST-073~080 미반영) — Phase 6 진입 전 정정 의무
+SSOT 출처: `.flowset/known-issues/INDEX.md:32` (KI-013 scheduled Phase 6) + `INDEX.md:53` (KI-034 open, Phase 6 KI-013과 함께 처리). **project.md §1 진행 순서표에는 명시 없음 — INDEX scheduled 표기 기반**.
+
+- **KI-013** (P3) — Phase 2 EP-03/04/05/09/10/11/12 7 Epic Task 분해 미완 — INDEX scheduled (Phase 6)
+- **KI-034** (P3) — tasks.md / estimation.md / dependency-graph.md stale (ST-073~080 미반영) — INDEX open (Phase 6 KI-013과 함께 처리)
 
 ### 작업 3 — Phase 6 evaluator + codex (모드 doc)
 
