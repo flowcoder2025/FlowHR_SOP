@@ -192,4 +192,5 @@ SSOT 출처: `.flowset/known-issues/INDEX.md:32` (KI-013 scheduled Phase 6) + `I
 | 2026-05-18 | 갱신 — G3 wf-v0.3.0 머지 + G4 진입 | wf-v0.3.0 tag |
 | 2026-05-18 | 갱신 — G4 wf-v0.4.0 머지 + Phase 5 통합 안내 | wf-v0.4.0 tag |
 | 2026-05-18 | 1차 wf-v1.0.0 부여 → 사용자 지적 → 철회 | "45 풀화면 codex 미검증" |
-| **2026-05-18** | **본 갱신 — Phase 5 정식 종료 (audit hotfix2+3 후 wf-v1.0.0 재부여)** | **evaluator PASS 8.13 + codex 4 그룹 평균 8.78 + 사용자 시각 검수 9/9 해소** |
+| 2026-05-18 | 갱신 — Phase 5 정식 종료 (audit hotfix2+3 후 wf-v1.0.0 재부여) | evaluator PASS 8.13 + codex 4 그룹 가중 평균 8.73 + 사용자 시각 검수 11 화면 10/11 코드 정정 (TA-09는 codex verification만) |
+| **2026-05-19** | **본 갱신 — HANDOFF 검증 사이클 (evaluator + codex 한 세트) FAIL → 증적 4 파일 보존 commit ee67a12 → 재평가 잔존 4건 mechanical fix** | **사용자 비판 정정 반영: 가중 평균 / 화면 수 / SSOT 출처 / 증적 보존** |

@@ -29,7 +29,7 @@
       "ops_entry": "P0/P1/P2 0건 + P3는 운영 백로그 이관"
     }
   },
-  "current_phase": "5-wireframes",
+  "current_phase": "6-sprint-plan",
   "phases": {
     "0-setup": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15"},
     "1-prd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.15, "eval_verdict": "PASS", "eval_attempts": 2, "rerun_score": 9.13, "rerun_at": "2026-05-15", "rerun_reason": "WI-KI-batch-003 보강 후 재평가"},
@@ -37,7 +37,7 @@
     "3-erd": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.68, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.21, "rerun_at": "2026-05-15", "rerun_reason": "LegalDocument/UserConsent 추가 후 재평가, P2 4건 즉시 처리"},
     "4-api": {"status": "completed", "owner": "claude", "started_at": "2026-05-15", "completed_at": "2026-05-15", "eval_score": 8.78, "eval_verdict": "PASS", "eval_attempts": 1, "rerun_score": 8.40, "rerun_at": "2026-05-15", "rerun_reason": "API 보강 후 재평가, P1+P2 즉시 처리 (OP-12 API 6종 + Envelope→SuccessEnvelope)"},
     "5-wireframes": {"status": "completed", "owner": "claude", "restarted_at": "2026-05-15", "completed_at": "2026-05-18", "policy_change": "Codex 이미지 폐기, HTML 직접 작성 단일 채택", "scope": "45 화면 (CM 8 + OP 12 + TA 14 + EM 11)", "tag": "wf-v1.0.0", "eval_cycle": "1차 FAIL 7.45 → h1 PASS 8.07 → h2 FAIL 7.84 → h3 PASS 8.13", "eval_score_final": 8.13, "eval_verdict_final": "PASS (evaluator 5축 모두 7.5+, Hard gate 5/5 PASS)", "codex_verification": "G1 PASS 9.2 + G2 CONDITIONAL 8.1 + G3 PASS 8.8 + G4 PASS 9.0 (4 그룹 분할 호출 — full review hang 회피)", "integration_verdict": "MERGE_WITH_KI → P3 NON_BLOCKING 정리 완료 → PASS"},
-    "6-sprint-plan": {"status": "pending"},
+    "6-sprint-plan": {"status": "pending", "entry_obligations": ["KI-013 (Phase 2 7 Epic Task 분해 미완 — INDEX.md:32)", "KI-034 (tasks.md/estimation.md stale — INDEX.md:53)"]},
     "7-dev-kickoff": {"status": "pending"},
     "8-qa": {"status": "pending"},
     "9-beta": {"status": "pending"},

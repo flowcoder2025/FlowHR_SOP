@@ -8,6 +8,35 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v1.0.0] — 2026-05-18 (Phase 5 정식 종료)
+
+audit hotfix1 ~ hotfix3 사이클 완료 후 evaluator PASS 8.13 + codex G2 hotfix3 CONDITIONAL 8.1 → 통합 매트릭스 PASS_WITH_KI → wf-v1.0.0 + phase-5.pass 재부여.
+
+### Phase 5 종료 증적
+
+- evaluator: PASS 8.13/10 (5 축 모두 7.5+, Hard gate 5/5 PASS) — `.flowset/eval-results/phase-5-full-hotfix3.eval.md`
+- codex 4 그룹 분할 검증 (full review hang 회피): G1 9.2 + G2 8.1 + G3 8.8 + G4 9.0 = **가중 평균 8.73** ((9.2×8 + 8.1×12 + 8.8×14 + 9.0×11) / 45 = 393/45)
+- 사용자 시각 검수 11 화면 중 10/11 코드 정정 + 1 (TA-09)은 codex verification PASS 보고 (시각 차이 가능성 명시)
+- 평가 사이클: 1차 FAIL 7.45 → h1 PASS 8.07 → h2 FAIL 7.84 → h3 PASS 8.13
+
+### 정식 종료 marker
+
+- `.flowset/eval-results/phase-5.pass` (재생성)
+- `prd-state.json.phases.5-wireframes.status = "completed"` + `eval_score_final: 8.13`
+- tag `wf-v1.0.0` (commit ba183a5)
+
+### Phase 6 진입 의무
+
+`.flowset/known-issues/INDEX.md:32` KI-013 (scheduled Phase 6) + `INDEX.md:53` KI-034 (open, Phase 6 KI-013과 함께 처리). project.md §1 진행 순서표에 명시는 없으나 INDEX scheduled 표기 SSOT.
+
+### 1차 wf-v1.0.0 부여 → 사용자 지적 → 철회 → 재부여 사이클
+
+2026-05-18 1차 wf-v1.0.0 부여 직후 사용자 두 가지 비판:
+1. 45 풀화면 codex 검증 미완 (sampled 15만, 30 화면 미검수)
+2. "codex 45+ MCP hang 위험" 결론 = 표본 1건 일반화
+
+→ 철회 → codex 4 그룹 분할 → audit hotfix2/3 → 재부여.
+
 ## [wf-v0.4.3] — 2026-05-18 (audit hotfix3 — evaluator FAIL 7.84 정정, "성급한 resolved 단언" 패턴 차단)
 
 evaluator audit hotfix2 재평가 FAIL 7.84/10 (DS 충실도 Hard gate 7.4 미달). 진단:
