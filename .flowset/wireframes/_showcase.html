@@ -1198,6 +1198,26 @@
   <p>OP-08 지원 티켓 dynamic badge — default accent / closed muted (`body[data-state="closed"]` override OP-08 inline 유지).</p>
 </section>
 
+<section class="showcase-section" id="section-g4-aux">
+  <h2>G4 §G4.7 보조 자식 클래스 SSOT (audit hotfix2 — matrix anchor 정합)</h2>
+  <p>components.css §G4.7 등록된 7 보조 자식 클래스 — base 컴포넌트의 자식 또는 modifier로 화면 다수 사용.</p>
+
+  <h3>1. `.info-row-key` / `.info-row-val` (info-row 자식)</h3>
+  <p>사용: 7 화면 (EM-02 정책, EM-03 안내, EM-04 분포, EM-06 모달, EM-08 안내, EM-09 보안, 기타). 13px / muted key + text + 600 val.</p>
+
+  <h3>2. `.empty-state-title` / `.empty-state-desc` (empty-state 자식)</h3>
+  <p>사용: 10 화면 (모든 EM + 일부 OP/TA). 14px 600 title + 13px muted desc + max-width 320px center align.</p>
+
+  <h3>3. `.tab-count` + `.tab.is-active .tab-count` variant (G3 신규)</h3>
+  <p>탭 내 카운트 배지 — 18×18 pill, surface-2 default / accent-bg variant when active.</p>
+
+  <h3>4. `.form-help` (form-row 자식)</h3>
+  <p>12px muted + 12×12 icon — 도움말 텍스트.</p>
+
+  <h3>5. `.history-card` (card variant — loading state anchor)</h3>
+  <p>EM-02/04/08 사용. base `.card` 시각 상속 + `body[data-state="loading"]` selector anchor 역할.</p>
+</section>
+
 <div style="text-align:center;color:var(--color-text-muted);font-size:12px;padding:24px;">
   FlowHR 디자인 시스템 v1.3 — G0~G4 + audit hotfix1 SSOT 7건 보강 (Phase 5 전체 evaluator FAIL 7.45 → 정정 후 재평가 대상, 2026-05-18)
 </div>

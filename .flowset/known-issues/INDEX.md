@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
-| P2 Medium | **6** | 5 | ✅ 트리거 도달 — KI-049/050/051/054/060/061. KI-053/058 G3 hotfix2~3로 resolved + **KI-063 WI-G4prep-ci resolved 2026-05-18 (CI inline-svg-sprite-check §3 cross-check 강화, 34/34 화면 PASS)**. |
-| P3 Low | **30** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055/056/057/062 G3 hotfix + KI-064/065/066/067 G4 evaluator + **KI-068/069 audit hotfix1 codex/evaluator 신규 (2026-05-18)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
+| P2 Medium | **5** | 5 | ✅ 트리거 도달 — KI-049/051/054/060/061. KI-053/058 G3 hotfix2~3 resolved + KI-063 WI-G4prep-ci resolved + **KI-050 audit hotfix2 resolved 2026-05-18 (17건 bare select → .select-wrap, 45/45 native-element-wrap-check PASS)**. |
+| P3 Low | **31** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + **KI-070 audit hotfix2 codex G1 (2026-05-18)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -66,7 +66,7 @@
 | ~~KI-047~~ | P1 | 5 | Wireframe | ~~모바일 반응형 부재 (@media 768px 없음)~~ | codex | 2026-05-16 | **resolved (batch-006-fix / wf-v0.2.0 / 2026-05-17, components.css @media 768px 추가)** |
 | ~~KI-048~~ | P1 | 5 | Wireframe | ~~라우팅 href placeholder / cross-link 부재~~ | codex | 2026-05-16 | **resolved (batch-006-fix / wf-v0.2.0 / 2026-05-17, href 159건 추가 — 사이드바 97 + dropdown 5 + row 5 + footer 24 + other 28)** |
 | KI-049 | P2 | 5 | Wireframe | analysis 권한 매트릭스 11화면 중 7화면 누락 (OP-04/05/06/08/10/11/12) — PRD엔 있으나 analysis 재인용 부재. wf-v0.2.0 hotfix 또는 G3 진행 시 일괄 보강. | evaluator | 2026-05-16 | open (G3 batch 또는 차기 batch) |
-| KI-050 | P2 | 5 | Wireframe | `.select-wrap` 미적용 17건 — `<select>`는 `.select` 클래스로 chevron 표시되지만 focus/disabled/error 상태 표현이 `.select-wrap` ancestor에 의존. NON_BLOCKING (native control DS 패턴 의무 통과). 다음 batch에서 일괄 적용. | codex hotfix2 §17-7-2 | 2026-05-17 | open (다음 batch) |
+| ~~KI-050~~ | P2 | 5 | Wireframe | ~~`.select-wrap` 미적용 17건~~ | codex hotfix2 §17-7-2 | 2026-05-17 | **resolved (audit hotfix2 2026-05-18 — 17건 모두 `.select-wrap` 적용 + select-sm variant, OP-02/05/06/07/11 정정)** |
 | KI-051 | P2 | 5 | Process | CI `showcase-coverage-check` job이 anchor 존재만 보고 컴포넌트 사용 일관성을 검증하지 못함 — false negative. 화면이 실제 사용하는 DS 클래스가 component-usage-matrix.json의 patterns에 매핑되어 있는지 cross-check 필요. | codex hotfix2 §17-7-4 | 2026-05-17 | open (다음 batch) |
 | ~~KI-052~~ | P3 | 5 | Wireframe | ~~`_design-system/_layout-shell.html` 외부 sprite 참조 20건 잔존~~ | evaluator hotfix3-rev1 | 2026-05-17 | **resolved (G3 진입 commit 01c800d / 2026-05-17, _layout-shell + _layout-auth 24건 인라인 sprite reference 정정 + CI 검사 범위 확장)** |
 | ~~KI-053~~ | P2 | 5 | Wireframe | ~~G3 신규 9 패턴 _showcase.html demo + 03-components.md 사양 미등록~~ | evaluator G3 hotfix1 | 2026-05-18 | **resolved (G3 hotfix2 commit 5e0b028 / 2026-05-18 — _showcase.html 9/9 + 03-components.md §G3.1~G3.9 9/9 등록 완료)** |
@@ -85,7 +85,8 @@
 | KI-066 | P3 | 5 | Wireframe | EM-09 `vert-tab data-tab="security"` 중복 — state 분기 시각화 위해 2개 정의 (1개는 state-only.state-security, 1개는 state-default/pending/error). Phase 7 React 변환 시 key 충돌 — 단일 element + state 토글 또는 data-tab 다른 식별자 사용 권장. | evaluator G4 | 2026-05-18 | open (Phase 7) |
 | KI-067 | P3 | 5 | Wireframe | 페이지 한정 grid 컴포넌트화 후보 — `dash-row`/`dash-row-3`/`att-top`/`leave-grid`/`leave-kpi-row`/`leave-chart-row`/`cert-grid`/`profile-grid` 등 8개 grid layout이 G2~G4 반복. G5 또는 Phase 7 컴포넌트화 검토 (예: `.grid-2col` `.grid-3col` 패턴 토큰). | evaluator G4 | 2026-05-18 | open (G5 또는 Phase 7) |
 | KI-068 | P3 | 5 | Wireframe | OP 모달 title `<h2>` inline-styled (G2 leftover) — `.modal-title` SSOT 미적용. G2 OP 화면 일부 모달이 `<div class="modal-header"><h2 style="...">제목</h2>` 패턴 유지. audit hotfix2 또는 Phase 7 React 변환 시 일괄 정정. | codex SAMP-P3-001 audit hotfix1 | 2026-05-18 | open (차기 docs batch) |
-| KI-069 | P3 | 5 | Wireframe | KI-049 audit hotfix1 보강 일부 backtick 텍스트 손상 (`users.role` `users` 등이 bash command substitution으로 빈 영역) — 16 화면 권한 매트릭스 § 텍스트 정정 필요. | evaluator audit hotfix1 NON_BLOCKING | 2026-05-18 | open (차기 docs batch) |
+| KI-069 | P3 | 5 | Wireframe | KI-049 audit hotfix1 보강 일부 backtick 텍스트 손상 — 16 화면 권한 매트릭스 § 텍스트 정정 필요 (CM-01만 audit hotfix2 정정 완료, 나머지 15건 잔존). | evaluator audit hotfix1 NON_BLOCKING | 2026-05-18 | open (차기 docs batch) |
+| KI-070 | P3 | 5 | Wireframe | inline svg width/height attribute 누락 — `<svg class="ico">` 패턴 (CSS `.ico { width: 16; height: 16 }`로 시각 보정되나 file:// fallback 계약 불일치). 다수 화면 광범위 영향. | codex G1-PHASE5-CDX-004 audit hotfix2 | 2026-05-18 | open (차기 docs batch) |
 
 ## 등록 형식
 

@@ -272,7 +272,7 @@
       "prd_pattern": "Auxiliary Child Classes (G4 §G4.7 SSOT)",
       "applicable_screens": ["전 G4 화면 + 전 G3 + G2 일부"],
       "components": ["info-row-key", "info-row-val", "empty-state-title", "empty-state-desc", "tab-count", "form-help", "history-card"],
-      "showcase_anchor": "_showcase.html#section-g4-aux (TBD — 차후 demo 추가)",
+      "showcase_anchor": "_showcase.html#section-g4-aux",
       "allowed_classes": ["info-row-key", "info-row-val", "empty-state-title", "empty-state-desc", "tab-count", "tab.is-active .tab-count", "form-help", "history-card"],
       "react_mapping": "base 컴포넌트(info-row / empty-state / tab / form-row / card)의 자식 또는 modifier — components.css §G4.7 SSOT. history-card는 card variant (loading state selector anchor)"
     }
