@@ -54,7 +54,7 @@
 - main branch protection 활성화 (gh api `/repos/:owner/:repo/branches/main/protection`)
 - 모든 PR은 `gh pr merge --auto --squash --delete-branch` 로 활성화 — CI PASS 시 자동 머지 + 로컬+원격 브랜치 자동 삭제 + main 자동 전환
 - 사용자 검토 없이 즉시 머지 (2026-05-16 사용자 결정)
-- CI 게이트: `.github/workflows/pr-checks.yml` 5 job (commit-msg, encoding, html-syntax, design-system-ssot, version-format)
+- CI 게이트: `.github/workflows/pr-checks.yml` **9 job** — 공통 3 (commit-msg, encoding, version-format) + 와이어프레임 path-scope 6 (html-syntax, design-system-ssot, inline-svg-sprite-check, native-element-wrap-check, showcase-coverage-check, playwright-smoke). Phase 7 진입 시 `phase7-code.yml` 신규 4 job 추가 (lint, typecheck, unit-test, build — `apps/**` + `packages/**` path-scope). [2026-05-19 codex 권고 5번 채택]
 
 ### 6-2. PR 머지 직후 표준 시퀀스 (Claude 자동 수행 의무)
 

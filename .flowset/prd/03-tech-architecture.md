@@ -62,7 +62,7 @@ FlowHR_SOP/
 │   ├── api-client/             # Supabase SDK wrapper + 타입
 │   ├── schemas/                # zod 스키마 (공유)
 │   ├── types/                  # DB 생성 타입 (Supabase) + 도메인 타입
-│   ├── utils/                  # 공용 유틸 (날짜/숫자/한글)
+│   ├── i18n/                   # next-intl ko/en namespace SSOT (날짜/숫자/한글 포맷 흡수)
 │   └── config/                 # ESLint / TS / Tailwind 공유 설정
 ├── supabase/
 │   ├── migrations/             # SQL 마이그레이션

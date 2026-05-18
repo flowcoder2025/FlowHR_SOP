@@ -643,7 +643,7 @@
 > So that 직원 EM-09 동등 + 운영사 보안 강화
 
 - **Acceptance**: PRD operator/OP-12-profile.md §8 Gherkin 4 시나리오 인용 (강제 2FA + super가 staff 강제 종료 + 마지막 super 보호 + 활동 다운로드)
-- **API**: OP-12 §7의 14 엔드포인트 (`GET/PATCH /me/profile`, `POST /me/avatar`, `POST /me/security/{change-password,2fa/enable,2fa/verify,2fa/regenerate}`, `GET/DELETE /me/security/sessions[/:id]`, `POST /operator/users/:id/force-logout` super only, `GET/PATCH /me/notifications/preferences`, `GET /me/audit-logs?days=30`, `GET /me/consents`)
+- **API**: OP-12 §7의 14 엔드포인트 (PRD `OP-12-profile.md:114-127` 그대로 인용 — operator-prefix 정확): `GET /api/v1/operator/me/profile` + `PATCH /api/v1/operator/me/profile` + `POST /api/v1/operator/me/avatar` + `POST /api/v1/me/security/change-password` + `POST /api/v1/me/security/2fa/enable` + `POST /api/v1/me/security/2fa/verify` + `POST /api/v1/me/security/2fa/regenerate` + `GET /api/v1/me/security/sessions` + `DELETE /api/v1/me/security/sessions/:id` + `POST /api/v1/operator/users/:id/force-logout` (super only) + `GET /api/v1/me/notifications/preferences` + `PATCH /api/v1/me/notifications/preferences` + `GET /api/v1/me/audit-logs?days=30` + `GET /api/v1/me/consents`
 - **추정**: 8 SP
 
 ## 변경 이력

@@ -1,6 +1,6 @@
 # Phase 4 — API 명세
 
-> SSOT: `.flowset/spec/matrix.json` (37 엔티티 + screens_to_entities_map 36 화면) + `.flowset/db/` (Phase 3 ERD).
+> SSOT: `.flowset/spec/matrix.json` (39 엔티티 + screens_to_entities_map 44 화면 — KI-027~030 batch-003 보강 후) + `.flowset/db/` (Phase 3 ERD).
 > 응답 규약: `.flowset/contracts/api-standard.md`. 데이터 흐름: `.flowset/contracts/data-flow.md`.
 
 ## 파일 인덱스
