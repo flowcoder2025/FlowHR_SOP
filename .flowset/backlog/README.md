@@ -1,7 +1,8 @@
 # FlowHR — 백로그 (Epic / Story / Task)
 
-> Phase 2 산출물. SSOT: `.flowset/spec/matrix.json` + `.flowset/prd/` 36 화면.
+> Phase 2 산출물. SSOT: `.flowset/spec/matrix.json` (`screens_total: 44` — PRD 화면 SSOT) + `.flowset/prd/` 도메인 문서. Phase 5 와이어프레임은 OP-01 추가로 45개 (`.flowset/wireframes/`에 별도 카운트).
 > 분할 구조: Epic(도메인 모듈) → Story(화면 × 역할) → Task(WBS).
+> 현재 합계 (보강 후, KI-013/034 closure 2026-05-19 + Phase 2 재평가 정정): **80 Story / 415 SP / 223 Task / 838 MD (보수적 환산)** — 상세는 stories.md `## 전체 요약` + tasks.md `## Task 추정`.
 
 ## 파일 인덱스
 
@@ -95,7 +96,7 @@ API:
 | Step | 산출물 | evaluator |
 |------|--------|----------|
 | 2.0 | README + epics.md 12개 | — |
-| 2.1 | stories.md (36 화면 × 역할 매트릭스 도출, MVP 우선순위) | — |
+| 2.1 | stories.md (44 화면 × 역할 매트릭스 도출, MVP 우선순위) | — |
 | 2.2 | tasks.md (Story별 FE/BE/DB/QA Task 분해) | — |
 | 2.3 | dependency-graph.md + estimation.md | — |
 | 2.4 | 전체 백로그 evaluator (doc 모드) | doc |

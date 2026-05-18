@@ -3,7 +3,7 @@
 > Story = 역할 × 화면 × 골든 패스 1건. Acceptance Criteria는 PRD 화면 §8 Gherkin 시나리오 ID를 인용.
 > Story 번호: `ST-NNN` (3자리). MVP 우선순위(P0/P1/P2) 표기.
 
-## Story ↔ PRD §8 인용 표 (전체 72 Story 일괄 매핑)
+## Story ↔ PRD §8 인용 표 (전체 80 Story 일괄 매핑)
 
 > README.md L69 규칙 이행. 각 Story의 Acceptance는 본 표의 PRD 경로 §8를 인용하는 것과 동일.
 
@@ -25,6 +25,11 @@
 | ST-070 | OP-01 → `.flowset/prd/domains/operator/OP-01-dashboard.md#8` |
 | ST-071 | TA-01 → `.flowset/prd/domains/tenant-admin/TA-01-dashboard.md#8` |
 | ST-072 | CM-06 → `.flowset/prd/domains/common.md#cm-06-오류점검-화면` |
+| ST-073~076 | CM-16~19 → `.flowset/prd/domains/common.md` 각 CM 섹션 (헤더 컴포넌트 4종) |
+| ST-077 | CM-20 → `.flowset/prd/domains/common.md#cm-20-pwa-설치-가이드` |
+| ST-078 | CM-21 → `.flowset/prd/domains/common.md#cm-21-약관·개인정보처리방침` |
+| ST-079 | CM-22 → `.flowset/prd/domains/common.md#cm-22-첫-사용자-온보딩-투어` |
+| ST-080 | OP-12 → `.flowset/prd/domains/operator/OP-12-profile.md#8` |
 
 본 표를 통해 모든 Story의 Acceptance는 해당 PRD §8 Gherkin 시나리오 전체와 1:1 매핑. 개별 Story에 시나리오 ID 인라인 기재가 필요한 경우 Phase 7 개발 착수 시 WI 변환 단계에서 보강.
 
@@ -516,24 +521,32 @@
 | EP-11 | 5 | 20 |
 | EP-12 | 8 | 38 |
 | **합계 (Phase 2)** | **72 Story** | **379 SP** |
-| EP-01·12 (KI-027~030 batch-003) | 8 (ST-073~080) | 36 |
+| EP-01·03·12 (KI-027~030 batch-003) | 8 (ST-073~080) | 36 |
 | **합계 (보강 후)** | **80 Story** | **415 SP** |
 
-## MVP P0 그룹 (Sprint 1~6 대상)
+## MVP 우선순위 그룹 (보강 후, epics.md / estimation.md SSOT 정합)
 
-- EP-01 (5) + EP-02 (5) + EP-03 ST-070 (1, 운영사 대시보드) + EP-06 (8) + EP-07 (6) + EP-08 (10) + EP-11 (5) + EP-12 (8) + EP-10 (ST-053/054/055 = 3) = **51 Story / 약 255 SP**
+### P0 그룹 (Sprint 1~6 대상)
 
-## P1 그룹 (Sprint 7~9 대상)
+- **50 Story / 275 SP**: EP-01 (5 = 21 SP) + ST-078 (CM-21 약관 P0, 1 Story / 8 SP) + EP-02 (5 = 31 SP) + EP-03 ST-070 (1 = 5 SP, 운영사 대시보드) + EP-06 (8 = 40 SP, ST-071 TA-01 포함) + EP-07 (6 = 35 SP) + EP-08 (10 = 58 SP) + EP-11 P0만 (4 = 18 SP, ST-061 P3 분리) + EP-12 P0만 (7 = 36 SP, ST-067 P3 분리) + EP-10 ST-053/054/055 (3 = 23 SP) — 분해 합 5+1+5+1+8+6+10+4+7+3 = 50 ✓
 
-- EP-03 ST-011~015 (5) + EP-04 (4) + EP-05 (4) + EP-09 (6) = 19 Story / 약 100 SP
+### P1 그룹 (Sprint 7~9 대상)
 
-## P2/P3 그룹 (Sprint 10+)
+- **23 Story / 116 SP**: EP-03 ST-011~015 (5 = 21 SP) + EP-04 (4 = 21 SP) + EP-05 (4 = 21 SP) + EP-09 (6 = 34 SP) + ST-073/074/077/080 (4 = 19 SP — 헤더 프로필·알림 종·PWA 설치·OP-12 운영사 프로필)
 
-- EP-10 (ST-056/057) + ST-061/067 = 4 Story / 약 20 SP
+### P2 그룹 (Sprint 10 대상)
+
+- **4 Story / 19 SP**: EP-10 ST-056/057 (2 = 11 SP) + ST-076 (CM-19 도움말 패널, 3 SP) + ST-079 (CM-22 온보딩 투어, 5 SP)
+
+### P3 그룹 (v1.1+ 백로그 이관)
+
+- **3 Story / 5 SP**: ST-061 (EM-11 통합 △ EM-05로 리다이렉트, 2 SP) + ST-067 (CM-08 공통 검색 △, 2 SP) + ST-075 (CM-18 검색 안내, 1 SP)
+
+**합계 검증**: 50 + 23 + 4 + 3 = **80 Story** | 275 + 116 + 19 + 5 = **415 SP** ↔ L525 `## 전체 요약` SSOT 정확 정합 ✓
 
 ---
 
-## EP-01·12 보강 — 라우팅·전역 컴포넌트·정적 페이지 (KI-027~030 batch-003)
+## EP-01·03·12 보강 — 라우팅·전역 컴포넌트·정적 페이지 (KI-027~030 batch-003)
 
 신규 8 Story. PRD 보강(`prd/09-routing.md`, `prd/domains/common.md`, `prd/domains/operator/OP-12-profile.md`)과 1:1 매핑.
 
@@ -606,7 +619,8 @@
   - AC-3: user_consents INSERT (version + ip + ua + source)
   - AC-4: operator_super가 신규 버전 게시 시 기존 active → false 트랜잭션
   - AC-5: 운영사 감사 화면에서 동의 통계 + 이력 조회
-- **API**: `GET /api/v1/legal/documents`, `POST /api/v1/me/consents`, `GET /me/consents/required`, `POST /api/v1/operator/legal/documents`
+  - AC-6: ko/en 페어 게시 의무 (운영사가 active=true 시 두 언어 모두 존재 검증, 영문은 참고 번역, 법적 효력은 ko) — matrix.json `LegalDocument._comment "i18n MVP ko+en 동시 게시 의무"` 정합
+- **API**: `GET /api/v1/legal/documents?language=`, `POST /api/v1/me/consents`, `GET /me/consents/required`, `POST /api/v1/operator/legal/documents` (ko/en 페어 검증 포함)
 - **추정**: 8 SP
 
 ### ST-079 (CM-22, all roles 첫 로그인) 첫 사용자 온보딩 투어 [P2]
@@ -629,7 +643,7 @@
 > So that 직원 EM-09 동등 + 운영사 보안 강화
 
 - **Acceptance**: PRD operator/OP-12-profile.md §8 Gherkin 4 시나리오 인용 (강제 2FA + super가 staff 강제 종료 + 마지막 super 보호 + 활동 다운로드)
-- **API**: OP-12 §7의 13 엔드포인트 (`PATCH /me/profile`, `POST /me/security/*`, `POST /operator/users/:id/force-logout`, `GET /me/audit-logs?days=30`, `GET /me/consents`)
+- **API**: OP-12 §7의 14 엔드포인트 (`GET/PATCH /me/profile`, `POST /me/avatar`, `POST /me/security/{change-password,2fa/enable,2fa/verify,2fa/regenerate}`, `GET/DELETE /me/security/sessions[/:id]`, `POST /operator/users/:id/force-logout` super only, `GET/PATCH /me/notifications/preferences`, `GET /me/audit-logs?days=30`, `GET /me/consents`)
 - **추정**: 8 SP
 
 ## 변경 이력
@@ -639,3 +653,6 @@
 | 2026-05-15 | 초안 69 Story / 366 SP | Phase 2 진입 |
 | 2026-05-15 | 72 Story / 379 SP (Phase 2 attempt 2 후 정정) | evaluator |
 | 2026-05-15 | ST-073~080 추가 (8 Story / 36 SP) — 합계 80 Story / 415 SP | KI-027~030 batch-003 |
+| 2026-05-19 | L6-28 인용 표 헤더 80 Story 갱신 + ST-073~080 매핑 5행 추가 + ST-078 AC-6 ko/en 페어 의무 + ST-080 OP-12 14 endpoint 정정 (PRD §7 14개 실측) + L524 라벨 EP-01·03·12 정정 | KI-034 closure + Phase 2 재평가 1차 정정 |
+| 2026-05-19 | MVP 그룹 절 (L527~545) 재작성 — P0/P1/P2/P3 4-tier + EP-11/EP-12 P0만 18/36 분리 표기 (ST-061/067 P3 별행) + 합계 검증 50+23+4+3=80 Story / 275+116+19+5=415 SP 정합 + L549 섹션 헤더 EP-01·03·12 동기화 | Phase 2 재평가 2차 정정 (P1-B closure) |
+| 2026-05-19 | P0 Story 수 헤더 52→50 정정 (분해 식 실측 5+1+5+1+8+6+10+4+7+3=50) + 합계 검증 등호 정합 + estimation.md L42 P0 50 + L46 MVP P0~P2 77 동기 갱신 | Phase 2 재평가 3차 정정 (P1 5건 mechanical closure) |
