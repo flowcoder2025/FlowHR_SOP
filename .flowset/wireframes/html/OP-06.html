@@ -180,11 +180,11 @@
       <!-- Top Filter -->
       <div class="filter-row">
         <span class="filter-label">청구월</span>
-        <select class="select input-sm"><option>2026-05 (이번달)</option><option>2026-04</option><option>분기</option><option>커스텀</option></select>
+        <div class="select-wrap"><select class="select select-sm"><option>2026-05 (이번달)</option><option>2026-04</option><option>분기</option><option>커스텀</option></select></div>
         <span class="filter-label" style="margin-left: 8px;">결제상태</span>
-        <select class="select input-sm"><option>전체</option><option>정상</option><option>미납</option><option>결제실패</option><option>환불</option></select>
+        <div class="select-wrap"><select class="select select-sm"><option>전체</option><option>정상</option><option>미납</option><option>결제실패</option><option>환불</option></select></div>
         <span class="filter-label" style="margin-left: 8px;">요금제</span>
-        <select class="select input-sm"><option>전체</option><option>기본</option><option>프리미엄</option><option>커스텀</option></select>
+        <div class="select-wrap"><select class="select select-sm"><option>전체</option><option>기본</option><option>프리미엄</option><option>커스텀</option></select></div>
         <label style="margin-left: 8px; display: flex; align-items: center; gap: 4px;"><input class="checkbox" type="checkbox" onclick="applyState(this.checked ? 'overdue_only' : 'default')"> 미수만 보기</label>
         <a style="margin-left: auto; color: var(--color-accent); cursor: pointer;" href="#">초기화</a>
       </div>

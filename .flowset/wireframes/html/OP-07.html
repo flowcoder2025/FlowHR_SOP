@@ -148,9 +148,9 @@
 
       <div class="filter-row">
         <span class="filter-label">모듈</span>
-        <select class="select input-sm"><option>전체</option><option>근태</option><option>휴가</option><option>결재</option><option>급여</option><option>문서</option><option>외부연동</option><option>시스템</option></select>
+        <div class="select-wrap"><select class="select select-sm"><option>전체</option><option>근태</option><option>휴가</option><option>결재</option><option>급여</option><option>문서</option><option>외부연동</option><option>시스템</option></select></div>
         <span class="filter-label" style="margin-left: 8px;">상태</span>
-        <select class="select input-sm"><option>전체</option><option>활성</option><option>비활성</option><option>베타</option><option>제한</option></select>
+        <div class="select-wrap"><select class="select select-sm"><option>전체</option><option>활성</option><option>비활성</option><option>베타</option><option>제한</option></select></div>
         <label style="margin-left: 8px; display: flex; align-items: center; gap: 4px;"><input class="checkbox" type="checkbox"> 베타만 보기</label>
       </div>
 
@@ -258,8 +258,8 @@
       <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">키 (slug)</label><input class="input" placeholder="electronic_contract" style="font-family: var(--font-mono);"></div>
       <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label label-required">한글 라벨</label><input class="input" placeholder="전자계약서"></div>
       <div class="form-row-stacked" style="padding: 0; border: 0; grid-column: 1 / 3;"><label class="label">설명</label><textarea class="textarea" placeholder="기능 설명"></textarea></div>
-      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">모듈</label><select class="select"><option>근태</option><option>휴가</option><option>결재</option><option>급여</option><option>문서</option><option>외부연동</option><option>시스템</option></select></div>
-      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">글로벌 기본값</label><select class="select"><option>ON</option><option>OFF</option><option>베타 (선택 테넌트)</option></select></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">모듈</label><div class="select-wrap"><select class="select"><option>근태</option><option>휴가</option><option>결재</option><option>급여</option><option>문서</option><option>외부연동</option><option>시스템</option></select></div></div>
+      <div class="form-row-stacked" style="padding: 0; border: 0;"><label class="label">글로벌 기본값</label><div class="select-wrap"><select class="select"><option>ON</option><option>OFF</option><option>베타 (선택 테넌트)</option></select></div></div>
     </div>
     <div style="margin-top: 12px;">
       <div class="label">제공 플랜 (멀티 선택)</div>

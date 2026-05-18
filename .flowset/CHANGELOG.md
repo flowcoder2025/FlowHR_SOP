@@ -8,6 +8,55 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.2] — 2026-05-18 (audit hotfix2 — 45 풀화면 codex 4 그룹 분할 검증 결과 정정)
+
+사용자 지적 핵심: "45 풀화면 검증 안된 상태 + codex 45+ MCP hang 위험 추측 일반화". 1차 wf-v1.0.0 + phase-5.pass 부여 철회.
+
+### 45 풀화면 codex 분할 검증 (4 호출, gpt-5.5)
+
+| 그룹 | 화면 | 점수 | 판정 | audit_hotfix verification |
+|------|------|-----:|------|--------------------------|
+| G1 CM | 8 | 8.1 | CONDITIONAL | (검증 항목 없음) |
+| G2 OP | 12 | 6.8 | FAIL | page-btn (OP-02/06/09) + ticket-status-current (OP-08) 양쪽 PASS |
+| G3 TA | 14 | 8.8 | CONDITIONAL | 사용자 지적 6 화면 + page-btn 6 화면 모두 PASS |
+| G4 EM | 11 | 8.7 | PASS | EM-10 badge + modal-title PASS |
+
+**가중 평균**: (8.1×8 + 6.8×12 + 8.8×14 + 8.7×11) / 45 = **8.12 / 10**
+
+audit hotfix1+1.2 정정 효과 **100% 검증** — 모든 verification PASS.
+
+### audit hotfix2 정정
+
+**P0 KI-050 (codex G2 차단 조건 발동) — bare select 17건**:
+- OP-02 (3건 multi-line) → `<div class="select-wrap"><select class="select select-sm" aria-label="...">`
+- OP-05/06/07/11 (14건 single-line) → sed 일괄 `.select-wrap` wrap + `select-sm` variant
+- 45/45 native-element-wrap-check PASS 재검증
+
+**P2 정정**:
+- G1-PHASE5-CDX-001 — matrix.json `section-g4-aux` 가짜 anchor → `_showcase.html`에 신규 section-g4-aux 추가 + 7 보조 자식 클래스 demo
+- G1-PHASE5-CDX-002 — CM 8 화면 헤더 도움말 `aria-label="도움말"` 일괄 추가
+
+**P3 정정**:
+- G1-PHASE5-CDX-003 — CM-05/06 `javascript:` href → `<button type="button" onclick="...">` 변환 (6건)
+- G1-PHASE5-CDX-005 — CM-01 권한 매트릭스 표 손상 정정 (operator_* + employee + manager + hr_admin + super 분기 명시)
+- G4-PHASE5-CDX-002 — EM-02/03/08 `<textarea class="input">` → `class="textarea"` 정정 (3건)
+
+### 신규 KI 등록 (P3 — 후속 docs batch)
+
+- **KI-070** (P3) — G1-PHASE5-CDX-004 inline svg width/height attribute 누락 (다수 화면, CSS 보정으로 시각 OK)
+
+### 잔존 (codex 결과 후속)
+
+- G3-PHASE5-CDX-001 (LOW) — manifest 경로 표기 (codex prompt 자체 문제, 실제 코드 결함 X)
+- G4-PHASE5-CDX-001/003 — 기존 KI-065/066 일부 (후속 batch)
+- KI-049 KI-051 KI-054 KI-060 KI-061 P2 잔존 (활성 5건, 임계 도달 — 후속 batch)
+- KI-069 backtick 손상 15 화면 잔존 (CM-01만 audit hotfix2 정정)
+
+### 영향
+
+- 17 bare select → 45/45 select-wrap 적용 (KI-050 resolved)
+- 사용자 지적 9 화면 결함 9/9 해소 (마지막 OP-02/05/06 bare select 본 정정으로 해소)
+
 ## [wf-v0.4.1-hotfix1.2] — 2026-05-18 (audit hotfix1.2 — SAMP-P2-002 4-way 동기 + 통합 판정 MERGE_WITH_KI)
 
 evaluator audit hotfix1 재평가 PASS 8.07 + codex sampled 30% review CONDITIONAL 8.1 → 통합 판정 MERGE_WITH_KI.
