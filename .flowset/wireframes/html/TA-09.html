@@ -13,20 +13,7 @@
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
-  .approval-shell { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; min-height: 600px; }
-  .inbox-sidebar { padding: 0; }
-  .inbox-tabs { display: flex; border-bottom: 1px solid var(--color-border-light); }
-  .inbox-tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 13px; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
-  .inbox-tab.is-active { color: var(--color-accent); border-bottom-color: var(--color-accent); font-weight: 600; }
-  .inbox-tab .count-chip { display: inline-block; background: var(--color-warning); color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; font-weight: 600; margin-left: 4px; }
-
-  .approval-row { padding: 12px; border-bottom: 1px solid var(--color-border-light); cursor: pointer; font-size: 13px; }
-  .approval-row:hover { background: var(--color-surface-2); }
-  .approval-row.is-active { background: var(--color-accent-bg); border-left: 3px solid var(--color-accent); padding-left: 9px; }
-  .approval-row .row-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 4px; }
-  .approval-row .row-title { font-weight: 600; color: var(--color-text); }
-  .approval-row .row-meta { font-size: 11px; color: var(--color-text-muted); }
-
+  /* .approval-shell / .inbox-sidebar / .inbox-tabs / .inbox-tab / .count-chip / .approval-row / .row-head / .row-title / .row-meta는 components.css SSOT 이동 (G3 hotfix1) */
   .state-only { display: none; }
   body[data-state="default"]  .state-default,
   body[data-state="filtered"] .state-filtered,
@@ -299,8 +286,8 @@
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a href="#">도움말</a>
-        <a href="#">운영팀 문의</a>
+        <a href="/help">도움말</a>
+        <a href="/support">운영팀 문의</a>
       </div>
       <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
     </footer>

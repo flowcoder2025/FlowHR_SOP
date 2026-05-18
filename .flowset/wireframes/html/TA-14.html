@@ -13,13 +13,7 @@
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
-  .integration-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .int-card { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .int-card .int-head { display: flex; gap: 10px; align-items: center; }
-  .int-card .int-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .int-card.is-coming { opacity: 0.65; }
-  .int-card .int-meta { font-size: 12px; color: var(--color-text-muted); }
-
+  /* .integration-grid / .int-card / .int-head / .int-icon / .int-meta / .seg-btn은 components.css SSOT 이동 (G3 hotfix1) */
   .state-only { display: none; }
   body[data-state="default"]  .state-default,
   body[data-state="filtered"] .state-filtered,
@@ -38,9 +32,6 @@
 
   body[data-state="default"]  .seg-btn[data-seg="channels"] { background: var(--color-accent); color: white; }
   body[data-state="filtered"] .seg-btn[data-seg="apikeys"] { background: var(--color-accent); color: white; }
-  .seg-btn { padding: 6px 14px; font-size: 13px; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer; }
-  .seg-btn:first-child { border-radius: 6px 0 0 6px; border-right: none; }
-  .seg-btn:last-child { border-radius: 0 6px 6px 0; }
 
   .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
   .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
@@ -380,8 +371,8 @@
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a href="#">도움말</a>
-        <a href="#">운영팀 문의</a>
+        <a href="/help">도움말</a>
+        <a href="/support">운영팀 문의</a>
       </div>
       <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
     </footer>

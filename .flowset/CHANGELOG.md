@@ -8,6 +8,72 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.3.0-hotfix1] — 2026-05-18 (G3 hotfix1 — P1 3건 + TA-03/13 pane)
+
+evaluator PASS 9.22 + codex FAIL 6.1 통합 판정 BLOCKED_FOR_HOTFIX → 사용자 결정 "P1 3건 + TA-03/13 pane 모두 추가" 채택.
+
+### P1 정정 (codex G3-CDX-001~003)
+
+**G3-CDX-001 — `href="#"` 48건 → 0건**:
+- footer 28건 일괄 sed (`도움말` → `/help`, `운영팀 문의` → `/support`) — 14 화면 적용
+- TA-01 공지 5건 → `/admin/notices` 가짜 base path
+- TA-02 필터 "초기화" 1건 → `javascript:void(0)` + `onclick="return false;"` (click 핸들러)
+- TA-10 급여 5 + 인사문서 4건 → `/admin/documents/D-2026`
+- TA-11 계약 5건 → `/admin/contracts/CT-2026`
+
+**G3-CDX-002 — component-usage-matrix.json v1.1.0 — G3 신규 9 패턴 추가** (14 → 24 patterns):
+- Profile Card + Summary Grid (TA-03/EM-09)
+- Org Tree 3-Pane (TA-04)
+- Calendar Grid 직원×일자 (TA-07)
+- Approval Timeline + Sticky Action (TA-08, PWA 결재)
+- Approval Master-Detail Inbox (TA-09, PWA 결재)
+- Report List + Chart Canvas (TA-12)
+- Settings Vertical Tabs Pane (TA-13)
+- Integration Card Grid (TA-14)
+- Side Detail Drawer with Diff (TA-06/OP-09)
+- Date Input applicable_screens 정정 — TA-02 + TA-13 추가 (G3-CDX-008)
+
+**G3-CDX-003 — inline `<style>` G3 신규 클래스 정의 → components.css SSOT 이동**:
+- components.css 870 → 1023 lines (+153 lines / G3 신규 8 섹션 + 모바일 override)
+- 9 화면 inline `<style>` 정리 — page-grid layout (kpi-row / chart-row / leave-shell 등 화면 한정)만 유지
+
+### P2 — TA-03 7 pane + TA-13 6 pane 추가 (사용자 결정 채택)
+
+**TA-03 (직원 상세) — 7 pane 추가 → 9 pane stack (PRD §3-2 100% coverage)**:
+- 추가: 계약정보 (super only, lock 아이콘) / 근태 (TA-05 임베드) / 휴가 (EM-04 임베드) / 급여 (지급 이력) / 문서 (계약/증명/발령) / 결재이력 (제출 + 처리) / 변경이력 (audit_logs diff)
+- state-default = 9 pane 전체 표시 (super/hr_admin) / state-filtered = 5 pane만 (manager scope-mgr — 기본/근태/휴가)
+
+**TA-13 (회사 설정) — 6 pane 추가 → 9 pane stack**:
+- 추가: 회사정보 (회사명/사업자/대표자/도메인/로고 file-input) / 결재라인 (5 종류 + SLA) / 역할권한 (4 역할 매트릭스, super only) / 알림 (채널 우선순위 + 폴백 임계 + 10 템플릿) / 문서양식 (5 양식 + 변수 + 버전) / 감사로그 (본 테넌트 한정 + 보존 7년)
+- state-default = 9 pane 전체 (super) / state-filtered = 6 pane scope-hr (hr_admin) / state-empty = 보안 pane 강조 (read-only 시나리오)
+
+### P2 추가 정정 (NON_BLOCKING)
+
+- **G3-CDX-007 모바일 override**: components.css `@media (max-width: 768px)` G3 신규 grid 패턴 단열 + calendar-grid overflow-x
+- **G3-CDX-008 Date Input matrix applicable_screens**: TA-02 + TA-13 추가 (G3-CDX-002와 통합 처리)
+
+### NON_BLOCKING (차후 KI 등록)
+
+- KI-053 (P2) G3 신규 18+ 패턴 → 9 패턴 추가로 partial resolve (잔여는 차후 _showcase.html demo 추가)
+- KI-054 (P3) _showcase.html G3 demo 미추가
+- KI-055 (P3) TA-01 공지 + TA-10 payslip `/admin/notices` / `/admin/documents` 가짜 base (Phase 7 실제 ID 매핑)
+- KI-056 (P3) footer 도움말 / 운영팀 `/help` `/support` 라우트 — 차후 05-layouts.md helpers SSOT 명시
+- KI-057 (P2) icon-only 버튼 aria-label 누락 (G3-CDX-006) — analysis md "Phase 7 변환 시 보강" 명시
+
+### 정적 게이트 9/9 재검증 PASS
+
+- 외부 sprite 0건 / 인라인 sprite 14/14
+- `.active` 변종 0건
+- bare select 0건 / native control wrap 14/14
+- inline 컴포넌트 재정의 0건
+- href="#" 0건 (48 → 0)
+- matrix.json 24 patterns + 5 forbidden_global JSON valid
+- components.css 신규 9 패턴 등록 + 모바일 override
+
+### 다음
+
+- 재평가 (evaluator + codex 병렬) → PASS_BOTH 시 ready → CI → auto-merge → tag wf-v0.3.0
+
 ## [wf-v0.3.0] — 2026-05-17 (G3 테넌트 매니저 양산)
 
 ### 산출물 (TA-01 ~ TA-14, 14 화면 + 14 analysis)

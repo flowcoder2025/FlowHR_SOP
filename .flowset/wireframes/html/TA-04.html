@@ -13,15 +13,7 @@
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
-  .org-shell { display: grid; grid-template-columns: 280px 1fr 1.2fr; gap: 16px; align-items: start; }
-  .org-tree { padding: 12px; min-height: 480px; }
-  .tree-node { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 13px; color: var(--color-text); }
-  .tree-node:hover { background: var(--color-surface-2); }
-  .tree-node.is-active { background: var(--color-accent); color: white; font-weight: 600; }
-  .tree-node.is-active .tree-meta { color: rgba(255,255,255,0.85); }
-  .tree-meta { font-size: 11px; color: var(--color-text-muted); margin-left: auto; }
-  .tree-children { padding-left: 14px; border-left: 1px dashed var(--color-border-light); margin-left: 12px; }
-
+  /* .org-shell / .org-tree / .tree-node / .tree-meta / .tree-children는 components.css SSOT 이동 (G3 hotfix1) */
   .state-only { display: none; }
   body[data-state="default"]  .state-default,
   body[data-state="filtered"] .state-filtered,
@@ -269,8 +261,8 @@
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a href="#">도움말</a>
-        <a href="#">운영팀 문의</a>
+        <a href="/help">도움말</a>
+        <a href="/support">운영팀 문의</a>
       </div>
       <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
     </footer>

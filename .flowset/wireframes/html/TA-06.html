@@ -13,10 +13,10 @@
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
-  .req-shell { display: grid; grid-template-columns: 1fr; gap: 16px; transition: grid-template-columns 0.2s; }
+  /* .req-shell / .req-drawer / .diff-row / .diff-label은 components.css SSOT 이동 (G3 hotfix1)
+     state별 drawer 열림 토글만 페이지 한정 유지 */
   body[data-state="filtered"] .req-shell { grid-template-columns: 1fr 360px; }
   body[data-state="filtered"] .req-drawer { display: block; }
-  .req-drawer { display: none; }
 
   .state-only { display: none; }
   body[data-state="default"]  .state-default,
@@ -34,9 +34,6 @@
   body[data-state="error"]    .count-error,
   body[data-state="loading"]  .count-default { display: inline; }
   .count-default, .count-filtered, .count-empty, .count-error { display: none; }
-
-  .diff-row { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; font-size: 13px; }
-  .diff-row > .diff-label { width: 64px; color: var(--color-text-muted); font-size: 12px; }
 
   .state-debug { position: fixed; bottom: 8px; right: 8px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-md); padding: 6px 10px; font-size: 11px; font-family: var(--font-mono); color: var(--color-text-muted); box-shadow: var(--shadow-sm); display: flex; gap: 6px; align-items: center; z-index: 100; }
   .state-debug-key { padding: 1px 5px; border-radius: 3px; border: 1px solid var(--color-border); background: var(--color-surface-2); cursor: pointer; }
@@ -269,8 +266,8 @@
       <div class="footer-links">
         <a href="/legal/terms">이용약관</a>
         <a href="/legal/privacy">개인정보처리방침</a>
-        <a href="#">도움말</a>
-        <a href="#">운영팀 문의</a>
+        <a href="/help">도움말</a>
+        <a href="/support">운영팀 문의</a>
       </div>
       <div class="footer-version">v1.0.0-beta · 마지막 업데이트 09:42</div>
     </footer>
