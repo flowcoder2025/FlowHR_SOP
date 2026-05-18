@@ -412,6 +412,8 @@ type BadgeProps = {
 └─────────────────────────────┘
 ```
 
+**`.kpi-sub` / `.kpi-meta` alias SSOT (audit fix)**: `.kpi-sub` 와 `.kpi-meta`는 동일 selector (12px muted, margin-top 6, flex/gap 4, flex-wrap). G3 이전 `.kpi-sub` 명명 / G2 운영 화면 `.kpi-meta` 명명 — components.css에서 `.kpi-sub, .kpi-meta { ... }`로 통합 (OP-06/OP-10 결함 해소).
+
 **Props**
 ```ts
 type KpiCardProps = {
@@ -544,6 +546,10 @@ type TabsProps = {
   <button class="tab">구독</button>
 </div>
 ```
+
+**SSOT alias (audit fix)**: `.tabs` ≡ `.tabs-row` (G2/G3 OP-03/12 TA-03/10 사용 변종, 동일 시각). `button.tab`은 UA 기본 background/border 제거 (components.css `.tab` selector에 reset 포함).
+
+**`button.vert-tab` reset (audit fix)**: `<button class="vert-tab">` 사용 시 (TA-13 등) UA 기본 시각 제거 — components.css `button.vert-tab { background: none; border: none; width: 100%; text-align: left; font: inherit; }` SSOT.
 
 ---
 
@@ -715,6 +721,27 @@ type TableProps<T> = {
 
 ### Pagination
 
+**Anatomy (audit hotfix1 SSOT 강제)**:
+```
+[이전 ‹]  [.page-btn] [.page-btn .is-active] [.page-btn] ... [.page-btn]  [다음 ›]
+                       ─────── accent bg ───────
+```
+
+```html
+<div class="pagination-pages">
+  <button class="page-btn">1</button>
+  <button class="page-btn is-active">2</button>
+  <button class="page-btn">3</button>
+  ...
+</div>
+```
+
+**Variant**:
+- `.page-btn` — 기본 28×28 cell + border + bg-bg + color-text
+- `.page-btn.is-active` — accent bg + white color + border accent (audit hotfix1로 9 화면 inline DS bypass → SSOT 강제)
+- `.page-btn:disabled` — opacity 0.4 + cursor not-allowed
+- `.page-btn:hover` — surface-2 bg
+
 ```ts
 type PaginationProps = {
   total: number;
@@ -724,6 +751,20 @@ type PaginationProps = {
   onChange: (page: number, pageSize: number) => void;
 }
 ```
+
+**금지 패턴 (audit hotfix1)**: `<button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">` — inline DS bypass 사용 금지. 항상 `.page-btn.is-active` SSOT 사용.
+
+---
+
+### TicketStatusCurrent (OP-08 dynamic badge)
+
+**Anatomy**:
+- `.badge.ticket-status-current` — 기본 accent-bg + accent color (default state)
+- `body[data-state="closed"] .ticket-status-current` — surface-2 + text-muted (OP-08 페이지 한정 inline override 허용 — 페이지 상태 종속)
+
+**적용 화면**: OP-08 지원 티켓 — 티켓 상태가 페이지 state에 따라 동적 변경. 다른 badge variant (.badge-success 등)와 달리 페이지 컨텍스트에 종속.
+
+**금지 패턴**: `<span class="badge" style="background: var(--color-accent-bg); color: var(--color-accent);">` — `.ticket-status-current` 클래스 사용 의무.
 
 ---
 
@@ -812,16 +853,23 @@ type FormSectionProps = {
 | lg      | `.modal-box .modal-box-lg` | 560px |
 | xl      | `.modal-box .modal-box-xl` | 720px |
 
-**Code (HTML)**
+**Code (HTML)** — `.modal-title` SSOT (G4 audit fix). `role="dialog"` + `aria-modal="true"` + `aria-labelledby` 필수 (G4-CDX-003 정정).
 ```html
-<div class="modal-overlay is-open" role="dialog" aria-modal="true" aria-labelledby="mt1">
-  <div class="modal-box modal-box-md">
-    <div class="modal-header"><h3 id="mt1">제목</h3></div>
-    <div class="modal-body">본문</div>
+<div class="modal-overlay is-open">
+  <div class="modal-box modal-box-md" role="dialog" aria-modal="true" aria-labelledby="mt1">
+    <div class="modal-header">
+      <div class="modal-title" id="mt1">제목 (선택적 icon)</div>
+      <button class="icon-btn" aria-label="모달 닫기"><svg class="ico" width="14" height="14"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">본문 (overflow-y auto + flex 1, padding은 modal-box에서 24)</div>
     <div class="modal-footer"><button class="btn btn-ghost">취소</button><button class="btn btn-primary">확인</button></div>
   </div>
 </div>
 ```
+
+**`.modal-title` Props (audit hotfix 신규 SSOT 등록)**:
+- 16px / 600 / color-text, flex + 6px gap (icon 옵션)
+- 자식 `> svg.ico` — 16x16 강제 width/height
 
 **Props (React)**
 ```ts

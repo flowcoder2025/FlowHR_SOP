@@ -8,6 +8,100 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.1-hotfix1.2] — 2026-05-18 (audit hotfix1.2 — SAMP-P2-002 4-way 동기 + 통합 판정 MERGE_WITH_KI)
+
+evaluator audit hotfix1 재평가 PASS 8.07 + codex sampled 30% review CONDITIONAL 8.1 → 통합 판정 MERGE_WITH_KI.
+
+### codex 신규 finding (SAMP) 정정
+
+**SAMP-P2-002 — page-btn / ticket-status-current 4-way 동기 미완**:
+- 03-components.md `### Pagination` 섹션 — page-btn / page-btn.is-active Anatomy + Variant + 금지 패턴 명시
+- 03-components.md `### TicketStatusCurrent` 신규 섹션 — OP-08 dynamic badge + 금지 패턴
+- matrix.json v1.2.1 → v1.2.2 — Pagination + TicketStatusCurrent 2 신규 패턴 entry + Detail+Tabs applicable_screens에 TA-10 추가 (31 → 33 patterns)
+- evaluator NEW-P2-003과 동일 결함 (codex와 evaluator 식별 일치)
+
+### KI 신규 등록 (audit hotfix1 codex/evaluator finding)
+
+- **KI-068** (P3) — codex SAMP-P3-001 — OP 모달 title `<h2>` inline-styled (G2 leftover, `.modal-title` SSOT 미적용)
+- **KI-069** (P3) — evaluator KI-049 보강 backtick 텍스트 손상 (`users.role` bash substitution)
+
+### 통합 판정 (review-system §4 매트릭스)
+
+| 평가 | 결과 |
+|------|------|
+| evaluator audit hotfix1 | PASS 8.07 (모든 축 7.5+, Hard gate 해소) |
+| codex sampled 30% | CONDITIONAL 8.1 (NEW-P1 3건 100% verification PASS) |
+| 매트릭스 적용 | **MERGE_WITH_KI** |
+
+P0/P1 0건 + P2 누적 4건 (임계 5 미달, trigger 미발동) → 머지 진행.
+
+### 사용자 개입 의무 시점 검토 (review-system §10)
+
+- §10.1 P0 발생: ❌
+- §10.2 P1 threshold 도달: ❌ (1차 NEW-P1 3건 모두 hotfix1로 resolved)
+- §10.3 P0/P1 downgrade: ❌
+- §10.4 public contract 변경: ❌
+- §10.5 evaluator/codex 정면 충돌: ❌ (PASS + CONDITIONAL 둘 다 임계 8.0 통과)
+- §10.6 3회 연속 재평가 FAIL: ❌ (재평가 2회 모두 PASS)
+
+→ 사용자 개입 의무 비해당, 능동 머지 진행. 단 codex Phase 5 full review hang 47분 + sampled 재호출 사례를 사용자가 직접 결정 (옵션 C).
+
+### 다음
+
+PR #13 ready → auto-merge → tag wf-v0.4.1 + tag wf-v1.0.0 (Phase 5 종료).
+
+## [wf-v0.4.1] — 2026-05-18 (Phase 5 audit hotfix1 — evaluator FAIL 7.45 정정)
+
+사용자 시각 검수로 9 화면 결함 지적 → audit fix PR #13 1차 정정 (badge variant 288건 + KI-061 dead code + modal/stepper/vert-tab + kpi-meta + tabs/tabs-row + leave-badge ellipsis + page-action-bar align). PR #13 commit 후 Phase 5 전체 evaluator FAIL 7.45/10 (완성도/정합성/DS 충실도 임계 미달 + Hard gate 위반 — modal-title SSOT 미동기).
+
+사용자 결정 (P1 누적 3건 도달 → review-system.md §10.2 의무 시점): "보완 commit + 재평가 (wf-v1.0.0 도전)".
+
+### NEW-P1 3건 정정 (audit hotfix1)
+
+**NEW-P1-001 — `.modal-title` SSOT 동기화**:
+- `_showcase.html` audit fix section 신규 (modal-title + button reset + alias 7건 demo)
+- `03-components.md` Modal 섹션에 `.modal-title` Anatomy + Props 명시 (16px / 600 / flex + 6px gap + svg.ico 16x16)
+- 03-components.md Tabs 섹션에 `button.tab` / `button.vert-tab` reset commentary 추가
+- 03-components.md KpiCard 섹션에 `.kpi-sub` ≡ `.kpi-meta` alias commentary
+- matrix.json Detail+Tabs 패턴 allowed_classes에 `modal-title`/`modal-body`/`button.tab`/`tab-count`/`badge-*` 추가
+
+**NEW-P1-002 — `.ticket-status-current` components.css 정식 등록**:
+- components.css L191 신규 — `.ticket-status-current { background: var(--color-accent-bg); color: var(--color-accent); }`
+- OP-08.html L234 inline `style="background: var(--color-accent-bg); color: var(--color-accent);"` 제거
+- body[data-state="closed"] override는 OP-08 페이지 한정 inline 유지 (페이지 state 종속)
+
+**NEW-P1-003 — 페이지네이션 `.page-btn.is-active` SSOT 강제**:
+- 9 화면 sed 일괄 정정 — OP-02/06/09, TA-02/05/06/07/10/11
+- `<button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">` → `<button class="page-btn is-active">`
+- components.css L394-399 `.page-btn` 정의 (28x28 + accent active) 적용
+
+### KI-049 확대 — 권한 매트릭스 16 화면 보강
+
+- CM 7 (CM-01/02/03/04/06/20/21) + OP 9 (OP-04~12) analysis 파일에 권한 매트릭스 §추가
+- 표준 텍스트 패턴 — 역할 + 권한 + "PRD §2 / Phase 3 rls.md SSOT 참조"
+- 일부 backtick 텍스트 미세 손상 (예: `users.role` 부분) 후속 hotfix
+
+### 정정 효과 추정
+
+| 축 | 1차 (FAIL) | audit hotfix1 추정 |
+|----|----------:|------------------:|
+| 완성도 | 7.4 | 8.1+ (KI-049 확대 보강) |
+| 정합성 | 7.2 | 8.3+ (NEW-P1 3건 + SSOT 동기 4종) |
+| 구체성 | 8.0 | 8.0 (변동 없음) |
+| 실행가능성 | 7.6 | 7.8+ (CHANGELOG 갱신) |
+| DS 충실도 | 6.8 | 8.4+ (Hard gate 해소: page-btn + ticket-status-current + modal-title SSOT) |
+
+추정 가중 합: ~8.15. 임계 8.0 + 각 축 7.5+ 통과 시 wf-v1.0.0 도전.
+
+### CI 사전 검증
+
+- PR #13 1차 commit 후 CI 9/9 PASS — 본 commit도 동일 9/9 예상
+- sprite cross-check 9 화면 sed 변경 후 재검증 필요
+
+### 다음
+
+evaluator + codex 재평가 → PASS_BOTH 시 PR #13 ready + auto-merge + tag wf-v0.4.1 (또는 점수에 따라 wf-v1.0.0)
+
 ## [wf-v0.4.0-hotfix2] — 2026-05-18 (G4 hotfix2 — codex CONDITIONAL 8.1 + evaluator PASS 8.98 NON_BLOCKING P3)
 
 evaluator PASS 8.98 + codex CONDITIONAL 8.1 → MERGE_WITH_KI (PASS + CONDITIONAL) → 모두 mechanical fix → 능동 정정.

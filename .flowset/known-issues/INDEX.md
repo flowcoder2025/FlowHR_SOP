@@ -9,7 +9,7 @@
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
 | P2 Medium | **6** | 5 | ✅ 트리거 도달 — KI-049/050/051/054/060/061. KI-053/058 G3 hotfix2~3로 resolved + **KI-063 WI-G4prep-ci resolved 2026-05-18 (CI inline-svg-sprite-check §3 cross-check 강화, 34/34 화면 PASS)**. |
-| P3 Low | **28** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055/056/057/062 G3 hotfix1~3 신규 + **KI-064/065/066/067 G4 evaluator 신규 (2026-05-18)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
+| P3 Low | **30** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055/056/057/062 G3 hotfix + KI-064/065/066/067 G4 evaluator + **KI-068/069 audit hotfix1 codex/evaluator 신규 (2026-05-18)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -84,6 +84,8 @@
 | KI-065 | P3 | 5 | Wireframe | EM-03 `.calc-val is-emphasis` variant 부재 — calc-summary "사용일수" row의 큰 강조 (22px+ accent)가 inline `style="font-size:22px..."` 우회 처리. components.css §G4.4에 `.calc-val.is-emphasis { font-size: 22px; font-weight: 700; color: var(--color-accent); }` variant 추가 권장. | evaluator G4 | 2026-05-18 | open (차기 docs batch) |
 | KI-066 | P3 | 5 | Wireframe | EM-09 `vert-tab data-tab="security"` 중복 — state 분기 시각화 위해 2개 정의 (1개는 state-only.state-security, 1개는 state-default/pending/error). Phase 7 React 변환 시 key 충돌 — 단일 element + state 토글 또는 data-tab 다른 식별자 사용 권장. | evaluator G4 | 2026-05-18 | open (Phase 7) |
 | KI-067 | P3 | 5 | Wireframe | 페이지 한정 grid 컴포넌트화 후보 — `dash-row`/`dash-row-3`/`att-top`/`leave-grid`/`leave-kpi-row`/`leave-chart-row`/`cert-grid`/`profile-grid` 등 8개 grid layout이 G2~G4 반복. G5 또는 Phase 7 컴포넌트화 검토 (예: `.grid-2col` `.grid-3col` 패턴 토큰). | evaluator G4 | 2026-05-18 | open (G5 또는 Phase 7) |
+| KI-068 | P3 | 5 | Wireframe | OP 모달 title `<h2>` inline-styled (G2 leftover) — `.modal-title` SSOT 미적용. G2 OP 화면 일부 모달이 `<div class="modal-header"><h2 style="...">제목</h2>` 패턴 유지. audit hotfix2 또는 Phase 7 React 변환 시 일괄 정정. | codex SAMP-P3-001 audit hotfix1 | 2026-05-18 | open (차기 docs batch) |
+| KI-069 | P3 | 5 | Wireframe | KI-049 audit hotfix1 보강 일부 backtick 텍스트 손상 (`users.role` `users` 등이 bash command substitution으로 빈 영역) — 16 화면 권한 매트릭스 § 텍스트 정정 필요. | evaluator audit hotfix1 NON_BLOCKING | 2026-05-18 | open (차기 docs batch) |
 
 ## 등록 형식
 
