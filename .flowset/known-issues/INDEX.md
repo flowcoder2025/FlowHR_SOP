@@ -8,8 +8,8 @@
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
-| P2 Medium | 3 | 5 | ❌ — KI-049 analysis 권한 매트릭스 7화면 누락 (evaluator) + KI-050 select-wrap 17건 (codex hotfix2) + KI-051 showcase-coverage CI 강화 (codex hotfix2) |
-| P3 Low | **18** | 10 | ✅ 트리거 도달 — 18건 활성 (기존 14 + KI-042/043/044 G1 fix1 NON_BLOCKING 3건 + KI-052 _layout-shell SSOT 외부 sprite) |
+| P2 Medium | **5** | 5 | ✅ 트리거 도달 — KI-049 analysis 권한 매트릭스 7화면 누락 + KI-050 select-wrap 17건 + KI-051 showcase-coverage CI 강화 + **KI-053 G3 신규 9 패턴 _showcase + 03-components 미등록 (Hard gate DS SSOT)** + **KI-054 icon-only aria-label 누락** (G3 hotfix1 evaluator + codex) |
+| P3 Low | **20** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055 가짜 base path + KI-056 footer SSOT + KI-057 G2 모바일 미디어 쿼리 (G3 hotfix1) |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -68,7 +68,12 @@
 | KI-049 | P2 | 5 | Wireframe | analysis 권한 매트릭스 11화면 중 7화면 누락 (OP-04/05/06/08/10/11/12) — PRD엔 있으나 analysis 재인용 부재. wf-v0.2.0 hotfix 또는 G3 진행 시 일괄 보강. | evaluator | 2026-05-16 | open (G3 batch 또는 차기 batch) |
 | KI-050 | P2 | 5 | Wireframe | `.select-wrap` 미적용 17건 — `<select>`는 `.select` 클래스로 chevron 표시되지만 focus/disabled/error 상태 표현이 `.select-wrap` ancestor에 의존. NON_BLOCKING (native control DS 패턴 의무 통과). 다음 batch에서 일괄 적용. | codex hotfix2 §17-7-2 | 2026-05-17 | open (다음 batch) |
 | KI-051 | P2 | 5 | Process | CI `showcase-coverage-check` job이 anchor 존재만 보고 컴포넌트 사용 일관성을 검증하지 못함 — false negative. 화면이 실제 사용하는 DS 클래스가 component-usage-matrix.json의 patterns에 매핑되어 있는지 cross-check 필요. | codex hotfix2 §17-7-4 | 2026-05-17 | open (다음 batch) |
-| KI-052 | P3 | 5 | Wireframe | `_design-system/_layout-shell.html` 외부 sprite 참조 20건 잔존 — SSOT 템플릿("신규 화면 작성 시 그대로 복사" 용도)이라 차기 화면 작성 시 file:// 차단 재발 위험. CI `inline-svg-sprite-check`는 `wireframes/html/`만 검사하여 `_design-system/` 사각. G3 진입 전 또는 차기 hotfix batch에서 인라인 sprite reference로 정정 + CI 검사 범위 확장 필요. | evaluator hotfix3-rev1 | 2026-05-17 | open (G3 batch 또는 차기 batch) |
+| ~~KI-052~~ | P3 | 5 | Wireframe | ~~`_design-system/_layout-shell.html` 외부 sprite 참조 20건 잔존~~ | evaluator hotfix3-rev1 | 2026-05-17 | **resolved (G3 진입 commit 01c800d / 2026-05-17, _layout-shell + _layout-auth 24건 인라인 sprite reference 정정 + CI 검사 범위 확장)** |
+| KI-053 | P2 | 5 | Wireframe | G3 신규 9 패턴 _showcase.html demo + 03-components.md 사양 미등록 — Hard gate "DS SSOT 결함" 트리거 (components.css ✅ / matrix.json ✅ / _showcase.html ❌ 0/9 / 03-components.md ❌ 0/9). Profile Card / Org Tree / Calendar / Approval Timeline+Sticky / Approval Master-Detail / Report Canvas / Settings Pane / Integration Card Grid / Side Drawer. | evaluator G3 hotfix1 | 2026-05-18 | open (G3 hotfix2) |
+| KI-054 | P2 | 5 | Wireframe | icon-only 버튼 다수가 `aria-label` 없이 `data-tooltip`만 사용 — WCAG 2.1 AA 결함. 화면 일괄 sed 또는 components.css icon-btn 등록 시 aria-label 의무 패턴 명시. | codex G3-CDX-006 | 2026-05-18 | open (G3 hotfix2 또는 차기 batch) |
+| KI-055 | P3 | 5 | Wireframe | TA-01 공지 5건 → `/admin/notices` 가짜 base + TA-10 급여/인사문서 9건 → `/admin/documents/D-2026` + TA-11 계약 5건 → `/admin/contracts/CT-2026` 가짜 base path. Phase 7 실제 ID 매핑 필요. | claude G3 hotfix1 | 2026-05-18 | scheduled (Phase 7) |
+| KI-056 | P3 | 5 | Wireframe | footer 도움말 `/help` + 운영팀 문의 `/support` 라우트 — 14 화면 footer 28건 일괄 추가했으나 05-layouts.md helpers SSOT 미명시. | claude G3 hotfix1 | 2026-05-18 | open (차기 docs batch) |
+| KI-057 | P3 | 5 | Wireframe | G2 화면 OP-02~12의 모바일 미디어 쿼리 부재 (G3 패턴만 components.css `@media (max-width: 768px)` 단열). G4 또는 Phase 5 전체에서 일괄 보강. | claude G3 hotfix1 partial resolve | 2026-05-18 | open (G4 또는 Phase 5 전체) |
 
 ## 등록 형식
 

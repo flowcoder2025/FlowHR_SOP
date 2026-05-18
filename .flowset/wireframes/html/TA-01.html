@@ -13,8 +13,8 @@
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
-  /* 페이지 한정 — 콘텐츠 grid layout만 */
-  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
+  /* 페이지 한정 grid template only — .kpi-row base는 components.css SSOT (G3 hotfix2) */
+  .kpi-row { grid-template-columns: repeat(6, 1fr); margin-bottom: 20px; }
   .chart-row { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
   .activity-row { display: grid; grid-template-columns: 1.3fr 1.3fr 1fr; gap: 16px; margin-bottom: 16px; }
 

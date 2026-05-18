@@ -13,8 +13,8 @@
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
-  /* 페이지 한정 grid template only — .calendar-cell / .leave-badge 등 컴포넌트 정의는 components.css SSOT (G3 hotfix1) */
-  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+  /* 페이지 한정 grid template only — .kpi-row / .calendar-grid base는 components.css SSOT (G3 hotfix2) */
+  .kpi-row { grid-template-columns: repeat(5, 1fr); }
   .leave-shell { display: grid; grid-template-columns: 1fr; gap: 16px; }
   .calendar-grid { grid-template-columns: 160px repeat(31, minmax(28px, 1fr)); }
 

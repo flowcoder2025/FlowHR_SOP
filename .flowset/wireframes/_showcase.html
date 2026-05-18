@@ -1045,11 +1045,80 @@
 </section>
 <section class="showcase-section" id="section-date-input">
   <h2>패턴 — Date Input (.date-input wrapper)</h2>
-  <p>전 화면에서 bare <code>&lt;input type="date"&gt;</code> 금지 — .date-input > .input(type="date") + ::after 캘린더 아이콘.</p>
+  <p>전 화면에서 bare <code>&lt;input type="date"&gt;</code> 금지 — .date-input > .input(type="date") + ::after 캘린더 아이콘. 적용: OP-04/06/11, TA-02/05/07/13, EM-03.</p>
+</section>
+
+<!-- ============================================================================
+     G3 신규 9 패턴 (wf-v0.3.0 hotfix2, 2026-05-18)
+     SSOT: component-usage-matrix.json v1.1.0 §G3 신규 9 패턴
+     KI-053 resolved
+     ============================================================================ -->
+
+<section class="showcase-section" id="section-profile-card">
+  <h2>패턴 — Profile Card + Summary Grid (G3 신규)</h2>
+  <p>적용 화면: TA-03, EM-09. 직원/본인 프로필 헤더 카드 표준.</p>
+  <p>구조: <code>.header-cards</code> (280px + 1fr grid) → 좌측 <code>.card.profile-card</code> (<code>.profile-avatar-lg</code> 64×64 원형 + <code>.profile-meta</code> 사번/직급/부서/배지) + 우측 <code>.card</code> (<code>.summary-grid</code> 4-cell with <code>.summary-label</code> uppercase + <code>.summary-value</code> 16px bold).</p>
+  <p>샘플 화면: TA-03.html L131-152 (한직원 — 잔여연차 / 최근 근태 / 결재 진행 / 재직 기간).</p>
+</section>
+
+<section class="showcase-section" id="section-org-tree">
+  <h2>패턴 — Org Tree 3-Pane (G3 신규)</h2>
+  <p>적용 화면: TA-04 조직도. 드래그앤드롭 부서 트리 + 부서 상세 + 구성원 테이블.</p>
+  <p>구조: <code>.org-shell</code> (280px / 1fr / 1.2fr grid) → 좌측 <code>.org-tree</code> (계층 <code>.tree-node</code> with <code>.is-active</code> + 들여쓰기 <code>.tree-children</code> dashed border + <code>.tree-meta</code> 인원수) + 중앙 부서 상세 form + 우측 구성원 테이블.</p>
+  <p>샘플: TA-04.html L227-303. Phase 7: react-arborist 또는 react-complex-tree.</p>
+</section>
+
+<section class="showcase-section" id="section-calendar">
+  <h2>패턴 — Calendar Grid (직원×일자, G3 신규)</h2>
+  <p>적용 화면: TA-07 휴가 관리. 직원 행 × 31일 컬럼 grid + 휴가 유형 배지.</p>
+  <p>구조: <code>.calendar-grid</code> (page-local: <code>grid-template-columns: 160px repeat(31, minmax(28px, 1fr))</code>) → <code>.calendar-cell</code> (.day-header / .name-cell / .weekend variants) + <code>.leave-badge</code> (.l-full blue / .l-half green 50% / .l-sick amber).</p>
+  <p>모바일: components.css <code>@media (max-width: 768px)</code> overflow-x:auto. 샘플: TA-07.html L188-300.</p>
+</section>
+
+<section class="showcase-section" id="section-approval-timeline">
+  <h2>패턴 — Approval Timeline + Sticky Action (G3 신규, PWA 결재 핵심)</h2>
+  <p>적용 화면: TA-08 휴가 신청 상세. 결재 라인 시각화 + 모바일 하단 고정 액션.</p>
+  <p>구조: <code>.info-cards</code> (2-col grid, <code>.card-wide</code> span 2) + <code>.info-cell</code> (90px label + value) + <code>.timeline-step</code> (28×28 <code>.timeline-marker</code> with .is-done success / .is-pending warning) + <code>.sticky-actions</code> (position: sticky bottom 16px + box-shadow).</p>
+  <p>샘플: TA-08.html L150-260. PWA: <code>bottom: env(safe-area-inset-bottom)</code>.</p>
+</section>
+
+<section class="showcase-section" id="section-approval-inbox">
+  <h2>패턴 — Approval Master-Detail Inbox (G3 신규, PWA 결재)</h2>
+  <p>적용 화면: TA-09 결재 / 승인. 받은/보낸/위임/완료 탭 + 결재 행 + 우측 상세.</p>
+  <p>구조: <code>.approval-shell</code> (380px / 1fr grid, min-h 600px) → 좌측 <code>.inbox-sidebar</code> (.inbox-tabs with .is-active border-bottom 2px + .count-chip warning bg) + <code>.approval-row</code> (.is-active 3px accent border-left + .row-head / .row-title / .row-meta) + 우측 상세 카드.</p>
+  <p>샘플: TA-09.html L138-280. 일괄 승인 + 스와이프(PWA — Phase 7 react-swipeable).</p>
+</section>
+
+<section class="showcase-section" id="section-report-canvas">
+  <h2>패턴 — Report List + Chart Canvas (G3 신규)</h2>
+  <p>적용 화면: TA-12 리포트. 좌측 리포트 카드 list + 우측 차트 그리드.</p>
+  <p>구조: <code>.report-shell</code> (260px / 1fr grid) → 좌측 <code>.report-list</code> with <code>.report-item</code> (.is-active accent / .is-disabled opacity 0.7 cursor: not-allowed) + 우측 <code>.chart-grid</code> (2-col + .card-wide span 2).</p>
+  <p>샘플: TA-12.html L139-310. Phase 7: recharts/visx.</p>
+</section>
+
+<section class="showcase-section" id="section-settings-pane">
+  <h2>패턴 — Settings Vertical Tabs Pane (G3 신규, vert-tabs 변종)</h2>
+  <p>적용 화면: TA-13 회사 설정. OP-11과 동일 vert-tabs 구조이나 9 pane stack 본문.</p>
+  <p>구조: <code>.settings-shell</code> (220px / 1fr grid) → 좌측 <code>.vert-tabs</code> + 우측 <code>.pane-canvas</code> with <code>.card.pane</code> × 9 (회사정보/근무/휴가/결재라인/역할권한/알림/문서양식/보안/감사로그).</p>
+  <p>state 토글: <code>body[data-state="default"] .pane { display: block; }</code> 9 pane stack / <code>body[data-state="filtered"] .pane.scope-hr { display: block; }</code> hr_admin 6 pane.</p>
+</section>
+
+<section class="showcase-section" id="section-integration">
+  <h2>패턴 — Integration Card Grid (G3 신규)</h2>
+  <p>적용 화면: TA-14 외부 연동. 채널 9 카드 그리드 + API Key 테이블 segment toggle.</p>
+  <p>구조: <code>.integration-grid</code> (3-col grid) → <code>.int-card</code> (.is-coming opacity 0.65 + disabled 버튼) with .int-head (40×40 .int-icon + 제목 + 연결 상태 badge) + .int-meta + 액션. <code>.seg-btn</code> (채널 ↔ API Key, first-child / last-child radius).</p>
+  <p>샘플: TA-14.html L162-353.</p>
+</section>
+
+<section class="showcase-section" id="section-side-drawer">
+  <h2>패턴 — Side Detail Drawer with Diff (G3 신규, 결재/감사 공용)</h2>
+  <p>적용 화면: TA-06 근태 수정 요청, OP-09 감사 로그 (drawer 일관 패턴).</p>
+  <p>구조: <code>.req-shell</code> (1fr → state filtered 시 1fr/360px transition) + <code>.req-drawer</code> (sticky top 16px) + <code>.diff-row</code> (64px <code>.diff-label</code> + value) — 원기록 line-through + 요청값 success bold.</p>
+  <p>샘플: TA-06.html L189-237. 결재 라인 timeline 재사용.</p>
 </section>
 
 <div style="text-align:center;color:var(--color-text-muted);font-size:12px;padding:24px;">
-  FlowHR 디자인 시스템 v1.0 — KI-037 batch-004 + KI-039 batch-005 + KI-batch-006-fix2 hotfix2 (2026-05-16)
+  FlowHR 디자인 시스템 v1.1 — KI-037 batch-004 + KI-039 batch-005 + KI-batch-006-fix2 hotfix2 (2026-05-16) + KI-053 G3 신규 9 패턴 (2026-05-18 hotfix2)
 </div>
 
 </body>

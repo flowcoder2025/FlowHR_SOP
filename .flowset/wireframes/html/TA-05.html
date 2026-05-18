@@ -13,7 +13,8 @@
 <link rel="stylesheet" href="../_design-system/tokens.css">
 <link rel="stylesheet" href="../_design-system/components.css">
 <style>
-  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  /* .kpi-row base는 components.css SSOT — 페이지별 column 수만 inline */
+  .kpi-row { grid-template-columns: repeat(4, 1fr); }
 
   .state-only { display: none; }
   body[data-state="default"]  .state-default,

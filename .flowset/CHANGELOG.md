@@ -8,6 +8,73 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.3.0-hotfix2] — 2026-05-18 (G3 hotfix2 — 완전 SSOT 동기화)
+
+evaluator PASS 8.48 + codex FAIL 7.0 → BLOCKED_FOR_HOTFIX → 사용자 결정 "완전 SSOT 동기화" 채택.
+
+### 정정 (P1 codex G3-CDX-002-HF1, G3-CDX-003-HF1 + evaluator G3-EV-H1-001~010)
+
+**matrix.json v1.1.0 metadata 정정**:
+- top-level `version: "1.0.0"` → `"1.1.0"` (commit `bf0c1d5` 누락분)
+- `updated_at: "2026-05-16"` → `"2026-05-18"`
+- changelog 1.1.0 entry 수치 정정: "8 패턴 / 14→22" → "10 패턴 / 14→24" (Profile + Side Drawer 별도 카운트 명시)
+
+**components.css SSOT 보강**:
+- `.kpi-row { display: grid; gap: 12px; margin-bottom: 16px }` base 등록 (TA-01/05/07 화면별 column 수만 inline override)
+- `.vert-tab.is-active` 등록 (state binding 패턴 SSOT)
+
+**화면 inline 정리**:
+- TA-01/05/07: `.kpi-row { grid-template-columns: repeat(N, 1fr) }` column override만 유지 (base는 components.css)
+- TA-02: `<a href="javascript:void(0)" onclick="return false;">초기화</a>` → `<button type="button" aria-label="필터 초기화">초기화</button>`
+
+**TA-13 scope-hr PRD §6 정합 정정**:
+- 결재라인 pane에 `scope-hr` 클래스 부착 (hr_admin R 가능 — 5 → 6 pane)
+- commit "6 pane" 의도 → 실제 markup도 6 pane 정합
+
+**analysis 갱신 (HTML ↔ analysis 정합)**:
+- TA-03.md L22 "변경이력 — Phase 7 timeline" → 9 pane stack 본문 시각화 명시 (line-through diff 등)
+- TA-13.md L18/L20 "(Phase 7)" → 본문 markup 명시 (결재라인 5 종류 + 감사로그 본 테넌트 한정)
+- 5 상태 매트릭스에 scope-mgr/scope-hr 표시 패턴 명시 (PRD §6 정합)
+
+### _showcase.html G3 9 demo 추가 (KI-053 partial resolve)
+
+15 → 24 sections. 신규: section-profile-card / section-org-tree / section-calendar / section-approval-timeline / section-approval-inbox / section-report-canvas / section-settings-pane / section-integration / section-side-drawer. footer note v1.0 → v1.1.
+
+### 03-components.md G3 9 패턴 사양 (§G3.1~G3.9, KI-053 resolved)
+
+각 패턴 Anatomy (CSS 구조) + Props 변수 + Variant + 모바일 + Phase 7 매핑 (~100 lines × 9 = ~270 lines 추가).
+
+### KI INDEX 5건 신규 등록
+
+- **KI-053 (P2)** G3 신규 9 패턴 _showcase.html + 03-components.md 미등록 — **resolved (본 hotfix2)**
+- **KI-054 (P2)** icon-only aria-label 누락 (data-tooltip 35 / aria 23) — 차기 batch
+- **KI-055 (P3)** TA-01/10/11 가짜 base path (`/admin/notices/N-NNNN` 등) → Phase 7 실제 ID
+- **KI-056 (P3)** footer `/help` `/support` 라우트 05-layouts.md helpers SSOT 미명시
+- **KI-057 (P3)** G2 화면 모바일 미디어 쿼리 부재 (G3는 components.css @media 적용)
+- KI-052는 G3 진입 commit `01c800d`로 resolved 표기
+
+### 카운트 갱신
+
+| 심각도 | 활성 | 임계 | 트리거 |
+|--------|------|------|------|
+| P0 | 0 | 1 | ❌ |
+| P1 | 0 | 3 | ❌ |
+| P2 | 5 (KI-049/050/051/053→resolve/054) → **4 후 hotfix2** | 5 | resolve-pending |
+| P3 | 20 (KI-052 resolved + 055/056/057 신규) | 10 | 도달 |
+
+### 정적 게이트 9/9 + 추가 검증 11/11 재PASS
+
+- href="#" 0건 / `javascript:void(0)` 0건 (button 변환 후)
+- inline 컴포넌트 재정의: kpi-row base components.css 이동 후 화면 column override만 잔존 (CI 통과)
+- matrix.json v1.1.0 metadata 정합 + 24 patterns
+- components.css G3 신규 9 + base 11 클래스 등록 (+11 lines)
+- _showcase.html 24 sections (15+9)
+- 03-components.md §G3.1~G3.9 추가
+
+### 다음
+
+- 재평가 (evaluator + codex 병렬) → PASS_BOTH 시 ready → CI → auto-merge → tag wf-v0.3.0
+
 ## [wf-v0.3.0-hotfix1] — 2026-05-18 (G3 hotfix1 — P1 3건 + TA-03/13 pane)
 
 evaluator PASS 9.22 + codex FAIL 6.1 통합 판정 BLOCKED_FOR_HOTFIX → 사용자 결정 "P1 3건 + TA-03/13 pane 모두 추가" 채택.

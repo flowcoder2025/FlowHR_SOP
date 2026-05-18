@@ -875,6 +875,15 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
    화면별 grid template-columns은 페이지 한정 (.kpi-row repeat(N,1fr) 등)
    ============================================================================ */
 
+/* === KPI Row base (페이지별 column 수는 화면 inline의 grid-template-columns만 override) ===
+   TA-01 dashboard 6-col / TA-05 attendance 4-col / TA-07 leave 5-col 등 화면별 다름
+   화면 inline 잔존 허용: .kpi-row { grid-template-columns: repeat(N, 1fr) } */
+.kpi-row { display: grid; gap: 12px; margin-bottom: 16px; }
+
+/* === vert-tab is-active (state 토글 — body[data-state] 패턴 대체) ===
+   화면에서는 markup에 .is-active 부착 또는 body[data-state] CSS 사용. 컴포넌트 정의 SSOT. */
+.vert-tab.is-active { background: var(--color-accent-bg); color: var(--color-accent); border-left-color: var(--color-accent); font-weight: 600; }
+
 /* === Profile Card + Summary Grid (TA-03, EM-09) === */
 .header-cards { display: grid; grid-template-columns: 280px 1fr; gap: 16px; margin-bottom: 16px; }
 .profile-card { display: flex; gap: 14px; align-items: center; padding: 16px; }
