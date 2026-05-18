@@ -1163,8 +1163,43 @@
   <p>variant: <code>.notif-row.is-unread</code> background var(--color-info-bg), hover accent-bg.</p>
 </section>
 
+<section class="showcase-section" id="section-audit-fix">
+  <h2>Audit fix SSOT 보강 (wf-v0.4.0 + audit hotfix1, 2026-05-18)</h2>
+
+  <h3>1. `.modal-title` (G4 audit hotfix1 신규 SSOT)</h3>
+  <p>EM-02/EM-06 modal에서 사용. 기존 `.modal-header h3` 패턴에서 `.modal-title` 클래스로 통일.</p>
+  <pre><code>&lt;div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="mt1"&gt;
+  &lt;div class="modal-header"&gt;
+    &lt;div class="modal-title" id="mt1"&gt;
+      &lt;svg class="ico" width="16" height="16"&gt;&lt;use href="#i-pdf"/&gt;&lt;/svg&gt; 제목 (icon optional)
+    &lt;/div&gt;
+    &lt;button class="icon-btn" aria-label="모달 닫기"&gt;...&lt;/button&gt;
+  &lt;/div&gt;
+  ...
+&lt;/div&gt;</code></pre>
+  <p>스타일: 16px / 600 / color-text + flex 6px gap + 자식 svg.ico 16x16 강제.</p>
+
+  <h3>2. `button.tab` / `button.vert-tab` UA reset (audit hotfix)</h3>
+  <p>TA-03 / TA-10 / TA-13 등에서 `<button class="tab">` `<button class="vert-tab">` 사용. UA 기본 background/border/font 제거 + width 100% (vert-tab) + text-align left.</p>
+
+  <h3>3. `.tabs` ≡ `.tabs-row` alias SSOT (audit hotfix)</h3>
+  <p>G2/G3 OP-03/12 TA-03/10 (`.tabs-row`) + G3/G4 EM-05/07/10 (`.tabs`) — 동일 시각으로 통합 selector.</p>
+
+  <h3>4. `.kpi-sub` ≡ `.kpi-meta` alias SSOT (audit hotfix)</h3>
+  <p>G3 이전 `.kpi-sub` / G2 운영 `.kpi-meta` — components.css L177 통합. OP-06/OP-10 시각 적용.</p>
+
+  <h3>5. `.badge.success` + `.badge-success` 양 패턴 selector (1차 audit fix)</h3>
+  <p>화면 288건 (badge-success/warning/danger/info/neutral/accent 하이픈 패턴) 색상 미적용 해소. 양 패턴 selector로 통합.</p>
+
+  <h3>6. `.page-btn` + `.page-btn.is-active` SSOT 강제 (audit hotfix1)</h3>
+  <p>9 화면 (OP-02/06/09, TA-02/05/06/07/10/11) 페이지네이션 inline DS bypass 정정 — `<button class="btn btn-ghost btn-sm" style="background:...">` → `<button class="page-btn is-active">`.</p>
+
+  <h3>7. `.ticket-status-current` SSOT 등록 (audit hotfix1)</h3>
+  <p>OP-08 지원 티켓 dynamic badge — default accent / closed muted (`body[data-state="closed"]` override OP-08 inline 유지).</p>
+</section>
+
 <div style="text-align:center;color:var(--color-text-muted);font-size:12px;padding:24px;">
-  FlowHR 디자인 시스템 v1.2 — G0~G3 + G4 신규 6 패턴 (Employee 도메인, wf-v0.4.0, 2026-05-18)
+  FlowHR 디자인 시스템 v1.3 — G0~G4 + audit hotfix1 SSOT 7건 보강 (Phase 5 전체 evaluator FAIL 7.45 → 정정 후 재평가 대상, 2026-05-18)
 </div>
 
 </body>

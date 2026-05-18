@@ -412,6 +412,8 @@ type BadgeProps = {
 └─────────────────────────────┘
 ```
 
+**`.kpi-sub` / `.kpi-meta` alias SSOT (audit fix)**: `.kpi-sub` 와 `.kpi-meta`는 동일 selector (12px muted, margin-top 6, flex/gap 4, flex-wrap). G3 이전 `.kpi-sub` 명명 / G2 운영 화면 `.kpi-meta` 명명 — components.css에서 `.kpi-sub, .kpi-meta { ... }`로 통합 (OP-06/OP-10 결함 해소).
+
 **Props**
 ```ts
 type KpiCardProps = {
@@ -544,6 +546,10 @@ type TabsProps = {
   <button class="tab">구독</button>
 </div>
 ```
+
+**SSOT alias (audit fix)**: `.tabs` ≡ `.tabs-row` (G2/G3 OP-03/12 TA-03/10 사용 변종, 동일 시각). `button.tab`은 UA 기본 background/border 제거 (components.css `.tab` selector에 reset 포함).
+
+**`button.vert-tab` reset (audit fix)**: `<button class="vert-tab">` 사용 시 (TA-13 등) UA 기본 시각 제거 — components.css `button.vert-tab { background: none; border: none; width: 100%; text-align: left; font: inherit; }` SSOT.
 
 ---
 
@@ -812,16 +818,23 @@ type FormSectionProps = {
 | lg      | `.modal-box .modal-box-lg` | 560px |
 | xl      | `.modal-box .modal-box-xl` | 720px |
 
-**Code (HTML)**
+**Code (HTML)** — `.modal-title` SSOT (G4 audit fix). `role="dialog"` + `aria-modal="true"` + `aria-labelledby` 필수 (G4-CDX-003 정정).
 ```html
-<div class="modal-overlay is-open" role="dialog" aria-modal="true" aria-labelledby="mt1">
-  <div class="modal-box modal-box-md">
-    <div class="modal-header"><h3 id="mt1">제목</h3></div>
-    <div class="modal-body">본문</div>
+<div class="modal-overlay is-open">
+  <div class="modal-box modal-box-md" role="dialog" aria-modal="true" aria-labelledby="mt1">
+    <div class="modal-header">
+      <div class="modal-title" id="mt1">제목 (선택적 icon)</div>
+      <button class="icon-btn" aria-label="모달 닫기"><svg class="ico" width="14" height="14"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">본문 (overflow-y auto + flex 1, padding은 modal-box에서 24)</div>
     <div class="modal-footer"><button class="btn btn-ghost">취소</button><button class="btn btn-primary">확인</button></div>
   </div>
 </div>
 ```
+
+**`.modal-title` Props (audit hotfix 신규 SSOT 등록)**:
+- 16px / 600 / color-text, flex + 6px gap (icon 옵션)
+- 자식 `> svg.ico` — 16x16 강제 width/height
 
 **Props (React)**
 ```ts

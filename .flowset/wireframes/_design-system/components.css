@@ -189,6 +189,8 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .badge.info,     .badge-info     { background: var(--color-info-bg);    color: var(--color-info); }
 .badge.muted,    .badge-muted,   .badge-neutral { background: var(--color-surface-2); color: var(--color-text-muted); }
 .badge-accent { background: var(--color-accent-bg); color: var(--color-accent); }
+/* OP-08 ticket-status-current — dynamic badge (페이지 state 종속). default accent + closed variant은 OP-08 inline override 유지 */
+.ticket-status-current { background: var(--color-accent-bg); color: var(--color-accent); }
 
 .module-badge { font-size: 11px; padding: 2px 6px; background: var(--color-accent-light); color: var(--color-primary); border-radius: var(--r-sm); display: inline-block; }
 

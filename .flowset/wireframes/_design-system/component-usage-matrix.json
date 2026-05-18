@@ -33,11 +33,11 @@
     },
     {
       "prd_pattern": "Detail + Header Cards + Tabs",
-      "applicable_screens": ["OP-03", "OP-12", "TA-03", "EM-09"],
-      "components": ["header-cards", "header-card", "tabs-row", "tab", "tab-pane", "form-section", "form-row", "modal-overlay", "modal-box", "btn-danger"],
+      "applicable_screens": ["OP-03", "OP-12", "TA-03", "TA-10", "EM-09"],
+      "components": ["header-cards", "header-card", "tabs", "tabs-row", "tab", "tab-pane", "form-section", "form-row", "modal-overlay", "modal-box", "modal-title", "btn-danger"],
       "showcase_anchor": "_showcase.html#section-detail-tabs",
-      "allowed_classes": ["tabs-row", "tab", "tab is-active", "form-section", "form-section-header", "form-row", "form-row-stacked", "label", "label-required", "input", "select", "select-wrap", "textarea", "modal-overlay", "modal-box", "modal-header", "modal-footer", "btn", "btn-primary", "btn-ghost", "btn-danger", "badge"],
-      "react_mapping": "shadcn/ui Tabs + Dialog + react-hook-form"
+      "allowed_classes": ["tabs", "tabs-row", "tab", "tab is-active", "button.tab", "tab-count", "form-section", "form-section-header", "form-row", "form-row-stacked", "label", "label-required", "input", "select", "select-wrap", "textarea", "modal-overlay", "modal-box", "modal-header", "modal-title", "modal-body", "modal-footer", "btn", "btn-primary", "btn-ghost", "btn-danger", "badge", "badge-success", "badge-warning", "badge-danger", "badge-info", "badge-neutral", "badge-accent"],
+      "react_mapping": "shadcn/ui Tabs + Dialog + react-hook-form. button reset 적용 (UA 기본 background/border 제거)"
     },
     {
       "prd_pattern": "Wizard Stepper (Multi-step Form)",
