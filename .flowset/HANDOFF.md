@@ -1,8 +1,18 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **작성**: 2026-05-18 (Phase 5 종료 — wf-v1.0.0 머지 완료, Phase 6 진입 준비)
-> **신규 세션 첫 작업**: 본 문서 §3 정독 → Phase 6 스프린트 계획 진입 (mvp-plan.md + sprint-001~N.md)
-> **이전 핸드오프**: 2026-05-18 G4 wf-v0.4.0 머지 (현재 본 문서로 갱신)
+> **작성**: 2026-05-18 (Phase 5 audit fix wf-v0.4.1 머지 완료, **wf-v1.0.0 + phase-5.pass 철회 — codex 45 풀화면 검증 미완**)
+> **신규 세션 첫 작업**: 본 문서 §3 정독 → 45 풀화면 codex 분할 검증 → 결함 정정 → wf-v1.0.0 재부여 + Phase 6 진입
+> **이전 핸드오프**: 2026-05-18 G4 wf-v0.4.0 머지
+
+## 0. 중요 — 사용자 지적 정정 (2026-05-18 후반)
+
+1차 wf-v1.0.0 tag + phase-5.pass marker 부여는 **codex 검증 불완전 상태에서 부여된 성급한 결정** — 사용자 지적으로 철회:
+- codex 실제 검토 화면: 15 (sampled 30%, agent `a1e9e652`)
+- **30 화면 codex 시각 검수 0** — 미검증 상태
+- codex 45 풀화면 시도는 hang 47분+ 후 TaskStop으로 정리 (agent `a4ad52f`)
+- "codex 45+ MCP hang 위험" 결론도 표본 1건 일반화로 추측
+
+→ tag `wf-v1.0.0` 철회 + `phase-5.pass` 삭제 (2026-05-18 22:5x). `wf-v0.4.1` audit hotfix1+1.2 tag만 유지 (정정 commit 자체는 합법).
 
 ## 1. 현재 상태 요약
 
@@ -20,7 +30,8 @@
 | (KI-063 강화) | G4 진입 전 의무 | CI sprite cross-check | ✅ 머지 (PR #11) | — |
 | wf-v0.4.0 | G4 테넌트 직원 | EM-01~11 (11) | ✅ 머지 (PR #12) | wf-v0.4.0 |
 | **wf-v0.4.1** | **Phase 5 audit fix** | **DS systemic 정정** | ✅ **머지 (PR #13)** | **wf-v0.4.1** |
-| **wf-v1.0.0** | **Phase 5 종료** | **45 화면 통합** | ✅ **종료 마커** | **wf-v1.0.0** |
+| ~~wf-v1.0.0~~ | ~~Phase 5 종료~~ | ~~45 화면~~ | ❌ **철회 2026-05-18 (45 풀화면 codex 미검증)** | ~~제거됨~~ |
+| wf-v1.0.0 | Phase 5 정식 종료 | 45 화면 + codex 풀검증 | ⏳ 45 풀화면 codex 검증 후 재부여 | — |
 
 **현재 브랜치**: `main` (HEAD: `072483f` PR #13 merge + HANDOFF/tag commit 후속)
 
@@ -83,11 +94,36 @@ components.css ↔ 03-components.md ↔ _showcase.html ↔ matrix.json 4-way 동
 
 matrix.json v1.2.2 — 33 patterns.
 
-## 3. 신규 세션 첫 작업 — Phase 6 진입
+## 3. 신규 세션 첫 작업 — 45 풀화면 codex 검증 (Phase 5 정식 종료)
 
-Phase 5 종료. Phase 6 (스프린트 계획) 진입:
+Phase 5 종료 보류. 45 풀화면 codex 검증 후 wf-v1.0.0 재부여 + Phase 6 진입.
 
-### 작업 1 — Phase 6 산출물
+### 작업 1 — codex 분할 호출 (hang 회피 + 30 화면 미검증 해소)
+
+방법 A (그룹별 4 호출, 권장):
+- G1 CM 8 화면 (CM-01~06, CM-20, CM-21)
+- G2 OP 12 화면 (OP-01~12)
+- G3 TA 14 화면 (TA-01~14)
+- G4 EM 11 화면 (EM-01~11)
+
+각 호출 모델 gpt-5.5 명시 + prompt에 화면 ID 명시 + audit hotfix1 정정 verification 포함.
+
+방법 B: 사용자 지정 다른 분할 (예: 미검증 30 화면만 + sampled 결과와 합산).
+
+### 작업 2 — codex 결과 통합 + 결함 정정
+
+- 4 codex 결과 통합 (또는 30 화면 결과 + sampled 15 화면 결과 합산)
+- 신규 결함 식별 시 hotfix 사이클
+- 모든 결함 정정 + 재평가
+
+### 작업 3 — wf-v1.0.0 재부여 + Phase 5 정식 종료
+
+- evaluator + 풀 codex 결과 통합 판정 PASS_BOTH 시:
+  - `phase-5.pass` marker 재생성
+  - tag wf-v1.0.0 재부여
+  - prd-state.json `5-wireframes.status="completed"` 갱신
+
+### 작업 4 — Phase 6 진입 (Phase 5 정식 종료 후)
 
 `.claude/rules/project.md §1 진행 순서표`:
 
@@ -98,11 +134,7 @@ Phase 5 종료. Phase 6 (스프린트 계획) 진입:
 | KI-013 (P3) | Phase 2 7 Epic Task 분해 미완 | Phase 6 진입 전 완료 |
 | KI-034 (P3) | tasks.md / estimation.md / dependency-graph.md stale | Phase 6 진입 전 정정 |
 
-### 작업 2 — Phase 6 evaluator 호출
-
-Phase 6 종료 시 `.claude/agents/evaluator.md` 호출 (doc 모드, 5축).
-
-### 작업 3 — KI 잔존 (Phase 6 사이클 안에서 처리 또는 별도 batch)
+### 작업 5 — KI 잔존 (Phase 6 사이클 안에서 처리 또는 별도 batch)
 
 **활성 P2 (4건)**:
 - KI-049 16 화면 권한 매트릭스 표 형식 미완 (backtick 손상 — KI-069로 분리)
@@ -111,10 +143,6 @@ Phase 6 종료 시 `.claude/agents/evaluator.md` 호출 (doc 모드, 5축).
 - KI-054 icon-btn aria-label 52건
 
 **활성 P3 (30건)**: INDEX.md 참조.
-
-### 작업 4 — Phase 6 진입 전 의무 (없음)
-
-KI-063 같은 차단성 의무 없음. 바로 Phase 6 시작 가능.
 
 ## 4. Known Issues 현황 (활성 — Phase 5 종료 시점)
 
