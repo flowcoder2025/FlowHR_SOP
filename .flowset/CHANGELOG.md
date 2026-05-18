@@ -8,6 +8,139 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.0-hotfix2] — 2026-05-18 (G4 hotfix2 — codex CONDITIONAL 8.1 + evaluator PASS 8.98 NON_BLOCKING P3)
+
+evaluator PASS 8.98 + codex CONDITIONAL 8.1 → MERGE_WITH_KI (PASS + CONDITIONAL) → 모두 mechanical fix → 능동 정정.
+
+### codex 2 신규 findings 정정
+
+**P2 G4-HF1-REVAL-001 — components.css §G4.7 카운트 + history-card 미정의**:
+- `.history-card` 누락 — EM-02/04/08 3 화면 `<div class="card history-card">` 사용 중. components.css §G4.7에 `.history-card` 추가 (base .card 시각 상속 + loading state selector anchor 역할만)
+- §G4.7 주석 갱신 — "8종" 명시 + 카운트 정확히 표기 + file-input-name → file-input-filename 통일 commentary 추가
+
+**P3 G4-HF1-REVAL-002 — EM-02 stale 5 state 표기**:
+- EM-02.html 상단 주석 "상태 (5)" → "상태 (6) — default/loading/empty/modal/offline/error"
+- EM-02 analysis §3 디자인 시스템 사용 — "state-default/empty/modal/error" → "state-default/empty/modal/offline/error + state-debug 6 key"
+- EM-02 analysis §7 검증 — "5 상태 토글" → "6 상태 토글"
+
+### evaluator 2 NON_BLOCKING P3 정정
+
+**P3 — history-card components.css 등록**: codex G4-HF1-REVAL-001과 통합 정정 (위 §G4.7)
+
+**P3 — matrix.json allowed_classes G4 §G4.7 미반영**:
+- component-usage-matrix.json v1.2.0 → v1.2.1 (patch)
+- 신규 patterns entry "Auxiliary Child Classes (G4 §G4.7 SSOT)" 추가 — 7종 클래스 + 8종 allowed_classes (tab.is-active .tab-count variant 포함)
+- Notif Row allowed_classes에 "button.notif-row" 추가 (G4-CDX-004 hotfix1 정정 reflect)
+- 30 patterns → 31 patterns
+
+### file-input-name deprecated 검증
+
+- codex 지적 "file-input-name deprecated 미표기" → 실제 잔존 0건 확인 (hotfix1 G4-CDX-001에서 file-input-filename 통일 완료)
+- §G4.7 주석에 commentary 추가하여 명시화
+
+### sprite cross-check 재검증
+
+- 11/11 PASS (변경 없음 — hotfix2는 HTML svg 변경 없음)
+
+## [wf-v0.4.0-hotfix1] — 2026-05-18 (G4 hotfix1 — codex CONDITIONAL 7.2 + evaluator P2 mechanical fix)
+
+evaluator PASS 8.74 + codex CONDITIONAL 7.2 → 통합 판정 MERGE_WITH_KI/hotfix1 권장 → 모든 결함 mechanical fix → 능동 정정.
+
+### codex 4 findings 정정 (P1:1 + P2:3)
+
+**P1 G4-CDX-001 — file-input DS 명세 통일**:
+- EM-02:285-290 + EM-03:154-160 — `<div class="file-input"><button>...</button><input type="file"><span class="file-input-name">...</span></div>` (기존) → DS 명세 `<label class="file-input"><input type="file" class="sr-only"><span class="file-input-btn">...</span><span class="file-input-filename is-empty">...</span></label>` (정정)
+
+**P2 G4-CDX-002 — EM-03 date input class="input" 추가**:
+- EM-03:131,135 — `<input type="date">` → `<input class="input" type="date">` (components.css `.date-input > .input` appearance/padding override 적용)
+
+**P2 G4-CDX-003 — modal aria 추가**:
+- EM-02:261 + EM-06:214 — `<div class="modal-box">` → `<div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="emXX-modal-title">` + `.modal-title` id 추가
+
+**P2 G4-CDX-004 — EM-10 notif-row href 없는 `<a>` 정정**:
+- EM-10:156 시스템 점검 → `<button type="button" class="notif-row">` 변환 (비이동 액션)
+- EM-10:165 휴가 정책 공지 → `<a class="notif-row" href="/me/documents?type=notice">` (이동 추가)
+- components.css `.notif-row` — `width: 100%; text-align: left` + `button.notif-row { background: none; border: none; font: inherit; }` reset 추가 + `a.notif-row:hover` → `.notif-row:hover` 일반화
+
+### evaluator 2 P2 정정
+
+**P2 — EM-02 offline state 추가 (5 → 6 state)**:
+- 5상태 머신 (default/loading/empty/modal/error) → 6 (default/loading/empty/modal/**offline**/error)
+- offline state-only banner — warning bg, globe icon, "출퇴근 IndexedDB 큐 적재 + 네트워크 복귀 시 자동 동기화"
+- state-debug 6 key 토글
+- EM-02 analysis md 상태 매트릭스 6 state 갱신
+
+**P2 — G4 보조 자식 클래스 8종 components.css §G4.7 SSOT 등록**:
+- `.info-row-key` / `.info-row-val` (info-row 자식, 7화면 사용)
+- `.empty-state-title` / `.empty-state-desc` (empty-state 자식, 10화면 사용)
+- `.tab-count` (tab 내 카운트 배지, G3 신규)
+- `.tab.is-active .tab-count` (active variant)
+- `.form-help` (form-row 자식 도움말)
+
+### P3 4건 KI 등록 (hotfix 의무 외, 차후 batch)
+
+- **KI-064** (P3) — EM-11 사이드바 비표시 시각 분기 부재
+- **KI-065** (P3) — EM-03 `.calc-val.is-emphasis` variant 부재 (inline styling 우회)
+- **KI-066** (P3) — EM-09 vert-tab data-tab="security" 중복 (Phase 7 React key 충돌)
+- **KI-067** (P3) — 페이지 한정 grid 8종 컴포넌트화 후보 (G5 또는 Phase 7)
+
+### sprite cross-check 재검증
+
+- 11/11 PASS (i-globe 추가로 EM-02 sprite 22 symbol)
+
+## [wf-v0.4.0] — 2026-05-18 (G4 Employee 와이어프레임 11 화면 양산)
+
+G3 wf-v0.3.0 + KI-063 CI sprite cross-check 강화 (PR #11) 이후 G4 진입. PRD `prd/domains/employee/EM-01~11.md` 11 화면 일괄 양산. PWA 모바일이 주 사용 환경.
+
+### 신규 화면 (EM-01 ~ EM-11)
+
+| ID | 화면 | 라우트 | 패턴 |
+|----|------|--------|------|
+| EM-01 | 내 대시보드 | `/me` | KPI 5 + Clock Card + Leave Balance Card + Mini Lists 3 |
+| EM-02 | 출퇴근 | `/me/attendance` | Clock Card (full) + Policy Info + History Table + Modification Modal |
+| EM-03 | 휴가 신청 | `/me/leaves/new` | Form (좌) + Calc Summary + Approval Line Preview (우) |
+| EM-04 | 내 휴가 현황 | `/me/leaves` | KPI 4 + Donut Chart Placeholder + Balance Distribution + History |
+| EM-05 | 내 결재 / 진행현황 | `/me/approvals` | Tab Filter (5) + Unified Approval Table + Detail Drawer (timeline) |
+| EM-06 | 급여명세서 | `/me/payslips` | Year Filter + Payslip Table + Detail Modal (지급/공제 표) |
+| EM-07 | 문서 조회 | `/me/documents` | Tab (내 문서/회사 문서) + Filter + Document Table |
+| EM-08 | 증명서 요청 | `/me/documents/certificate-request` | Form + Process Stepper + History Table |
+| EM-09 | 내 정보 / 프로필 | `/me/profile` | Profile Card + 7 Vert Tabs + Form + Security Tab (2FA + Sessions) |
+| EM-10 | 알림함 | `/me/notifications` | Tab Filter + Type Filter + Notification Row List + PWA Push Banner |
+| EM-11 | 요청 내역 (v1.1) | `/me/requests` | Unified Request Table + MVP Redirect Notice |
+
+### G4 신규 컴포넌트 (components.css §G4.1~G4.6)
+
+1. **ClockCard** — `.clock-card` + display/now/date/meta/actions (36px mono 시계 + 4-col meta + 상태별 큰 버튼 그룹)
+2. **LeaveBalanceCard** — `.leave-balance-card` + main/num(48px accent)/unit/sub/row/key/val (잔여 휴가 강조)
+3. **StatMiniList** — `.stat-mini-list` + row/type/icon/title/time (미니 리스트 3건, surface-2 + hover accent-bg)
+4. **CalcSummary** — `.calc-summary` + row/key/val (자동 계산 박스, 사용일수 22px accent + error variant danger)
+5. **ChartPlaceholder** — `.chart-placeholder` + donut/legend/note (140px Donut SVG placeholder + 4 legend + Phase 7 교체 note)
+6. **NotifRow** — `.notif-card` + `.notif-row.is-unread` + dot/icon/body/type/time (32×32 circle icon, is-unread info-bg)
+
+기존 G3 컴포넌트 100% 재사용 — vert-tabs (EM-09), approval-timeline (EM-05 drawer), profile-card (EM-09), stepper (EM-03/EM-08), drawer (EM-05), modal-overlay (EM-02/EM-06), tabs (EM-05/EM-07/EM-10), select-wrap, date-input, file-input 등.
+
+### 문서 갱신
+
+- `_design-system/components.css` 988 → 1086+ lines (G4 6 컴포넌트 §G4 + 모바일 override 5 규칙)
+- `_design-system/03-components.md` 1305 → 1430+ lines (§G4.1~G4.6 Anatomy + Props + Phase 7)
+- `_design-system/_showcase.html` 1125 → 1180+ lines (G4 6 신규 demo section)
+- `_design-system/component-usage-matrix.json` v1.1.0 → v1.2.0 (24 → 30 patterns, 신규 6 + applicable_screens 확장)
+- `wireframes/analysis/EM-01~11.md` 신규 11 (PRD 매핑 + 5상태 + i18n + API + 권한 + 검증 + Phase 7 + 의존성)
+
+### 사이드바 employee 8 메뉴 (05-layouts.md §employee SSOT 정합)
+
+```
+대시보드 / 출퇴근 / 휴가 / 결재 / 급여 / 문서 / 알림 / 내 정보
+```
+footer: `v1.0.0-beta · 직원 환경`. sidebar-section-label: `내 메뉴`.
+
+### CI 검증
+
+- inline-svg-sprite-check (KI-063 강화) — 11/11 화면 cross-check PASS (used IDs ⊆ defined IDs)
+- design-system-ssot — inline 정의 0건 (페이지 한정 grid layout만)
+- native-element-wrap-check — select/file/date 모두 wrap
+- showcase-coverage-check — matrix.json v1.2.0 30 patterns 매핑
+
 ## [wf-v0.3.0-hotfix3] — 2026-05-18 (G3 hotfix3 — codex mechanical fix 능동 정정)
 
 evaluator PASS 8.65 + codex FAIL 7.3 → BLOCKED_FOR_HOTFIX → codex 권고 "모두 mechanical fix — 사용자 결정 불필요" → 능동 정정.

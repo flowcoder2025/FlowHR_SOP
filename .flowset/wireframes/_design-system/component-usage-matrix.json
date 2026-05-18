@@ -1,6 +1,6 @@
 {
   "$schema": "./component-usage-matrix.schema.json",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "updated_at": "2026-05-18",
   "source_of_truth": ".flowset/wireframes/_design-system/component-usage-matrix.json",
   "spec_ref": ".flowset/contracts/review-system.md §17-4 (Codex 합의안)",
@@ -201,6 +201,62 @@
       "showcase_anchor": "_showcase.html#section-side-drawer",
       "allowed_classes": ["req-shell", "req-drawer", "diff-row", "diff-label"],
       "react_mapping": "shadcn/ui Sheet (drawer) + URL ?id= 동기화 + diff highlight"
+    },
+    {
+      "prd_pattern": "Clock Card (G4 신규, PWA 출퇴근)",
+      "applicable_screens": ["EM-01", "EM-02"],
+      "components": ["clock-card", "clock-display", "clock-now", "clock-date", "clock-meta", "clock-meta-item", "clock-meta-label", "clock-meta-value", "clock-actions"],
+      "showcase_anchor": "_showcase.html#section-clock-card",
+      "allowed_classes": ["clock-card", "clock-display", "clock-now", "clock-date", "clock-meta", "clock-meta-item", "clock-meta-label", "clock-meta-value", "clock-actions"],
+      "react_mapping": "navigator.geolocation + workbox-background-sync (오프라인 큐) + shadcn/ui Card — 모바일 ≤768px 시 clock-meta 2-col + clock-actions 1-col stack"
+    },
+    {
+      "prd_pattern": "Leave Balance Card (G4 신규, 잔여 휴가 강조)",
+      "applicable_screens": ["EM-01", "EM-04"],
+      "components": ["leave-balance-card", "leave-balance-main", "leave-balance-num", "leave-balance-unit", "leave-balance-sub", "leave-balance-row", "leave-balance-key", "leave-balance-val"],
+      "showcase_anchor": "_showcase.html#section-leave-balance",
+      "allowed_classes": ["leave-balance-card", "leave-balance-main", "leave-balance-num", "leave-balance-unit", "leave-balance-sub", "leave-balance-row", "leave-balance-key", "leave-balance-val"],
+      "react_mapping": "shadcn/ui Card + 큰 숫자 강조 패턴 — Phase 7 만료 임박 cron 알림 연동"
+    },
+    {
+      "prd_pattern": "Stat Mini List (G4 신규, 미니 리스트 3건)",
+      "applicable_screens": ["EM-01"],
+      "components": ["stat-mini-list", "stat-mini-row", "stat-mini-type", "stat-mini-icon", "stat-mini-title", "stat-mini-time"],
+      "showcase_anchor": "_showcase.html#section-stat-mini",
+      "allowed_classes": ["stat-mini-list", "stat-mini-row", "stat-mini-type", "stat-mini-icon", "stat-mini-title", "stat-mini-time"],
+      "react_mapping": "shadcn/ui Card + <a> wrapping (자동 read mark + navigate) — 최대 3건 (PRD §3 명세)"
+    },
+    {
+      "prd_pattern": "Calc Summary (G4 신규, 자동 계산 박스)",
+      "applicable_screens": ["EM-03"],
+      "components": ["calc-summary", "calc-row", "calc-key", "calc-val"],
+      "showcase_anchor": "_showcase.html#section-calc-summary",
+      "allowed_classes": ["calc-summary", "calc-row", "calc-key", "calc-val"],
+      "react_mapping": "useMutation('/leaves/calculate-days') debounce 500ms 또는 client-side date-fns + work_policy 주말/공휴일"
+    },
+    {
+      "prd_pattern": "Chart Placeholder Donut (G4 신규, Phase 7 chart lib 교체 전)",
+      "applicable_screens": ["EM-04"],
+      "components": ["chart-placeholder", "chart-placeholder-donut", "chart-placeholder-donut-inner", "chart-placeholder-num", "chart-placeholder-sub", "chart-donut-svg", "chart-placeholder-legend", "legend-row", "legend-dot", "legend-label", "legend-val", "chart-placeholder-note"],
+      "showcase_anchor": "_showcase.html#section-chart-placeholder",
+      "allowed_classes": ["chart-placeholder", "chart-placeholder-donut", "chart-placeholder-donut-inner", "chart-placeholder-num", "chart-placeholder-sub", "chart-donut-svg", "chart-placeholder-legend", "legend-row", "legend-dot", "legend-label", "legend-val", "chart-placeholder-note"],
+      "react_mapping": "recharts <PieChart> 또는 visx <Pie> — 본 placeholder는 시각 검수용 inline SVG (stroke-dasharray)"
+    },
+    {
+      "prd_pattern": "Notif Row (G4 신규, 알림 카드 리스트)",
+      "applicable_screens": ["EM-10"],
+      "components": ["notif-card", "notif-row", "notif-row-dot", "notif-row-icon", "notif-row-body", "notif-row-title", "notif-row-desc", "notif-row-type", "notif-row-time"],
+      "showcase_anchor": "_showcase.html#section-notif-row",
+      "allowed_classes": ["notif-card", "notif-row", "notif-row is-unread", "notif-row-dot", "notif-row-icon", "notif-row-body", "notif-row-title", "notif-row-desc", "notif-row-type", "notif-row-time", "button.notif-row"],
+      "react_mapping": "Realtime broadcast 구독 + PWA Web Push (iOS 16.4+) + 카카오 알림톡 폴백 — is-unread variant + 비이동 시 button reset"
+    },
+    {
+      "prd_pattern": "Auxiliary Child Classes (G4 §G4.7 SSOT)",
+      "applicable_screens": ["전 G4 화면 + 전 G3 + G2 일부"],
+      "components": ["info-row-key", "info-row-val", "empty-state-title", "empty-state-desc", "tab-count", "form-help", "history-card"],
+      "showcase_anchor": "_showcase.html#section-g4-aux (TBD — 차후 demo 추가)",
+      "allowed_classes": ["info-row-key", "info-row-val", "empty-state-title", "empty-state-desc", "tab-count", "tab.is-active .tab-count", "form-help", "history-card"],
+      "react_mapping": "base 컴포넌트(info-row / empty-state / tab / form-row / card)의 자식 또는 modifier — components.css §G4.7 SSOT. history-card는 card variant (loading state selector anchor)"
     }
   ],
 
@@ -255,6 +311,26 @@
         "G3 신규 9 패턴 추가 — Profile Card+Summary Grid, Org Tree 3-Pane, Calendar Grid, Approval Timeline+Sticky, Approval Master-Detail Inbox, Report List+Canvas, Settings Vert-Tabs Pane, Integration Card Grid, Side Detail Drawer with Diff",
         "Date Input applicable_screens 정정 — TA-02 + TA-13 추가 (기존 1 pattern update만, 신규 카운트 X)",
         "기존 15 patterns + G3 신규 9 = 24 patterns (15 → 24)"
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-05-18",
+      "wi": "WI-G4-wireframes-employee (wf-v0.4.0)",
+      "changes": [
+        "G4 신규 6 패턴 추가 — Clock Card (PWA 출퇴근), Leave Balance Card, Stat Mini List, Calc Summary, Chart Placeholder Donut, Notif Row",
+        "applicable_screens 업데이트 — Dashboard에 EM-01 / Master-Detail에 EM-05 EM-11 / Date Input에 EM-03 / Profile Card에 EM-09 추가 (기존 패턴 매핑 확장)",
+        "기존 24 patterns + G4 신규 6 = 30 patterns (24 → 30)"
+      ]
+    },
+    {
+      "version": "1.2.1",
+      "date": "2026-05-18",
+      "wi": "WI-G4hotfix2-fix (codex G4-HF1-REVAL-001/002 + evaluator NON_BLOCKING P3 2건)",
+      "changes": [
+        "Auxiliary Child Classes (G4 §G4.7 SSOT) 신규 패턴 추가 — info-row-key/val, empty-state-title/desc, tab-count(+is-active variant), form-help, history-card (G4 hotfix2 정정 history-card 등록 포함)",
+        "Notif Row allowed_classes에 'button.notif-row' 추가 (G4-CDX-004 hotfix1 정정 reflect)",
+        "기존 30 patterns + auxiliary 1 = 31 patterns"
       ]
     }
   ]

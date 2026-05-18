@@ -986,3 +986,108 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
   .chart-grid > .card-wide { grid-column: span 1; }
   .calendar-grid { overflow-x: auto; }
 }
+
+/* ============================================================================
+   G4 신규 컴포넌트 (wf-v0.4.0 — Employee 도메인)
+   ============================================================================ */
+
+/* === G4.1 ClockCard — EM-01/02 출퇴근 시계 + 상태별 큰 액션 버튼 그룹 === */
+.clock-card { display: flex; flex-direction: column; gap: 12px; }
+.clock-display { padding: 8px 0 12px; text-align: center; }
+.clock-now { font-size: 36px; font-weight: 700; color: var(--color-text); font-family: var(--font-mono); letter-spacing: -0.02em; line-height: 1.1; }
+.clock-date { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; }
+.clock-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.clock-meta-item { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: var(--color-surface-2); border-radius: var(--r-sm); font-size: 12px; }
+.clock-meta-label { color: var(--color-text-muted); font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.clock-meta-value { color: var(--color-text); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.clock-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 4px; }
+.clock-actions > .btn { justify-content: center; }
+
+/* === G4.2 LeaveBalanceCard — EM-01/04 잔여 휴가 강조 카드 === */
+.leave-balance-card { display: flex; flex-direction: column; gap: 12px; }
+.leave-balance-main { text-align: center; padding: 12px 0; }
+.leave-balance-num { font-size: 48px; font-weight: 700; color: var(--color-accent); line-height: 1; letter-spacing: -0.02em; }
+.leave-balance-unit { font-size: 18px; font-weight: 600; color: var(--color-text-muted); margin-left: 4px; }
+.leave-balance-sub { font-size: 12px; color: var(--color-text-muted); margin-top: 6px; }
+.leave-balance-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--color-border); }
+.leave-balance-row:last-of-type { border-bottom: none; }
+.leave-balance-key { color: var(--color-text-muted); }
+.leave-balance-val { color: var(--color-text); font-weight: 600; }
+
+/* === G4.3 StatMiniList — EM-01 미니 리스트 (요청/알림/일정 3건) === */
+.stat-mini-list { display: flex; flex-direction: column; gap: 4px; }
+.stat-mini-row { display: flex; gap: 8px; align-items: center; padding: 8px 10px; background: var(--color-surface-2); border-radius: var(--r-sm); font-size: 13px; color: var(--color-text); text-decoration: none; transition: background 0.15s; }
+a.stat-mini-row:hover { background: var(--color-accent-bg); }
+.stat-mini-type { font-size: 11px; padding: 2px 6px; border-radius: 3px; background: var(--color-info-bg); color: var(--color-info); font-weight: 600; flex-shrink: 0; }
+.stat-mini-icon { display: inline-flex; color: var(--color-text-muted); flex-shrink: 0; }
+.stat-mini-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-mini-time { font-size: 11px; color: var(--color-text-muted); flex-shrink: 0; }
+
+/* === G4.4 CalcSummary — EM-03 자동 계산 박스 (사용일수/잔여/신청후 잔여) === */
+.calc-summary { display: flex; flex-direction: column; gap: 6px; }
+.calc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; }
+.calc-key { color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; }
+.calc-val { color: var(--color-text); font-weight: 600; }
+
+/* === G4.5 ChartPlaceholder — EM-04 Donut 차트 (Phase 7 chart lib 교체 전 placeholder) === */
+.chart-placeholder { display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: center; padding: 12px 0; }
+.chart-placeholder-donut { position: relative; width: 140px; height: 140px; }
+.chart-donut-svg { width: 100%; height: 100%; transform: rotate(0); }
+.chart-placeholder-donut-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.chart-placeholder-num { font-size: 28px; font-weight: 700; color: var(--color-accent); line-height: 1; }
+.chart-placeholder-sub { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+.chart-placeholder-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-label { flex: 1; color: var(--color-text); }
+.legend-val { color: var(--color-text-muted); font-weight: 600; }
+.chart-placeholder-note { grid-column: 1 / -1; font-size: 11px; color: var(--color-text-muted); padding-top: 8px; border-top: 1px dashed var(--color-border); display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+
+/* === G4.6 NotifRow — EM-10 알림 카드 리스트 === */
+.notif-card { padding: 0; }
+.notif-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--color-border); text-decoration: none; color: var(--color-text); position: relative; transition: background 0.15s; cursor: pointer; width: 100%; text-align: left; }
+.notif-row:last-child { border-bottom: none; }
+/* button.notif-row reset — UA 기본 background/border/font 제거 (G4-CDX-004 정정) */
+button.notif-row { background: none; border: none; font: inherit; }
+.notif-row:hover { background: var(--color-surface-2); }
+.notif-row.is-unread { background: var(--color-info-bg); }
+.notif-row.is-unread:hover { background: var(--color-accent-bg); }
+.notif-row-dot { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); }
+.notif-row-icon { display: inline-flex; color: var(--color-text-muted); flex-shrink: 0; width: 32px; height: 32px; align-items: center; justify-content: center; background: var(--color-surface-2); border-radius: 50%; }
+.notif-row.is-unread .notif-row-icon { color: var(--color-accent); background: white; }
+.notif-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.notif-row-title { font-size: 13px; font-weight: 600; color: var(--color-text); }
+.notif-row-desc { font-size: 12px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notif-row-type { flex-shrink: 0; font-size: 11px; }
+.notif-row-time { font-size: 11px; color: var(--color-text-muted); flex-shrink: 0; }
+
+/* === G4.7 보조 자식 클래스 SSOT 등록 (evaluator P2 정정 + hotfix2 history-card 추가) ===
+   G4 화면 다수 사용되나 base 컴포넌트의 자식 클래스로 components.css 미정의 상태였음.
+   클래스 목록 (8종):
+     1. info-row-key / 2. info-row-val (info-row 자식, 7화면 사용)
+     3. empty-state-title / 4. empty-state-desc (10화면 사용)
+     5. tab-count (G3 신규 — tab 내 카운트 배지) + 5-variant tab.is-active .tab-count
+     6. form-help (form-row 자식 도움말 텍스트)
+     7. history-card (card variant — 이력 카드, body[data-state=loading] selector 타깃, EM-02/04/08 3화면)
+   참고: file-input-name 클래스는 G4-CDX-001 hotfix1 정정으로 file-input-filename으로 통일되어 잔존 0건. */
+.info-row-key { color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; font-size: 13px; }
+.info-row-val { color: var(--color-text); font-weight: 500; font-size: 13px; }
+.empty-state-title { font-size: 14px; font-weight: 600; color: var(--color-text); margin-top: 8px; }
+.empty-state-desc { font-size: 13px; color: var(--color-text-muted); margin-top: 4px; max-width: 320px; text-align: center; }
+.tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 6px; margin-left: 6px; border-radius: 9px; background: var(--color-surface-2); color: var(--color-text-muted); font-size: 11px; font-weight: 600; }
+.tab.is-active .tab-count { background: var(--color-accent-bg); color: var(--color-accent); }
+.form-help { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+.form-help > svg.ico { width: 12px !important; height: 12px !important; }
+/* .history-card — card modifier. base .card 시각 유지하고 페이지 loading state opacity 타깃 selector 역할만. */
+.history-card { /* base card 그대로 상속 — body[data-state="loading"] .history-card 셀렉터 anchor */ }
+
+/* === G4 모바일 override === */
+@media (max-width: 768px) {
+  .clock-meta { grid-template-columns: repeat(2, 1fr); }
+  .clock-actions { grid-template-columns: 1fr; }
+  .chart-placeholder { grid-template-columns: 1fr; }
+  .chart-placeholder-donut { margin: 0 auto; }
+  .notif-row { flex-wrap: wrap; }
+  .notif-row-desc { white-space: normal; }
+  .leave-balance-num { font-size: 40px; }
+}
