@@ -7,7 +7,7 @@
 | 심각도 | 활성 건수 | 트리거 임계 | 트리거 도달 |
 |--------|----------|------------|-----------|
 | P0 Critical | 0 | 1 | ❌ |
-| P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
+| P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1 wf-v0.2.0 resolved + **audit hotfix3 NEW-P0/P1 정정 2026-05-18 — OP-04:179 + _showcase L386/529/618/809 5건 select-wrap, 21건 총 적용**) |
 | P2 Medium | **4** | 5 | ❌ 임계 미달 — KI-049/054/060/061. KI-053/058 G3 hotfix2~3 resolved + KI-063 WI-G4prep-ci resolved + KI-050 **audit hotfix2 16/17 정정 (OP-02/05/06/07/11) + audit hotfix3 OP-04 1건 + _showcase 4건 추가 정정 = resolved 2026-05-18 (총 21건 .select-wrap, 45/45 CI 강화 PASS)** + **KI-051 audit hotfix3 resolved (CI native-element-wrap-check `.select-wrap` parent 검증 추가)**. |
 | P3 Low | **31** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + **KI-070 audit hotfix2 codex G1 (2026-05-18)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
 
@@ -68,7 +68,6 @@
 | KI-049 | P2 | 5 | Wireframe | analysis 권한 매트릭스 11화면 중 7화면 누락 (OP-04/05/06/08/10/11/12) — PRD엔 있으나 analysis 재인용 부재. wf-v0.2.0 hotfix 또는 G3 진행 시 일괄 보강. | evaluator | 2026-05-16 | open (G3 batch 또는 차기 batch) |
 | ~~KI-050~~ | P2 | 5 | Wireframe | ~~`.select-wrap` 미적용 17건 (실측 16건 + OP-04 누락 1건 + _showcase 본체 4건 = 총 21건)~~ | codex hotfix2 §17-7-2 + audit hotfix2 G2 재검수 + evaluator audit hotfix2 P0/P1 | 2026-05-17 | **resolved (audit hotfix3 2026-05-18 — 21건 모두 `.select-wrap` 적용: hotfix2 16건 OP-02/05/06/07/11 + hotfix3 OP-04:179 1건 + hotfix3 _showcase L386/529/618/809 4건. CI 강화 PASS)** |
 | ~~KI-051~~ | P2 | 5 | Process | ~~CI `showcase-coverage-check` anchor만 검사 — false negative (KI-050 OP-04 미검출 증명)~~ | codex hotfix2 §17-7-4 + evaluator audit hotfix2 P2 | 2026-05-17 | **resolved (audit hotfix3 2026-05-18 — `.github/workflows/pr-checks.yml` native-element-wrap-check job에 `.select-wrap` parent 검증 추가, awk 직전 5줄 검사. OP-04 같은 누락 향후 차단)** |
-| KI-051 | P2 | 5 | Process | CI `showcase-coverage-check` job이 anchor 존재만 보고 컴포넌트 사용 일관성을 검증하지 못함 — false negative. 화면이 실제 사용하는 DS 클래스가 component-usage-matrix.json의 patterns에 매핑되어 있는지 cross-check 필요. | codex hotfix2 §17-7-4 | 2026-05-17 | open (다음 batch) |
 | ~~KI-052~~ | P3 | 5 | Wireframe | ~~`_design-system/_layout-shell.html` 외부 sprite 참조 20건 잔존~~ | evaluator hotfix3-rev1 | 2026-05-17 | **resolved (G3 진입 commit 01c800d / 2026-05-17, _layout-shell + _layout-auth 24건 인라인 sprite reference 정정 + CI 검사 범위 확장)** |
 | ~~KI-053~~ | P2 | 5 | Wireframe | ~~G3 신규 9 패턴 _showcase.html demo + 03-components.md 사양 미등록~~ | evaluator G3 hotfix1 | 2026-05-18 | **resolved (G3 hotfix2 commit 5e0b028 / 2026-05-18 — _showcase.html 9/9 + 03-components.md §G3.1~G3.9 9/9 등록 완료)** |
 | KI-054 | P2 | 5 | Wireframe | icon-only 버튼 다수가 `aria-label` 없이 `data-tooltip`만 사용 — WCAG 2.1 AA 결함. 화면 일괄 sed 또는 components.css icon-btn 등록 시 aria-label 의무 패턴 명시. | codex G3-CDX-006 | 2026-05-18 | open (차기 batch) |
