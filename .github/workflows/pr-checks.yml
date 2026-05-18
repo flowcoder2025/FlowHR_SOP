@@ -253,6 +253,15 @@ jobs:
               echo "::error file=$f::bare <select> (class에 'select' 없음): ${line:0:120}"
               fail=1
             done < <(grep -nE '<select(\s|>)' "$f" | grep -vE 'class="[^"]*\bselect\b[^"]*"' || true)
+            # KI-051 hotfix3 — .select 단독은 chevron만 표시. focus/error/disabled 상태는 .select-wrap parent 의존.
+            # 모든 <select>의 직전 5줄 안에 .select-wrap parent 의무 (hotfix3 audit evaluator P0/P1 정정).
+            while IFS= read -r line; do
+              line_num=$(echo "$line" | cut -d: -f1)
+              if ! awk -v n="$line_num" 'NR >= n-5 && NR <= n' "$f" | grep -q 'class="[^"]*select-wrap'; then
+                echo "::error file=$f:$line_num::<select> parent .select-wrap 없음 (KI-051 false negative 해소 — .select-wrap 의무)"
+                fail=1
+              fi
+            done < <(grep -nE '<select(\s|>)' "$f" || true)
             # <input type="file"> — 부모에 .file-input wrap 있어야 (단순 검사: 이전 5줄 안 .file-input)
             while IFS= read -r line; do
               # awk로 input 라인 + 이전 5줄 중 .file-input 있는지

@@ -8,6 +8,53 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.3] — 2026-05-18 (audit hotfix3 — evaluator FAIL 7.84 정정, "성급한 resolved 단언" 패턴 차단)
+
+evaluator audit hotfix2 재평가 FAIL 7.84/10 (DS 충실도 Hard gate 7.4 미달). 진단:
+
+> "hotfix2-G2 codex가 commit bdb0735에 포함된 채로 FAIL 7.2 + P0 1건 (OP-04) + P1 1건 (showcase drift 4건)을 보고했음에도 KI-050 INDEX를 'resolved (17건 모두, 45/45 PASS)'로 유지 — 자체 codex 보고와 정합성 단언 정면 충돌. 1차 wf-v1.0.0 철회와 동일 패턴 (성급한 resolved 단언)."
+
+근본 원인: codex 1차 "17건" 카운트(실측 16건 + OP-04 누락)를 검증 없이 사실로 단언 + _showcase 본체 시각 검수 누락. 사용자 비판 "일부 보고 결론처럼 떄려박는" 패턴 반복.
+
+### 정정 (증적 grep 기반)
+
+**P0 — OP-04:179 bare select 1건**:
+- 정정: `<div class="select-wrap"><select class="select"><option>...</option></select></div>`
+- 증적: `grep -nE '<select' .flowset/wireframes/html/OP-04.html` → 1건, .select-wrap parent PASS
+
+**P1 — _showcase.html 4건 (SSOT 본체 위반)**:
+- L386 / L529 / L618 / L809 — 4건 모두 `.select-wrap` 추가
+- 증적: bare select parent .select-wrap 검사 4/4 PASS
+
+**P2 — CI native-element-wrap-check 강화 (KI-051 해소)**:
+- `.github/workflows/pr-checks.yml` native-element-wrap-check job 추가 — `<select>` 직전 5줄 안에 `.select-wrap` parent 의무
+- 로컬 시뮬레이션 45/45 PASS
+- OP-04 같은 누락 향후 차단
+
+**INDEX 표기 정정**:
+- KI-050: "resolved (17건)" → "resolved (실측 16+1+4=21건, audit hotfix2 16건 + audit hotfix3 OP-04 1건 + _showcase 4건)"
+- KI-051: resolved (CI 강화로 false negative 해소)
+- P2 활성 5건 → **4건** (KI-050 + KI-051 resolved, 임계 5건 미달, 트리거 해제)
+
+### 카운트 실측 (commit message 단언 검증)
+
+- OP-02 multi-line 3건
+- OP-05 single-line 3건
+- OP-06 single-line 3건
+- OP-07 single-line 4건
+- OP-11 single-line 3건
+- = **16건 (audit hotfix2)**
+- OP-04 single-line 1건 (audit hotfix3)
+- _showcase 4건 (audit hotfix3)
+- = **총 21건 select-wrap 적용** (45/45 CI PASS)
+
+### 사용자 비판 반영
+
+CLAUDE.md "추측성 답변/작업 절대 금지" 재인지. 향후 정정 시:
+1. codex sub-agent 결과는 1차 가설 — 항상 grep 검증 후 commit
+2. "X건 정정 완료" 단언 전 실측 카운트 검증
+3. KI INDEX "resolved" 단언 전 grep 0건 증적 제시
+
 ## [wf-v0.4.2] — 2026-05-18 (audit hotfix2 — 45 풀화면 codex 4 그룹 분할 검증 결과 정정)
 
 사용자 지적 핵심: "45 풀화면 검증 안된 상태 + codex 45+ MCP hang 위험 추측 일반화". 1차 wf-v1.0.0 + phase-5.pass 부여 철회.
