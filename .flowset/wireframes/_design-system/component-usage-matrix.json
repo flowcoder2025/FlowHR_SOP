@@ -252,9 +252,9 @@
       "date": "2026-05-18",
       "wi": "WI-G3-hotfix1 (G3-CDX-002 + G3-CDX-008 정정)",
       "changes": [
-        "G3 신규 10 패턴 추가 — Profile Card+Summary Grid, Org Tree 3-Pane, Calendar Grid, Approval Timeline+Sticky, Approval Master-Detail Inbox, Report List+Canvas, Settings Vert-Tabs Pane, Integration Card Grid, Side Detail Drawer with Diff (Profile + Side Drawer 별도 카운트)",
-        "Date Input applicable_screens 정정 — TA-02 + TA-13 추가 (실제 사용 화면 정합, OP-04/06/11/TA-05/TA-07/EM-03 유지)",
-        "G2 패턴은 그대로 유지 (14 → 24 patterns)"
+        "G3 신규 9 패턴 추가 — Profile Card+Summary Grid, Org Tree 3-Pane, Calendar Grid, Approval Timeline+Sticky, Approval Master-Detail Inbox, Report List+Canvas, Settings Vert-Tabs Pane, Integration Card Grid, Side Detail Drawer with Diff",
+        "Date Input applicable_screens 정정 — TA-02 + TA-13 추가 (기존 1 pattern update만, 신규 카운트 X)",
+        "기존 15 patterns + G3 신규 9 = 24 patterns (15 → 24)"
       ]
     }
   ]

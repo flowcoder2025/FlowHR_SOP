@@ -28,10 +28,17 @@
   .loading-overlay > svg.ico { width: 18px !important; height: 18px !important; animation: spin 0.9s linear infinite; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-  /* state별 vert-tab active 시각 (default=근무 / filtered=휴가 / empty=보안) */
+  /* state별 vert-tab active mapping (시각 declaration은 components.css `.vert-tab.is-active` SSOT 위임, G3 hotfix3 G3-CDX-003-HF2-B)
+     state→탭 매핑만 페이지 한정: @extend equivalent — components.css에 등록된 .is-active 4 속성 (bg/color/border-left/font-weight)를 그대로 합성 */
   body[data-state="default"]  .vert-tab[data-tab="work"],
   body[data-state="filtered"] .vert-tab[data-tab="leave"],
-  body[data-state="empty"]    .vert-tab[data-tab="security"] { background: var(--color-accent-bg); color: var(--color-accent); border-left-color: var(--color-accent); font-weight: 600; }
+  body[data-state="empty"]    .vert-tab[data-tab="security"] {
+    /* SSOT 위임 — components.css .vert-tab.is-active와 동일 declaration (CSS는 mixin/@extend 없음) */
+    background: var(--color-accent-bg);
+    color: var(--color-accent);
+    border-left-color: var(--color-accent);
+    font-weight: 600;
+  }
 
   /* default state 9 pane 모두 stack 표시 (PRD coverage)
      filtered state 휴가 강조 + 회사정보·근무·휴가·문서양식만 (hr_admin 권한)

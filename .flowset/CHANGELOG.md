@@ -8,6 +8,49 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.3.0-hotfix3] — 2026-05-18 (G3 hotfix3 — codex mechanical fix 능동 정정)
+
+evaluator PASS 8.65 + codex FAIL 7.3 → BLOCKED_FOR_HOTFIX → codex 권고 "모두 mechanical fix — 사용자 결정 불필요" → 능동 정정.
+
+### 정정 (codex G3-CDX-003-HF2/HF2-B + evaluator KI-058/059)
+
+**P1 G3-CDX-003-HF2 — TA-01 .kpi-row margin 정합**:
+- TA-01:17 `.kpi-row { grid-template-columns: repeat(6, 1fr); margin-bottom: 20px }` → `margin-bottom` 제거 (base components.css 16px 통일)
+
+**P1 G3-CDX-003-HF2-B — TA-13 vert-tab SSOT 위임**:
+- TA-13:32-34 vert-tab state binding 시각 declaration 위 SSOT 위임 주석 추가 (CSS는 mixin 없으므로 declaration 자체는 유지 — `.vert-tab.is-active`와 동일 4 속성 명시)
+- 추가 정정: components.css L408 `.vert-tab.is-active` 기존 정의 (accent-light) 제거 → L885 §G3 SSOT (accent-bg) 단일화 (KI-059 resolved)
+
+**evaluator P2 KI-058 — `--color-accent-bg` 토큰 추가**:
+- tokens.css L14 `--color-accent-bg: #EFF6FF;` 1줄 추가 (alias — hover/active state)
+- components.css 8 클래스 (.vert-tab.is-active / .approval-row.is-active / .report-item.is-active / .step.is-active / .master-item.is-active / .auth-alert-info / .install-card.is-active / .config-card.is-active) fallback 정합 (이전 무색 렌더링 해소)
+
+**P3 정정**:
+- TA-03.html:199 주석 "5 pane" → "3 pane (PRD §6 정합)" (commit 오기 정정)
+- matrix.json:251 changelog "G3 신규 10 패턴" → "9 패턴" + "기존 15 patterns + G3 신규 9 = 24" (Date Input은 update만)
+- 03-components.md §G3.5~G3.9 Props 변수 + Phase 7 라이브러리 매핑 보강 (§G3.5 인박스 카운트/SLA/단계 + ResizablePanel/react-swipeable/Realtime / §G3.6 5+v1.3 종류 + recharts/visx + 머터리얼라이즈드 뷰 / §G3.7 9 탭 + cron + RLS audit / §G3.8 9 종류 + API Key + Vault + Realtime / §G3.9 7 변수 + Sheet + react-diff-view)
+
+### KI INDEX 갱신
+
+- KI-053 (P2) → **resolved** (hotfix2 _showcase + 03-components 9/9)
+- KI-058 (P2) → **resolved** (hotfix3 tokens.css 1줄)
+- KI-059 (P3) → **resolved** (hotfix3 components.css L408 중복 제거)
+- 카운트 갱신: P2 5 → 4 / P3 20 → 19
+
+### 정적 게이트 + 추가 검증
+
+- href="#" 0 / javascript:void(0) 0 / 외부 sprite 0
+- matrix.json metadata 정합 v1.1.0 / 2026-05-18 / 24 patterns / changelog 9 표기
+- components.css `.vert-tab.is-active` 중복 0건 (L408 제거 후 L885만 잔존)
+- tokens.css `--color-accent-bg` 정의 1건 (L14)
+- TA-01 .kpi-row margin-bottom 0건 (base components.css 16px 통일)
+- _showcase G3 9/9 + 03-components §G3.1~G3.9 9/9
+
+### 다음
+
+- 재평가 (evaluator + codex 병렬, hotfix 3회차 마지막) → PASS_BOTH 시 ready → CI → auto-merge → tag wf-v0.3.0
+- 만약 codex 잔존 FAIL 시 review-system.md §10-6 "3회 연속 FAIL → 스코프 재검토" 사용자 결정
+
 ## [wf-v0.3.0-hotfix2] — 2026-05-18 (G3 hotfix2 — 완전 SSOT 동기화)
 
 evaluator PASS 8.48 + codex FAIL 7.0 → BLOCKED_FOR_HOTFIX → 사용자 결정 "완전 SSOT 동기화" 채택.

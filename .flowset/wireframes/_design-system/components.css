@@ -405,7 +405,7 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
 .vert-tabs { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--r-lg); padding: 8px; box-shadow: var(--shadow-sm); }
 .vert-tab { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 13px; color: var(--color-text); border-radius: var(--r-sm); cursor: pointer; line-height: 1.4; }
 .vert-tab:hover { background: var(--color-surface); }
-.vert-tab.is-active { background: var(--color-accent-light); color: var(--color-primary); font-weight: 600; }
+/* .vert-tab.is-active SSOT는 §G3 신규 섹션에 정의 (border-left-color accent + accent-bg + accent color). G3 hotfix3 KI-059 중복 제거 */
 .vert-tab > svg { width: 16px !important; height: 16px !important; opacity: 0.7; flex-shrink: 0; }
 
 /* Breadcrumb */
@@ -880,9 +880,7 @@ svg.ico, svg.icon { display: inline-block; flex-shrink: 0; vertical-align: middl
    화면 inline 잔존 허용: .kpi-row { grid-template-columns: repeat(N, 1fr) } */
 .kpi-row { display: grid; gap: 12px; margin-bottom: 16px; }
 
-/* === vert-tab is-active (state 토글 — body[data-state] 패턴 대체) ===
-   화면에서는 markup에 .is-active 부착 또는 body[data-state] CSS 사용. 컴포넌트 정의 SSOT. */
-.vert-tab.is-active { background: var(--color-accent-bg); color: var(--color-accent); border-left-color: var(--color-accent); font-weight: 600; }
+/* .vert-tab.is-active는 §Vertical Tabs (L765-768)에 단일 SSOT 정의. G3 hotfix3 KI-059 중복 제거 (hotfix2가 잘못 추가한 L885 제거). 화면은 markup에 .is-active 부착 또는 body[data-state] CSS 사용. */
 
 /* === Profile Card + Summary Grid (TA-03, EM-09) === */
 .header-cards { display: grid; grid-template-columns: 280px 1fr; gap: 16px; margin-bottom: 16px; }

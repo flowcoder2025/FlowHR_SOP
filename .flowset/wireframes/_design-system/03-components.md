@@ -1207,9 +1207,11 @@ interface StepperProps {
     - `.row-meta` (font 11px text-muted)
 - 우측: `.card` (상세 — Approval Timeline 변종 재사용)
 
-**Variant**: 받은(default) / 보낸(filtered) / 위임(v1.1) / 완료
+**Props 변수**: 인박스 카운트 (warning chip — 받은 결재 대기 N) / 결재 종류 (휴가/근태/증명서/문서) / 요청자 (이름+부서) / SLA 임박 (warning badge — "1h" / "23m") / 단계 표기 ("1/2" 형식) / 본인 처리 여부 / 일괄 처리 가능 카운트
 
-**Phase 7**: shadcn/ui ResizablePanel + Sheet (모바일 drawer) + react-swipeable (좌 승인 / 우 반려)
+**Variant**: 받은(default) / 보낸(filtered) / 위임(v1.1 small) / 완료. 행 선택 — `.approval-row.is-active` accent border-left + 우측 상세 동기화
+
+**Phase 7**: shadcn/ui ResizablePanel (좌/우 width 조절) + Sheet (모바일 drawer 풀스크린 전환) + react-swipeable (좌 스와이프 승인 / 우 반려) + Realtime channel `approvals:tenant_id={id}` (신규/단계 전이/SLA 임박 알림) + 일괄 승인 zod (같은 type만)
 
 ### §G3.6 Report List + Chart Canvas
 
@@ -1224,7 +1226,11 @@ interface StepperProps {
     - `.is-disabled` (text-muted, cursor: not-allowed, opacity 0.7 — v1.3 커스텀)
 - 우측: `.chart-grid` (grid 1fr 1fr, gap 16px) + `> .card-wide` span 2
 
+**Props 변수**: 리포트 종류 (5+v1.3) / 기간 / 부서 필터 / 직급 필터 / 차트 데이터 (Line/Bar/Donut/Stacked/Radar) / 임박 alert (52h) / PDF/Excel 다운로드 핸들러
+
 **Variant**: 인력 / 근태 / 휴가 / 초과근무 (warning) / 부서비교 / 커스텀 (v1.3 disabled)
+
+**Phase 7**: recharts 또는 visx (LineChart/BarChart/DonutChart/StackedBar/Radar) + shadcn/ui Card + Puppeteer (PDF 생성) + SheetJS (Excel 내보내기). 머터리얼라이즈드 뷰 (성능 — 부서별 사전 집계).
 
 ### §G3.7 Settings Vertical Tabs Pane
 
@@ -1235,7 +1241,11 @@ interface StepperProps {
 - 좌측: `.vert-tabs` + `.vert-tab` (기존 컴포넌트 — `.is-active` SSOT components.css 등록)
 - 우측: `.pane-canvas` (position: relative) with `.card.pane` × 9
 
+**Props 변수**: 9 탭 (회사정보 / 근무정책 / 휴가정책 / 결재라인 / 역할권한 / 알림 / 문서양식 / 보안 / 감사로그) / 변경 이력 (audit_logs) / 적용 시점 (date-input) / 권한 매트릭스 (super/hr_admin/manager/employee)
+
 **Variant**: state default = super 9 pane / state filtered = hr_admin 6 pane (scope-hr 부착) / state empty = 보안 단독
+
+**Phase 7**: shadcn/ui Tabs (orientation=vertical) + URL ?tab=X + react-hook-form + zod (탭별 schema) + 적용 예정 cron (매 00:00 status=scheduled→active) + Supabase RLS audit_logs `tenant_id`
 
 ### §G3.8 Integration Card Grid
 
@@ -1252,7 +1262,11 @@ interface StepperProps {
   - `:first-child` radius 6px 0 0 6px, border-right: none
   - `:last-child` radius 0 6px 6px 0
 
-**Variant**: connected (success badge) / pending / error / disconnected
+**Props 변수**: 연동 종류 (카카오 알림톡 / SMS / SMTP / 전자계약 / Calendar / Slack / SSO / 출퇴근기기 / Webhook) / 상태 (connected/pending/error/disconnected) / 마지막 발송 / 24h 실패 / 템플릿 카운트 / API Key (이름/마스킹키/권한/만료/24h 호출)
+
+**Variant**: connected (success badge) / pending (muted) / error / disconnected. `.is-coming` v1.2/v1.3 디저블드. 세그먼트 토글 채널 ↔ API Key (`.seg-btn[data-seg="channels"]` vs `[data-seg="apikeys"]`).
+
+**Phase 7**: shadcn/ui Card + Dialog (연결 설정 모달) + react-hook-form (API 키 발급) + Supabase Vault (인증 정보 암호화) + Realtime channel `integrations:tenant_id={id}` + react-day-picker (만료일)
 
 ### §G3.9 Side Detail Drawer with Diff
 
@@ -1265,7 +1279,11 @@ interface StepperProps {
   - `> .diff-label` (64px width, text-muted, font 12px)
 - diff highlight: 원기록 text-decoration: line-through + text-muted / 요청값 success color + font 600
 
-**Variant**: state default = 목록 1fr / state filtered = 목록 + drawer 1fr/360px
+**Props 변수**: 요청 정보 (직원/대상일/요청유형) / 원기록 (출근시각 등) / 요청값 / 사유 (textarea) / 증빙 (file-input — 사진/문서) / 결재라인 단계별 (timeline reuse) / 액션 (승인/반려/의견)
+
+**Variant**: state default = 목록 1fr / state filtered = 목록 + drawer 1fr/360px transition 0.2s. OP-09 감사 로그에서도 동일 drawer 패턴 (diff highlight 재사용 — before→after)
+
+**Phase 7**: shadcn/ui Sheet (drawer) + URL `?id=req-XXX` 동기화 + react-hook-form (반려 사유 textarea + zod validate) + react-dropzone (증빙) + diff library (react-diff-view 또는 자체 highlight)
 
 ### 모바일 override 일괄 (G3 신규 9 패턴 + Approval/Report/Settings/Integration)
 
