@@ -8,6 +8,48 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.1-hotfix1.2] — 2026-05-18 (audit hotfix1.2 — SAMP-P2-002 4-way 동기 + 통합 판정 MERGE_WITH_KI)
+
+evaluator audit hotfix1 재평가 PASS 8.07 + codex sampled 30% review CONDITIONAL 8.1 → 통합 판정 MERGE_WITH_KI.
+
+### codex 신규 finding (SAMP) 정정
+
+**SAMP-P2-002 — page-btn / ticket-status-current 4-way 동기 미완**:
+- 03-components.md `### Pagination` 섹션 — page-btn / page-btn.is-active Anatomy + Variant + 금지 패턴 명시
+- 03-components.md `### TicketStatusCurrent` 신규 섹션 — OP-08 dynamic badge + 금지 패턴
+- matrix.json v1.2.1 → v1.2.2 — Pagination + TicketStatusCurrent 2 신규 패턴 entry + Detail+Tabs applicable_screens에 TA-10 추가 (31 → 33 patterns)
+- evaluator NEW-P2-003과 동일 결함 (codex와 evaluator 식별 일치)
+
+### KI 신규 등록 (audit hotfix1 codex/evaluator finding)
+
+- **KI-068** (P3) — codex SAMP-P3-001 — OP 모달 title `<h2>` inline-styled (G2 leftover, `.modal-title` SSOT 미적용)
+- **KI-069** (P3) — evaluator KI-049 보강 backtick 텍스트 손상 (`users.role` bash substitution)
+
+### 통합 판정 (review-system §4 매트릭스)
+
+| 평가 | 결과 |
+|------|------|
+| evaluator audit hotfix1 | PASS 8.07 (모든 축 7.5+, Hard gate 해소) |
+| codex sampled 30% | CONDITIONAL 8.1 (NEW-P1 3건 100% verification PASS) |
+| 매트릭스 적용 | **MERGE_WITH_KI** |
+
+P0/P1 0건 + P2 누적 4건 (임계 5 미달, trigger 미발동) → 머지 진행.
+
+### 사용자 개입 의무 시점 검토 (review-system §10)
+
+- §10.1 P0 발생: ❌
+- §10.2 P1 threshold 도달: ❌ (1차 NEW-P1 3건 모두 hotfix1로 resolved)
+- §10.3 P0/P1 downgrade: ❌
+- §10.4 public contract 변경: ❌
+- §10.5 evaluator/codex 정면 충돌: ❌ (PASS + CONDITIONAL 둘 다 임계 8.0 통과)
+- §10.6 3회 연속 재평가 FAIL: ❌ (재평가 2회 모두 PASS)
+
+→ 사용자 개입 의무 비해당, 능동 머지 진행. 단 codex Phase 5 full review hang 47분 + sampled 재호출 사례를 사용자가 직접 결정 (옵션 C).
+
+### 다음
+
+PR #13 ready → auto-merge → tag wf-v0.4.1 + tag wf-v1.0.0 (Phase 5 종료).
+
 ## [wf-v0.4.1] — 2026-05-18 (Phase 5 audit hotfix1 — evaluator FAIL 7.45 정정)
 
 사용자 시각 검수로 9 화면 결함 지적 → audit fix PR #13 1차 정정 (badge variant 288건 + KI-061 dead code + modal/stepper/vert-tab + kpi-meta + tabs/tabs-row + leave-badge ellipsis + page-action-bar align). PR #13 commit 후 Phase 5 전체 evaluator FAIL 7.45/10 (완성도/정합성/DS 충실도 임계 미달 + Hard gate 위반 — modal-title SSOT 미동기).

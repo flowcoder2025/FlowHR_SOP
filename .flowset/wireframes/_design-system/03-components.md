@@ -721,6 +721,27 @@ type TableProps<T> = {
 
 ### Pagination
 
+**Anatomy (audit hotfix1 SSOT 강제)**:
+```
+[이전 ‹]  [.page-btn] [.page-btn .is-active] [.page-btn] ... [.page-btn]  [다음 ›]
+                       ─────── accent bg ───────
+```
+
+```html
+<div class="pagination-pages">
+  <button class="page-btn">1</button>
+  <button class="page-btn is-active">2</button>
+  <button class="page-btn">3</button>
+  ...
+</div>
+```
+
+**Variant**:
+- `.page-btn` — 기본 28×28 cell + border + bg-bg + color-text
+- `.page-btn.is-active` — accent bg + white color + border accent (audit hotfix1로 9 화면 inline DS bypass → SSOT 강제)
+- `.page-btn:disabled` — opacity 0.4 + cursor not-allowed
+- `.page-btn:hover` — surface-2 bg
+
 ```ts
 type PaginationProps = {
   total: number;
@@ -730,6 +751,20 @@ type PaginationProps = {
   onChange: (page: number, pageSize: number) => void;
 }
 ```
+
+**금지 패턴 (audit hotfix1)**: `<button class="btn btn-ghost btn-sm" style="background: var(--color-accent); color: white;">` — inline DS bypass 사용 금지. 항상 `.page-btn.is-active` SSOT 사용.
+
+---
+
+### TicketStatusCurrent (OP-08 dynamic badge)
+
+**Anatomy**:
+- `.badge.ticket-status-current` — 기본 accent-bg + accent color (default state)
+- `body[data-state="closed"] .ticket-status-current` — surface-2 + text-muted (OP-08 페이지 한정 inline override 허용 — 페이지 상태 종속)
+
+**적용 화면**: OP-08 지원 티켓 — 티켓 상태가 페이지 state에 따라 동적 변경. 다른 badge variant (.badge-success 등)와 달리 페이지 컨텍스트에 종속.
+
+**금지 패턴**: `<span class="badge" style="background: var(--color-accent-bg); color: var(--color-accent);">` — `.ticket-status-current` 클래스 사용 의무.
 
 ---
 

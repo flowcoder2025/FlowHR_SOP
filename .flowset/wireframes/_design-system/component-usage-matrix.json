@@ -1,6 +1,6 @@
 {
   "$schema": "./component-usage-matrix.schema.json",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "updated_at": "2026-05-18",
   "source_of_truth": ".flowset/wireframes/_design-system/component-usage-matrix.json",
   "spec_ref": ".flowset/contracts/review-system.md §17-4 (Codex 합의안)",
@@ -251,6 +251,24 @@
       "react_mapping": "Realtime broadcast 구독 + PWA Web Push (iOS 16.4+) + 카카오 알림톡 폴백 — is-unread variant + 비이동 시 button reset"
     },
     {
+      "prd_pattern": "Pagination (audit hotfix1 SSOT 강제)",
+      "applicable_screens": ["OP-02", "OP-06", "OP-09", "TA-02", "TA-05", "TA-06", "TA-07", "TA-10", "TA-11"],
+      "components": ["pagination-pages", "page-btn"],
+      "showcase_anchor": "_showcase.html#section-audit-fix (audit fix demo §6)",
+      "allowed_classes": ["pagination-pages", "page-btn", "page-btn is-active", "page-btn:disabled"],
+      "forbidden_patterns": ["<button class=\"btn btn-ghost btn-sm\" style=\"background: var(--color-accent); color: white;\"> — inline DS bypass (audit hotfix1로 9 화면 정정)"],
+      "react_mapping": "shadcn/ui Pagination 또는 자체 Pagination + page state. is-active variant accent bg"
+    },
+    {
+      "prd_pattern": "TicketStatusCurrent (OP-08 dynamic badge)",
+      "applicable_screens": ["OP-08"],
+      "components": ["badge", "ticket-status-current"],
+      "showcase_anchor": "_showcase.html#section-audit-fix (audit fix demo §7)",
+      "allowed_classes": ["badge ticket-status-current"],
+      "forbidden_patterns": ["<span class=\"badge\" style=\"background:...\"> — inline override (audit hotfix1로 OP-08:234 정정)"],
+      "react_mapping": "shadcn/ui Badge + variant — Phase 7 OP-08 dynamic badge useState (default accent / closed muted)"
+    },
+    {
       "prd_pattern": "Auxiliary Child Classes (G4 §G4.7 SSOT)",
       "applicable_screens": ["전 G4 화면 + 전 G3 + G2 일부"],
       "components": ["info-row-key", "info-row-val", "empty-state-title", "empty-state-desc", "tab-count", "form-help", "history-card"],
@@ -331,6 +349,17 @@
         "Auxiliary Child Classes (G4 §G4.7 SSOT) 신규 패턴 추가 — info-row-key/val, empty-state-title/desc, tab-count(+is-active variant), form-help, history-card (G4 hotfix2 정정 history-card 등록 포함)",
         "Notif Row allowed_classes에 'button.notif-row' 추가 (G4-CDX-004 hotfix1 정정 reflect)",
         "기존 30 patterns + auxiliary 1 = 31 patterns"
+      ]
+    },
+    {
+      "version": "1.2.2",
+      "date": "2026-05-18",
+      "wi": "WI-Phase5-fix audit hotfix1.2 (SAMP-P2-002 page-btn + ticket-status-current 4-way 동기)",
+      "changes": [
+        "Pagination (audit hotfix1 SSOT 강제) 신규 패턴 추가 — page-btn / page-btn.is-active. 9 화면 inline DS bypass 정정 반영. forbidden_patterns에 btn-ghost+style inline override 차단",
+        "TicketStatusCurrent (OP-08 dynamic badge) 신규 패턴 추가 — components.css L191 등록 + OP-08:234 inline 제거 반영",
+        "Detail+Tabs 패턴 applicable_screens에 TA-10 추가 (audit hotfix1 누락 보강)",
+        "31 patterns + 신규 2 = 33 patterns"
       ]
     }
   ]
