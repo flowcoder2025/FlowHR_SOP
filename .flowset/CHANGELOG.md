@@ -8,6 +8,52 @@
 >
 > Git tag와 1:1 동기화. 산출물 단위는 git에 push되어야 의미가 있음.
 
+## [wf-v0.4.0-hotfix1] — 2026-05-18 (G4 hotfix1 — codex CONDITIONAL 7.2 + evaluator P2 mechanical fix)
+
+evaluator PASS 8.74 + codex CONDITIONAL 7.2 → 통합 판정 MERGE_WITH_KI/hotfix1 권장 → 모든 결함 mechanical fix → 능동 정정.
+
+### codex 4 findings 정정 (P1:1 + P2:3)
+
+**P1 G4-CDX-001 — file-input DS 명세 통일**:
+- EM-02:285-290 + EM-03:154-160 — `<div class="file-input"><button>...</button><input type="file"><span class="file-input-name">...</span></div>` (기존) → DS 명세 `<label class="file-input"><input type="file" class="sr-only"><span class="file-input-btn">...</span><span class="file-input-filename is-empty">...</span></label>` (정정)
+
+**P2 G4-CDX-002 — EM-03 date input class="input" 추가**:
+- EM-03:131,135 — `<input type="date">` → `<input class="input" type="date">` (components.css `.date-input > .input` appearance/padding override 적용)
+
+**P2 G4-CDX-003 — modal aria 추가**:
+- EM-02:261 + EM-06:214 — `<div class="modal-box">` → `<div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="emXX-modal-title">` + `.modal-title` id 추가
+
+**P2 G4-CDX-004 — EM-10 notif-row href 없는 `<a>` 정정**:
+- EM-10:156 시스템 점검 → `<button type="button" class="notif-row">` 변환 (비이동 액션)
+- EM-10:165 휴가 정책 공지 → `<a class="notif-row" href="/me/documents?type=notice">` (이동 추가)
+- components.css `.notif-row` — `width: 100%; text-align: left` + `button.notif-row { background: none; border: none; font: inherit; }` reset 추가 + `a.notif-row:hover` → `.notif-row:hover` 일반화
+
+### evaluator 2 P2 정정
+
+**P2 — EM-02 offline state 추가 (5 → 6 state)**:
+- 5상태 머신 (default/loading/empty/modal/error) → 6 (default/loading/empty/modal/**offline**/error)
+- offline state-only banner — warning bg, globe icon, "출퇴근 IndexedDB 큐 적재 + 네트워크 복귀 시 자동 동기화"
+- state-debug 6 key 토글
+- EM-02 analysis md 상태 매트릭스 6 state 갱신
+
+**P2 — G4 보조 자식 클래스 8종 components.css §G4.7 SSOT 등록**:
+- `.info-row-key` / `.info-row-val` (info-row 자식, 7화면 사용)
+- `.empty-state-title` / `.empty-state-desc` (empty-state 자식, 10화면 사용)
+- `.tab-count` (tab 내 카운트 배지, G3 신규)
+- `.tab.is-active .tab-count` (active variant)
+- `.form-help` (form-row 자식 도움말)
+
+### P3 4건 KI 등록 (hotfix 의무 외, 차후 batch)
+
+- **KI-064** (P3) — EM-11 사이드바 비표시 시각 분기 부재
+- **KI-065** (P3) — EM-03 `.calc-val.is-emphasis` variant 부재 (inline styling 우회)
+- **KI-066** (P3) — EM-09 vert-tab data-tab="security" 중복 (Phase 7 React key 충돌)
+- **KI-067** (P3) — 페이지 한정 grid 8종 컴포넌트화 후보 (G5 또는 Phase 7)
+
+### sprite cross-check 재검증
+
+- 11/11 PASS (i-globe 추가로 EM-02 sprite 22 symbol)
+
 ## [wf-v0.4.0] — 2026-05-18 (G4 Employee 와이어프레임 11 화면 양산)
 
 G3 wf-v0.3.0 + KI-063 CI sprite cross-check 강화 (PR #11) 이후 G4 진입. PRD `prd/domains/employee/EM-01~11.md` 11 화면 일괄 양산. PWA 모바일이 주 사용 환경.

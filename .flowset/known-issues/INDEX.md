@@ -9,7 +9,7 @@
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1로 resolved 2026-05-17, wf-v0.2.0 머지) |
 | P2 Medium | **6** | 5 | ✅ 트리거 도달 — KI-049/050/051/054/060/061. KI-053/058 G3 hotfix2~3로 resolved + **KI-063 WI-G4prep-ci resolved 2026-05-18 (CI inline-svg-sprite-check §3 cross-check 강화, 34/34 화면 PASS)**. |
-| P3 Low | **24** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055/056/057/062 G3 hotfix1~3 신규 + ~~KI-015~~ resolved (estimation.md 정책 명시) + ~~KI-041~~ resolved (G0 archive 처리) — 표기 정정 |
+| P3 Low | **28** | 10 | ✅ 트리거 도달 — KI-052 G3 진입 시 resolved + KI-055/056/057/062 G3 hotfix1~3 신규 + **KI-064/065/066/067 G4 evaluator 신규 (2026-05-18)** + ~~KI-015~~ resolved + ~~KI-041~~ resolved |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -80,6 +80,10 @@
 | KI-061 | P2 | 5 | Wireframe | components.css L399~L510 vs L683~L770 — 7 base 셀렉터 (.tab/.vert-tab/.vert-tabs/.modal-header/.modal-footer/.step/.stepper) 중복 정의 systemic 잔존. `.tab.is-active` L402(600+primary) vs L754(700+accent) 명확한 4 속성 충돌. cascade로 G3 후자 승리하나 SSOT 위반. KI-059는 `.vert-tab.is-active` 변종만 해소. | evaluator G3 hotfix3 + codex (P2 격상) | 2026-05-18 | open (G4 또는 차기 docs batch) |
 | KI-062 | P3 | 5 | Wireframe | .pass marker 0 bytes (의도된 빈 마커이나 codex 지적) + Playwright 렌더 증거는 CI playwright-smoke 결과 (PR merge 시점 자동 생성)로 충족 — analysis md에 "Playwright smoke 결과 의무" 명시 권장. | codex G3 hotfix3 | 2026-05-18 | open (차기 docs batch) |
 | ~~KI-063~~ | P2 | 5 | Process | ~~CI `inline-svg-sprite-check`가 sprite block 존재만 검사하고 사용된 use href ↔ 정의된 symbol id cross-check 미실시~~ | G3 PR #9/#10 사고 교훈 | 2026-05-18 | **resolved (WI-G4prep-ci 2026-05-18 — pr-checks.yml `inline-svg-sprite-check` §3 cross-check 추가, 로컬 34/34 화면 PASS)** |
+| KI-064 | P3 | 5 | Wireframe | EM-11 사이드바 비표시 (PRD `mvp: partial` 정합) 시각 분기 부재 — 화면은 active=결재로 시연하나 MVP에서는 EM-11 사이드바 항목 자체 비표시 (현재 active=결재만으로 약함). 사이드바에 EM-11 항목을 v1.1 placeholder로 추가 + state=mvp 시 hidden 변형 권장. | evaluator G4 | 2026-05-18 | open (차기 docs batch) |
+| KI-065 | P3 | 5 | Wireframe | EM-03 `.calc-val is-emphasis` variant 부재 — calc-summary "사용일수" row의 큰 강조 (22px+ accent)가 inline `style="font-size:22px..."` 우회 처리. components.css §G4.4에 `.calc-val.is-emphasis { font-size: 22px; font-weight: 700; color: var(--color-accent); }` variant 추가 권장. | evaluator G4 | 2026-05-18 | open (차기 docs batch) |
+| KI-066 | P3 | 5 | Wireframe | EM-09 `vert-tab data-tab="security"` 중복 — state 분기 시각화 위해 2개 정의 (1개는 state-only.state-security, 1개는 state-default/pending/error). Phase 7 React 변환 시 key 충돌 — 단일 element + state 토글 또는 data-tab 다른 식별자 사용 권장. | evaluator G4 | 2026-05-18 | open (Phase 7) |
+| KI-067 | P3 | 5 | Wireframe | 페이지 한정 grid 컴포넌트화 후보 — `dash-row`/`dash-row-3`/`att-top`/`leave-grid`/`leave-kpi-row`/`leave-chart-row`/`cert-grid`/`profile-grid` 등 8개 grid layout이 G2~G4 반복. G5 또는 Phase 7 컴포넌트화 검토 (예: `.grid-2col` `.grid-3col` 패턴 토큰). | evaluator G4 | 2026-05-18 | open (G5 또는 Phase 7) |
 
 ## 등록 형식
 

@@ -20,6 +20,7 @@
   body[data-state="default"] .state-default,
   body[data-state="empty"]   .state-empty,
   body[data-state="modal"]   .state-modal,
+  body[data-state="offline"] .state-offline,
   body[data-state="error"]   .state-error { display: block; }
   body[data-state="loading"] .skeleton-overlay { display: flex; }
   body[data-state="loading"] .att-top,
@@ -93,6 +94,14 @@
     <main class="content">
       <div class="attendance-canvas">
         <div class="skeleton-overlay"><svg class="ico"><use href="#i-loader"/></svg><span>출퇴근 데이터 로드 중...</span></div>
+
+        <!-- 오프라인 상태 (PWA Service Worker 오프라인 — 출퇴근 IndexedDB 큐) -->
+        <div class="state-only state-offline" style="margin-bottom: 16px;">
+          <div class="maintenance-banner" style="background: var(--color-warning-bg); border-color: var(--color-warning);">
+            <svg class="ico" width="16" height="16"><use href="#i-globe"/></svg>
+            <span><strong>오프라인 모드 —</strong> 출퇴근 기록이 로컬 큐(IndexedDB)에 적재됩니다. 네트워크 복귀 시 자동 동기화 + "동기화 완료" 토스트.</span>
+          </div>
+        </div>
 
         <!-- 에러 상태 -->
         <div class="state-only state-error" style="margin-bottom: 16px;">
@@ -258,9 +267,9 @@
 
 <!-- 수정 요청 모달 (state=modal일 때 노출) -->
 <div class="modal-overlay">
-  <div class="modal-box" style="width: 480px;">
+  <div class="modal-box" style="width: 480px;" role="dialog" aria-modal="true" aria-labelledby="em02-modal-title">
     <div class="modal-header">
-      <div class="modal-title">근태 수정 요청 — 2026-05-15 (금)</div>
+      <div class="modal-title" id="em02-modal-title">근태 수정 요청 — 2026-05-15 (금)</div>
       <button class="icon-btn" aria-label="모달 닫기"><svg class="ico" width="14" height="14"><use href="#i-x"/></svg></button>
     </div>
     <div class="modal-body">
@@ -283,11 +292,11 @@
         </div>
         <div class="form-row">
           <label class="form-label">증빙 (선택)</label>
-          <div class="file-input">
-            <button class="btn btn-secondary"><svg class="ico ico-sm" width="14" height="14"><use href="#i-paperclip"/></svg> 파일 선택</button>
-            <input type="file" aria-label="증빙 파일" />
-            <span class="file-input-name">선택된 파일 없음</span>
-          </div>
+          <label class="file-input">
+            <input type="file" class="sr-only" aria-label="증빙 파일" />
+            <span class="file-input-btn"><svg class="ico" width="14" height="14"><use href="#i-paperclip"/></svg> 파일 선택</span>
+            <span class="file-input-filename is-empty">선택된 파일 없음</span>
+          </label>
         </div>
       </div>
       <div class="info-row" style="margin-top: 12px; background: var(--color-info-bg); padding: 8px 12px; border-radius: var(--r-sm);">
@@ -308,6 +317,7 @@
   <span class="state-debug-key" data-state="loading">loading</span>
   <span class="state-debug-key" data-state="empty">empty</span>
   <span class="state-debug-key" data-state="modal">modal</span>
+  <span class="state-debug-key" data-state="offline">offline</span>
   <span class="state-debug-key" data-state="error">error</span>
 </div>
 <script>
