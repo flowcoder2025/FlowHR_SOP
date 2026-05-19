@@ -9,7 +9,7 @@
 | P0 Critical | 0 | 1 | ❌ |
 | P1 High | 0 | 3 | ❌ (KI-046/047/048 batch-006-fix3-rev1 wf-v0.2.0 resolved + **audit hotfix3 NEW-P0/P1 정정 2026-05-18 — OP-04:179 + _showcase L386/529/618/809 5건 select-wrap, 21건 총 적용**) |
 | P2 Medium | **4** | 5 | ❌ 임계 미달 — KI-049/054/060/061. KI-053/058 G3 hotfix2~3 resolved + KI-063 WI-G4prep-ci resolved + KI-050 audit hotfix2/3 resolved + KI-051 audit hotfix3 resolved + **~~KI-071~~ Phase 6 mvp-plan 작성 동반 정합화 resolved (2026-05-19 — 12곳 + 추가 stale 3건 동시 처리)**. |
-| P3 Low | **32** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + KI-070 audit hotfix2 codex G1 + ~~KI-013~~ / ~~KI-034~~ resolved + ~~KI-015~~ resolved + ~~KI-041~~ resolved + **KI-072/073/074 신규 (Phase 6 evaluator 2차 NON_BLOCKING, 2026-05-19 — spill 결합 + MD 임계 + 가독성)** |
+| P3 Low | **33** | 10 | ✅ 트리거 도달 — KI-052 G3 resolved + KI-055~057/062 G3 hotfix + KI-064~067 G4 evaluator + KI-068/069 audit hotfix1 codex/evaluator + KI-070 audit hotfix2 codex G1 + ~~KI-013~~ / ~~KI-034~~ resolved + ~~KI-015~~ resolved + ~~KI-041~~ resolved + **KI-072/073/074 신규 (Phase 6 evaluator 2차 NON_BLOCKING, 2026-05-19 — spill 결합 + MD 임계 + 가독성)** + **KI-075 신규 (Phase 7 진입 발견, 2026-05-19 — sprint-001.md commit/branch WI 번호 stale)** |
 
 **카운트 갱신 규칙**: 이슈 등록/해결 시 즉시 본 표 재계산. P0 1건 이상이면 즉시 트리거. 누적 건수가 임계 도달 시 `triggers.md §3` 절차 발동.
 
@@ -91,6 +91,7 @@
 | KI-072 | P3 | 6 | Sprint | sprint-007.md S6 spill 시나리오 (ST-043/044/045/070 spill 옵션)에서 ST-070을 S8 흡수 시 sprint-008.md 헤더 (29 SP → 34 SP) 갱신 의무 미명시 — spill 발동 시점에 sprint-008 hotfix 동반 의무. Phase 7 Sprint 1 실측 후 보수배수 4배+ 확인 시 spill 발동 시점 처리 | evaluator Phase 6 2차 NON_BLOCKING | 2026-05-19 | scheduled (Phase 7 Sprint 1 실측 후) |
 | KI-073 | P3 | 6 | Sprint | mvp-plan §7 R-1 위험 "1 SP × 0.5 MD 환산 — Sprint 1 실측 후 보수배수 재조정" 정책 명시되어 있으나 재조정 발동 임계 (예: "실측 4.5배+ 시") 미명시 | evaluator Phase 6 2차 NON_BLOCKING | 2026-05-19 | scheduled (Phase 7 Sprint 1 회고 시 결정) |
 | KI-074 | P3 | 6 | Sprint | mvp-plan §4 S5 행 "8+3+8+8+5 = 32" 합산 표기에서 항목 5개 중 SP 4행과 5행 모두 8로 표기되어 시각적 혼동 가능 (산술 정합 ✓) | evaluator Phase 6 2차 NON_BLOCKING | 2026-05-19 | open (차기 docs batch) |
+| KI-075 | P3 | 7 | Sprint | sprint-001.md L38 commit 메시지 "WI-001-feat 모노레포 루트 셋업" + L65 branch "feature/WI-001-feat-login-core" 표기가 wi-global.md §1 + fix_plan.md SSOT 위반. WI-001은 fix_plan.md L19에서 `WI-001-docs 개발용 PRD 초안 작성`으로 이미 점유 — 모노레포 부트스트랩은 `WI-018-feat`, 로그인 핵심은 `WI-020-feat`이 정확. Phase 7 Sprint 1 진입 시 발견. | claude Phase 7 진입 | 2026-05-19 | open (차기 docs batch — sprint-001~010 commit 메시지/branch 명 일괄 점검) |
 
 ## 등록 형식
 

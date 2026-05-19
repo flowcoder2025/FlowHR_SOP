@@ -55,7 +55,7 @@
 
 ## Phase 7 — 개발 착수
 
-- [ ] WI-018-feat 모노레포 부트스트랩
+- [x] WI-018-feat 모노레포 부트스트랩 (pnpm@9.15.0 + Turborepo 2.9.14 + tsconfig.base + 루트 devDeps 5종, Sprint 1 Day 1~2)
 - [ ] WI-019-feat Supabase 프로젝트 + 스키마 마이그레이션
 - [ ] WI-020-feat 인증 (이메일/2FA)
 - [ ] WI-021-feat 디자인 시스템 베이스
