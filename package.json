@@ -1,0 +1,25 @@
+{
+  "name": "@flowhr/root",
+  "version": "0.0.0",
+  "private": true,
+  "description": "FlowHR — 멀티테넌트 HR SaaS 모노레포 (Next.js 15 + Supabase + Tauri 2.x)",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:migrate": "turbo run db:migrate"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

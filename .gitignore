@@ -41,6 +41,11 @@ coverage/
 # Cache
 .turbo/
 .cache/
+*.tsbuildinfo
+
+# pnpm
+.pnpm-debug.log*
+shamefully-hoist.log
 
 # FlowSet 라이트 — 로컬 임시
 .flowset/wireframes/images/*.tmp.png
