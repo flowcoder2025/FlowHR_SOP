@@ -1,196 +1,219 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **작성**: 2026-05-18 (Phase 5 정식 종료 — wf-v1.0.0 재부여 + Phase 6 진입 준비)
-> **신규 세션 첫 작업**: 본 문서 §3 정독 → Phase 6 스프린트 계획 진입 (mvp-plan.md + sprint-001~N.md)
-> **이전 핸드오프**: 2026-05-18 wf-v1.0.0 + phase-5.pass 1차 부여 후 사용자 지적으로 철회 → audit hotfix2 + 3 사이클 후 재부여
+> **작성**: 2026-05-19 (Phase 6 정식 종료 — PR #16/#17 머지 + PASS_BOTH/PASS_WITH_KI + Phase 7 진입 준비)
+> **신규 세션 첫 작업**: 본 문서 §3 정독 → Phase 7 Sprint 1 부트스트랩 진입 (`sprint-001.md` Day 1~14 시퀀스)
+> **이전 핸드오프**: 2026-05-18 Phase 5 wf-v1.0.0 재부여 + Phase 6 진입 안내
 
-## 0. 사용자 지적 정정 사이클 (2026-05-18 audit hotfix1→3)
+## 0. Phase 6 종료 사이클 (2026-05-19)
 
-1차 wf-v1.0.0 부여 후 사용자가 두 가지 비판:
-1. "45 풀화면 검증 안된 상태" — sampled 15 화면만 codex 검토, 30 화면 미검증
-2. "codex 45+ MCP hang 위험" 결론 = 표본 1건 일반화 (추측)
+신규 세션 진입 후 사용자 명령 "핸드오프 읽고 작업 진행해"로 시작:
 
-→ tag wf-v1.0.0 철회 → 45 풀화면 codex 4 그룹 분할 호출 (G1+G2+G3+G4, hang 회피) → audit hotfix2 commit → evaluator FAIL 7.84 (KI-050 "17건 resolved" 단언이 실측 16건 + OP-04 1건 누락 + _showcase 4건 미검수로 부정합) → audit hotfix3 증적 기반 정정 → evaluator PASS 8.13 → **wf-v1.0.0 재부여**.
+1. **Phase 2 재평가 (KI-013/034 closure, PR #16)** — Phase 6 진입 전 의무 2건 처리
+   - KI-013: EP-03/04/05/09/10/11/12 7 Epic + ST-073~080 + ST-071 Task 137건 신규 분해 → 80 Story / 223 Task / 838 MD
+   - KI-034: 5 파일 합계/의존/카운트 stale 정합화
+   - 평가 4 사이클: 1차 FAIL 6.90 → 2차 FAIL 7.625 → 3차 FAIL 7.625 → **4차 PASS 8.475 (evaluator) + 8.34 (codex gpt-5.5)**
+   - PASS_BOTH 통합 판정 → main 머지 (commit `d6aaa95`)
+
+2. **사용자 지적**: "디렉토리 구조 명확히 잡고 가" → codex 협의 7건 결정 채택
+
+3. **Phase 6 mvp-plan + sprint-001~010 (PR #17)** — 11 파일 신규 작성
+   - 디렉토리 구조 SSOT (codex 7건 결정): `apps/{web,desktop}` + `packages/{ui,schemas,types,api-client,i18n,platform,config}` + 루트 `supabase/`
+   - KI-071 묶음 closure (15곳: epics SP 7곳 + estimation 4곳 + stories L646 + prd-state.json:61 i18n + api/README.md:3 entity + .claude/rules/project.md:57 CI 카운트)
+   - 평가 사이클: evaluator 1차 PASS 8.40 → 2차 PASS 9.00 / codex 1차 FAIL 7.4 → 2차 CONDITIONAL 7.88 → 3차 CONDITIONAL 7.81 → 4차 CONDITIONAL 8.21 (mechanical fix 22건 누적 closure + false alarm 2건)
+   - PASS_WITH_KI 통합 판정 → main 머지 (commit `8ac2d6c`)
 
 **교훈 (CLAUDE.md 규칙 강화 의무)**:
-- codex sub-agent 결과는 1차 가설 — commit 전 grep 증적 검증 의무
-- "X건 정정" 단언 전 실측 카운트
-- KI "resolved" 단언 전 grep 0건 증적 제시
+- review-system.md §7-1 evaluator + codex 한 세트 의무 (Phase 6 1차 codex 호출 누락 사용자 지적 후 정정)
+- codex 호출 표준 절차: `Agent subagent_type=codex:codex-rescue` + 모델 unset (gpt-5.5 기본) + `--read-only` for 검증
+- codex 검토 범위 한계 인지 (4차 P1 잔존이 사실 false alarm — L282 산식 누락 검출). 산수 정밀도 결함은 mechanical fix이지만 closure 검증 시 라인 범위 명시
+- 사용자가 옵션 결정 떠넘기지 말고 codex와 follow-up으로 단일 최적안 도출 후 보고
 
 ## 1. 현재 상태 요약
 
-### Phase 5 와이어프레임 정식 종료
+### Phase 5/6 완전 종료 + Phase 7 진입 대기
 
-| 버전 | 그룹 | 화면 | 상태 | tag |
-|------|------|------|------|-----|
-| wf-v0.0.0 | 베이스라인 | (batch-003+004+005 + OP-01) | ✅ 머지 | wf-v0.0.0 |
-| wf-v0.1.0 | G1 최초 진입점 | CM-01~06 + CM-20/21 (8) | ✅ 머지 | wf-v0.1.0 |
-| wf-v0.1.1 | G1 hotfix | 7 화면 | ✅ 머지 | wf-v0.1.1 |
-| wf-v0.2.0 | G2 운영 | OP-02~12 (11) | ✅ 머지 (PR #5) | wf-v0.2.0 |
-| wf-v0.3.0 | G3 테넌트 매니저 | TA-01~14 (14) | ✅ 머지 (PR #8~10) | wf-v0.3.0 |
-| wf-v0.4.0 | G4 테넌트 직원 | EM-01~11 (11) | ✅ 머지 (PR #12) | wf-v0.4.0 |
-| wf-v0.4.1 | audit fix 1차 | DS systemic 정정 | ✅ 머지 (PR #13) | wf-v0.4.1 |
-| wf-v0.4.2 | audit hotfix2 | 45 풀화면 codex 분할 결과 정정 | ✅ 머지 (PR #14) | wf-v0.4.2 |
-| wf-v0.4.3 | audit hotfix3 | evaluator FAIL 7.84 증적 기반 정정 | ✅ 머지 (PR #15) | wf-v0.4.3 |
-| **wf-v1.0.0** | **Phase 5 정식 종료** | **45 화면 + 4 그룹 codex 검증 + evaluator PASS 8.13** | ✅ **재부여 (commit ba183a5)** | **wf-v1.0.0** |
+| Phase | 산출물 | 평가 | 머지 | 상태 |
+|-------|------|------|------|------|
+| 0 셋업 | `.flowset/` 구조 + CLAUDE.md | (생략) | — | ✅ |
+| 1 PRD | `.flowset/prd/` 50 파일 | PASS 8.15 → 재평가 9.13 | — | ✅ |
+| 2 백로그 | `.flowset/backlog/` 6 파일 (80 Story / 415 SP / 223 Task / 838 MD) | PASS 8.29 → 재평가 8.03 → 4차 재평가 PASS_BOTH 8.475/8.34 | PR #16 | ✅ |
+| 3 ERD | `.flowset/db/` 23 파일 (39 entity + 37 테이블 + RLS) | PASS 8.68 → 재평가 8.21 | — | ✅ |
+| 4 API | `.flowset/api/` (280 endpoint, Markdown) | PASS 8.78 → 재평가 8.40 | — | ✅ |
+| 5 와이어프레임 | 45 화면 HTML + DS SSOT (wf-v1.0.0) | PASS 8.13 / codex 4 그룹 가중 8.73 | wf-v1.0.0 | ✅ |
+| 6 스프린트 계획 | `mvp-plan.md` + `sprint-001~010.md` 11 파일 | **PASS_WITH_KI 9.00/8.21** | PR #17 | ✅ |
+| **7 개발 착수** | `apps/` + `packages/` + `supabase/` 코드 (sprint-001~010 점진) | — | — | ⏳ **신규 세션** |
+| 8 QA | (Phase 7 후 진입) | — | — | ⏳ |
+| 9 베타 | (Phase 8 후 진입) | — | — | ⏳ |
+| 10 운영 | (Phase 9 후 진입) | — | — | ⏳ |
 
-**현재 브랜치**: `main` (wf-v1.0.0 tag 부여 commit: `ba183a5`. 최근 commit hash는 본 문서 작성 후 push 시점 갱신되므로 `git log -1 --format=%h main`으로 확인. HANDOFF 자체 hash 표기 stale 방지 정책)
+**현재 브랜치**: `main` (Phase 6 종료 commit: `8ac2d6c`. `git log -1 --format=%h main`으로 최신 확인)
 
-**Phase 5 화면 합계**: CM 8 + OP 12 + TA 14 + EM 11 = **45 화면**
+**전체 MVP 합계 (보강 후)**: 80 Story / 415 SP / 223 Task / 218 MD 순수 / 838 MD 보수 / 10 Sprint × 2주 = **19~20주 (약 4.6개월)** — mvp-plan §4-1 정밀 계산 (415 SP × 0.5 / 20 MD/sprint = 약 10.4 sprint, 9.5~10 sprint 흡수)
 
-## 2. 최근 진행 (2026-05-18 audit 사이클)
+## 2. 모노레포 디렉토리 구조 SSOT (codex 7건 결정 채택, 2026-05-19)
 
-### 평가 사이클 추적
+> **SSOT 위치**: `.flowset/sprints/mvp-plan.md §1`. 본 절은 짧은 요약만.
 
-| 차수 | evaluator | codex | 통합 | 정정 |
-|------|----------:|------:|------|------|
-| 1차 (PR #13 commit) | FAIL 7.45 | full review hang 47분 | FAIL | h1 정정 |
-| h1 (PR #13 commit) | PASS 8.07 | sampled CONDITIONAL 8.1 | MERGE_WITH_KI | h1.2 정정 |
-| h1.2 (PR #13 commit) | (생략) | (생략) | MERGE_WITH_KI | 1차 wf-v1.0.0 부여 → 사용자 지적 → 철회 |
-| h2 (PR #14 commit) | 미평가 | G1 8.1 + G2 6.8 + G3 8.8 + G4 8.7 | 가중 8.12 | h2 codex KI-050 P0 잔존 |
-| h2 (PR #14 재평가) | FAIL 7.84 (Hard gate 미달) | G2 FAIL 7.2 | FAIL | h3 증적 정정 |
-| **h3 (PR #15)** | **PASS 8.13** | G2 hotfix3 재평가 8.1 (G1/G3/G4는 hotfix2 평가 유지: 9.2/8.8/9.0) — **가중 평균 8.73** | **MERGE_WITH_KI → PASS** | **wf-v1.0.0 재부여** |
+```
+FlowHR_SOP/
+├── apps/
+│   ├── web/                  # Next.js 15 App Router + PWA (manifest.json + sw.js)
+│   │   └── app/[locale]/{(auth),(operator),(tenant),(employee)}/  # 44 화면 라우트
+│   └── desktop/              # Tauri 2.x (src-tauri/)
+├── packages/
+│   ├── ui/                   # shadcn + Phase 5 DS 40+ React 변환
+│   ├── schemas/              # zod schemas (zod-to-openapi 변환 대상)
+│   ├── types/                # DB/domain TypeScript types
+│   ├── api-client/           # Supabase wrapper + TanStack Query hooks
+│   ├── i18n/                 # next-intl ko + en MVP
+│   ├── platform/             # web/pwa/tauri 분기 + iOS 제약
+│   └── config/               # ESLint/TS/Tailwind 공유
+├── supabase/                 # 루트 (CLI 기본 + 03-tech-architecture.md SSOT)
+│   ├── migrations/           # Phase 3 ERD 변환 (24 파일 + RLS 정책 SQL)
+│   ├── functions/            # Edge Functions (cron + 외부 콜백)
+│   └── seed.sql
+├── .github/workflows/
+│   ├── pr-checks.yml         # 현행 9 job (3 공통 + 6 wireframe path-scope)
+│   └── phase7-code.yml       # 신규 4 job (lint + typecheck + unit-test + build, Sprint 1 day 13~14 작성)
+├── .flowset/                 # Phase 1~10 산출물 SSOT (변경 안 함)
+├── docs/                     # 원본 명세
+└── pnpm-workspace.yaml + turbo.json + tsconfig.base.json + package.json + CLAUDE.md
+```
 
-### codex 4 그룹 분할 검증 (45 화면 전수)
+### codex 7건 결정 요약 (mvp-plan.md §1-1)
 
-| 그룹 | 화면 | 점수 | 판정 | 평가 시점 |
-|------|-----:|-----:|------|----------|
-| G1 CM | 8 | 9.2 | PASS | hotfix2 재평가 |
-| G2 OP | 12 | 8.1 | CONDITIONAL (P2 정합성 결함 2건 → 정리 완료) | hotfix3 재평가 |
-| G3 TA | 14 | 8.8 | PASS | hotfix2 재평가 |
-| G4 EM | 11 | 9.0 | PASS | hotfix2 재평가 |
-| **가중 평균** | **45** | **8.73** | (= (9.2×8 + 8.1×12 + 8.8×14 + 9.0×11) / 45 = 393.0/45) | |
+1. **supabase 위치**: 루트 `supabase/` (Supabase CLI 기본 + 03-tech SSOT)
+2. **i18n MVP**: ko + en 동시 (WI-KI-batch-005 사용자 결정 2026-05-16)
+3. **entity 카운트**: 39 entity / 44 screen (matrix.json SSOT)
+4. **OpenAPI 변환**: `zod-to-openapi`, Sprint 1 day 13~14
+5. **CI job**: 현행 9 + Phase 7 신규 4
+6. **packages/platform 채택**: web/pwa/tauri 분기 + iOS 제약 중앙화
+7. **packages/config 채택**: Turborepo 표준 공유 설정
 
-### 사용자 시각 검수 결함 해소 (11 화면)
+## 3. 신규 세션 첫 작업 — Phase 7 Sprint 1 부트스트랩
 
-사용자 직접 시각 검수로 지적한 11 화면 (TA 6 + OP 4 + EM 1):
+### 작업 1 — Sprint 1 Day 1~14 시퀀스 (`sprint-001.md` SSOT)
 
-| 화면 | 결함 | 해소 사이클 | 비고 |
-|------|------|------------|------|
-| TA-03 | 탭 디자인 시스템 미준수 | h1 (tabs/tabs-row alias + button reset) | codex G3 hotfix2 verification PASS |
-| TA-06 | 상태버튼 (페이지네이션 정정) | h1.2 (page-btn SSOT) | codex G3 verification PASS |
-| TA-07 | 캘린더 정렬 + 반차 잘림 | h1 (page-action-bar flex + leave-badge ellipsis + "½") | codex G3 verification PASS |
-| TA-09 | 에러 메시지 반응형 | **시각 결함 직접 정정 없음 — codex G3 audit_hotfix_verification 항목 PASS 보고 (TA-09_error_responsive: PASS)** | 시각 검수 vs 코드 분석 결과 차이 가능. 사용자 추가 검수 권장. KI 등록 없음. |
-| TA-10 | 탭 디자인 시스템 미준수 | h1 (동일 audit fix) | codex G3 verification PASS |
-| TA-13 | vert-tabs UA 시각 | h1 (button.vert-tab reset) | codex G3 verification PASS |
-| OP-02 | 테이블 정렬 + DS 일부 적용 | h2 (KI-050 3건 select-wrap) + h3 OP-04 무관 | codex G2 hotfix3 PASS |
-| OP-05 | 테이블 정렬 + DS 일부 | h2 (KI-050 3건 select-wrap) | codex G2 hotfix3 PASS |
-| OP-06 | 테이블 정렬 + DS 일부 | h2 (KI-050 3건 select-wrap) | codex G2 hotfix3 PASS |
-| OP-10 | 디자인 시스템 미준수 | h1 (kpi-meta selector 통합) | codex G2 1차 PASS |
-| EM-10 | 배지 적용 안됨 | h1 (badge variant CSS 양 패턴 — 288건 색상 해소) | codex G4 verification PASS |
+42 SP / 30 MD 보수. 9 Story 분해: ST-001 (5) + ST-002 (3) + ST-003 (3) + ST-004 (5) + ST-005 (5) + ST-068 (5) + ST-069 (5) + ST-072 (3) + ST-078 (8) = 42 SP (sprint-001.md L4 SSOT 정합).
 
-**해소율**: 10/11 코드 정정 + codex verification PASS. 1건 (TA-09)은 코드 정정 없이 codex가 PASS 보고 — 사용자 실제 시각 결과와 차이 가능, 추가 검수 시 hotfix.
+| Day | 작업 | 산출물 | 의존 |
+|-----|-----|------|------|
+| 1~2 | 모노레포 셋업 | `pnpm-workspace.yaml` + `turbo.json` + `tsconfig.base.json` + 루트 devDeps | (없음) |
+| 3~4 | apps/web + packages 7개 스캐폴드 | `apps/web/`, `packages/{ui,schemas,types,api-client,i18n,platform,config}/` | Day 1~2 |
+| 5 | supabase 인프라 (RLS 정책 제외) | `supabase/migrations/` 12 파일 + `packages/types/src/database.ts` | Day 3~4 |
+| 6~7 | ST-001 로그인 핵심 (Supabase Auth + CM-01) | `apps/web/app/[locale]/(auth)/login/page.tsx` + 5회 잠금 + 역할별 리다이렉트 | Day 5 |
+| 8~10 | **4 그룹 병렬** — ST-002~004 (인증 보조) + ST-005 (RLS) + ST-068 (audit) + ST-069 (Realtime) | 4 마이그레이션 + 권한 매트릭스 테스트 + Realtime wrapper | Day 6~7 |
+| 11~12 | ST-078 약관 (PIPA + ko/en 페어) + ST-072 오류/점검 | `legal_documents + user_consents` 마이그레이션 + CM-21/CM-06 페이지 | Day 8~10 |
+| 13~14 | zod-to-openapi + `phase7-code.yml` CI 4 job | `packages/schemas/dist/openapi.yaml` + 신규 CI workflow | Day 11~12 |
 
-## 3. 신규 세션 첫 작업 — Phase 6 진입
+### 작업 2 — Sprint 1 Day 1 의무 (외부 신청)
 
-Phase 5 정식 종료. Phase 6 (스프린트 계획) 진입.
+- **D+0 즉시 신청 의무**:
+  - **NHN Cloud 알림톡 채널 인증** (60일 보수 → S6 ST-066 진입 시점 D+71에 활성 보장, mvp-plan §5 정밀 계산)
+  - Supabase 프로젝트 + Pro 플랜 신청
+  - Vercel 프로젝트 + 환경변수 분리 (preview/staging/production)
+- **S6 직전 신청**:
+  - Sentry 무료 플랜 계정 (S6 진입 전 활성, mvp-plan §5 / sprint-001 L136 SSOT — Sprint 1 day 1 의무 아님)
 
-### 작업 1 — Phase 6 산출물 (`.claude/rules/project.md §1`)
+### 작업 3 — Sprint 1 DoD 검증 (`sprint-001.md` L138~)
 
-| 산출물 | 위치 | 의무 |
-|--------|------|------|
-| MVP 계획 | `.flowset/sprints/mvp-plan.md` | Phase 5 45 화면 → Sprint N 분할 + 우선순위 |
-| Sprint 001~N | `.flowset/sprints/sprint-001.md` ~ `.flowset/sprints/sprint-N.md` | 각 Sprint 스토리/태스크/수용 기준/MD |
+- [ ] `apps/web` 빌드 PASS (`pnpm turbo run build`)
+- [ ] `packages/ui` base 16 컴포넌트 (Button/Input/Card/Alert/Stepper 등)
+- [ ] `supabase/migrations/` 24+ 파일 + RLS 정책 SQL → `pnpm supabase db reset --local` PASS
+- [ ] `packages/types/src/database.ts` 자동 생성 + git 커밋
+- [ ] `packages/schemas/dist/openapi.yaml` 생성 + CI 검증
+- [ ] 6 역할 × 44 화면 권한 매트릭스 자동 테스트 (TS-021-005-QA-1)
+- [ ] ST-001~004 + ST-072 + ST-078 E2E Playwright PASS
+- [ ] audit_logs 트리거 21 테이블 INSERT/UPDATE/DELETE/APPROVE 4 이벤트 검증
+- [ ] Realtime notifications 클라이언트 wrapper 구독 + 자동 재연결 검증
+- [ ] CI 신규 4 job (`phase7-code.yml`) 통과
+- [ ] PR template 갱신 (API/스키마 동시 갱신 의무)
 
-### 작업 2 — Phase 6 진입 전 의무 (KI-013/034 정리)
+### 작업 4 — Sprint 1 종료 시 의무
 
-SSOT 출처: `.flowset/known-issues/INDEX.md:32` (KI-013 scheduled Phase 6) + `INDEX.md:53` (KI-034 open, Phase 6 KI-013과 함께 처리). **project.md §1 진행 순서표에는 명시 없음 — INDEX scheduled 표기 기반**.
+- evaluator + codex 한 세트 호출 (Phase 7 mode: **code**, Phase 7 첫 WI라 review-system.md §7-1 full review)
+- `.flowset/eval-results/WI-XXX.{eval,codex,pass}.md` 저장
+- KI-072/073/074 점검 (Phase 7 Sprint 1 실측 후 처리 예정 P3 3건)
+- prd-state.json `7-dev-kickoff` status 갱신 (`in_progress` → 부분 진행 / `completed` → Sprint 1 종료)
 
-- **KI-013** (P3) — Phase 2 EP-03/04/05/09/10/11/12 7 Epic Task 분해 미완 — INDEX scheduled (Phase 6)
-- **KI-034** (P3) — tasks.md / estimation.md / dependency-graph.md stale (ST-073~080 미반영) — INDEX open (Phase 6 KI-013과 함께 처리)
-
-### 작업 3 — Phase 6 evaluator + codex (모드 doc)
-
-스프린트 계획 종료 시 evaluator + codex 호출. review-system.md §17 v3 5축 (Phase 6은 wireframe DS 충실도 축 비적용 — 4축).
-
-### 작업 4 — KI 잔존 (Phase 6 사이클 또는 별도 batch)
-
-**활성 P2 (4건, 임계 미달)**:
-- KI-049 16 화면 권한 매트릭스 표 형식 (KI-069로 backtick 손상 분리)
-- KI-054 icon-btn aria-label 52건 (WCAG 2.1 AA)
-- KI-060 TA-13 vert-tab font-weight drift
-- KI-061 components.css 7 base 셀렉터 중복 systemic
-
-**활성 P3 (30건+)**: INDEX.md 참조.
-
-## 4. Known Issues 현황 (Phase 5 종료 시점)
+## 4. Known Issues 현황 (Phase 6 종료 시점)
 
 | 심각도 | 활성 | 임계 | 트리거 |
 |--------|------|------|--------|
 | P0 | 0 | 1 | ❌ |
-| P1 | 0 | 3 | ❌ (audit hotfix3 OP-04 + _showcase 5건 정정 — KI-046/047/048 외 추가 이력) |
-| P2 | 4 (KI-049/054/060/061) | 5 | ❌ (KI-050+KI-051 resolved로 트리거 해제) |
-| P3 | 30+ | 10 | ✅ 도달 (차기 docs batch) |
+| P1 | 0 | 3 | ❌ |
+| P2 | 4 (KI-049/054/060/061) | 5 | ❌ 임계 미달 (KI-071 묶음 resolved 후) |
+| P3 | 32 | 10 | ✅ 도달 (KI-072/073/074 신규 추가) |
 
-**Phase 5 audit 사이클 resolved**: KI-050 (21건 select-wrap), KI-051 (CI native-wrap-check 강화).
+**Phase 6 사이클 resolved**: KI-013 + KI-034 (Phase 2 closure) + KI-071 묶음 (15곳)
+**Phase 6 사이클 신규 등록**: KI-072 (P3, sprint-007 S6 spill 결합), KI-073 (P3, MD 보수배수 임계), KI-074 (P3, mvp-plan §4 S5 가독성)
 
-## 5. 핵심 정책 결정 (변경 금지 + audit 교훈 반영)
+**P3 32건 트리거 도달 — 차기 docs batch 또는 Phase 7 Sprint 1 회고 시 처리 결정**
 
-| 결정 | 출처 |
-|------|------|
-| 평가 시스템 v3 (5축 + Hard gate + Playwright smoke) | review-system.md §17 |
-| KI 트리거 (P0=1, P1=3, P2=5, P3=10) | triggers.md §2 |
-| PR auto-merge --squash --delete-branch | project.md §6 |
-| 그룹별 단일 브랜치 + commit/push 후 그룹 PR | project.md §6 |
-| 그룹 머지 직후 KI close-out은 main 직접 push 허용 | 사용자 결정 2026-05-17 |
-| 화면별 inline `<style>` 컴포넌트 재정의 금지 (DS SSOT) | design-system-ssot CI + 03-components.md |
-| 외부 SVG `<use>` 금지 → 인라인 sprite + #i-... reference 의무 | review-system.md §17-1 + CI |
-| CI inline-svg-sprite-check sprite cross-check 의무 (KI-063 resolved) | PR #11 / pr-checks.yml §3 |
-| **CI native-element-wrap-check `.select-wrap` parent 검증 (KI-051 resolved)** | **audit hotfix3 / pr-checks.yml L256+** |
-| variant naming `.is-*` 표준 (`.active` 금지) | G2 hotfix3-rev1 SSOT 통일 |
-| `.badge.X` 와 `.badge-X` 양 패턴 selector 통합 (audit hotfix1) | DS SSOT 위반 재발 방지 |
-| `.page-btn.is-active` SSOT 강제 (audit hotfix1.2) | 페이지네이션 inline DS bypass 차단 |
-| 사용자 개입 6개 시점만 | review-system.md §10 |
-| 그룹 완료 시에만 사용자 보고 (능동 진행) | 사용자 결정 2026-05-16 |
-| codex MCP hang 시 모델 명시 (gpt-5.5) + 4 그룹 분할 fallback | 사용자 결정 2026-05-18 (Phase 5 full review hang + sampled hang 사례) |
-| **codex sub-agent 결과는 1차 가설 — commit 전 grep 증적 검증 의무** | **audit hotfix3 사용자 비판 반영 2026-05-18** |
-| **"X건 정정" 단언 전 실측 카운트** | **audit hotfix3** |
-| **KI "resolved" 단언 전 grep 0건 증적 제시** | **audit hotfix3** |
+## 5. 핵심 정책 결정 (변경 금지)
+
+| 결정 | 출처 | 일자 |
+|------|------|----|
+| 모노레포 디렉토리 구조 SSOT (codex 7건 권고) | mvp-plan.md §1 | 2026-05-19 |
+| i18n MVP ko + en 동시 | WI-KI-batch-005 + mvp-plan §1-1 | 2026-05-16/19 |
+| OpenAPI 변환 `zod-to-openapi`, Sprint 1 day 13~14 | mvp-plan §1-1, §3-3 | 2026-05-19 |
+| Sprint 1 day 1 NHN 알림톡 신청 의무 (D+0) | sprint-001.md + mvp-plan §5 | 2026-05-19 |
+| Phase 7 CI 신규 4 job (`phase7-code.yml`) | mvp-plan §6, sprint-001.md Day 13~14 | 2026-05-19 |
+| 평가 시스템 v3 (5축, Phase 5만 / Phase 6+ 4축) | review-system.md §17 / review-rubric.md §10 | 2026-05-16 |
+| KI 트리거 (P0=1, P1=3, P2=5, P3=10) | triggers.md §2 | 기존 |
+| PR auto-merge --squash --delete-branch | project.md §6 | 2026-05-16 |
+| **codex 호출 표준**: `Agent subagent_type=codex:codex-rescue` + 모델 unset (gpt-5.5 기본) + `--read-only` for 검증 | codex-cli-runtime skill + 2026-05-19 사용자 지적 | 2026-05-19 |
+| **review-system.md §7-1 의무**: evaluator + codex 한 세트 호출 (단독 호출 금지) | 2026-05-19 사용자 지적 | 2026-05-19 |
+| **codex 검토 범위 한계 인지**: codex가 라인 범위 한정 검토하므로 산수/정합 결함이 false alarm일 수 있음 (Phase 6 4차 codex P1 L282 산식 누락 검출 사례). 재평가 시 의문 결함은 grep으로 실제 확인 의무 + closure 검증 시 라인 범위 명시 | Phase 6 4차 사이클 교훈 | 2026-05-19 |
 
 ## 6. PR 현황
 
-| PR | 제목 | 상태 |
-|----|------|------|
-| #1~#12 | G0~G4 + system-v2/v3 + hotfix | ✅ MERGED |
-| #13 | WI-Phase5-fix DS systemic 1차 정정 (audit fix) | ✅ MERGED |
-| #14 | WI-Phase5-fix audit hotfix2 — 45 풀화면 codex 분할 결과 정정 | ✅ MERGED |
-| **#15** | **WI-Phase5-fix audit hotfix3 — evaluator FAIL 7.84 증적 정정** | ✅ **MERGED 2026-05-18** |
-| #(미생성) | Phase 6 스프린트 계획 | ⏳ 신규 세션 |
+| PR | 제목 | 머지 commit | 상태 |
+|----|------|----|----|
+| #1~#15 | Phase 5 G0~G4 + system v2/v3 + audit hotfix 1~3 | (15개) | ✅ MERGED |
+| #16 | WI-Phase6prep-docs Phase 6 진입 전 의무 closure (KI-013 + KI-034) | `d6aaa95` | ✅ MERGED |
+| **#17** | **WI-016-docs Phase 6 MVP 스프린트 계획 (mvp-plan + sprint-001~010)** | **`8ac2d6c`** | ✅ **MERGED 2026-05-18T17:50:16Z** |
+| #(미생성) | Phase 7 Sprint 1 부트스트랩 (모노레포 + 인증 + RLS + audit + Realtime + 약관 + 오류 + CI) | — | ⏳ 신규 세션 |
 
 ## 7. Task 상태
 
 | 영역 | 상태 |
 |------|------|
-| G0/G1/G2/G3/G4 양산 + 평가 | ✅ completed |
-| KI-063 CI sprite cross-check | ✅ resolved (PR #11) |
-| Phase 5 audit fix 1차 (PR #13) | ✅ completed |
-| Phase 5 audit hotfix2 (PR #14) + hotfix3 (PR #15) | ✅ completed |
-| **Phase 5 정식 종료 marker `phase-5.pass` (재부여)** | ✅ **created** |
-| **tag wf-v1.0.0 (재부여)** | ✅ **push 2026-05-18** |
-| Phase 6 진입 | ⏳ **신규 세션** |
+| Phase 5 G0~G4 양산 + 평가 | ✅ completed |
+| Phase 5 audit fix 1/2/3 + wf-v1.0.0 재부여 | ✅ completed |
+| Phase 2 재평가 (KI-013/034 closure) | ✅ PASS_BOTH (PR #16) |
+| **Phase 6 mvp-plan + sprint-001~010** | ✅ **PASS_WITH_KI (PR #17)** |
+| **Phase 7 Sprint 1 부트스트랩** | ⏳ **신규 세션** |
 
-## 8. 컨텍스트 압축 시 우선 보존
+## 8. 컨텍스트 압축 시 우선 보존 + 신규 세션 읽기 순서
 
-- **본 HANDOFF.md (필수 첫 작업)**
-- `.flowset/contracts/review-system.md` (§17 v3 SSOT)
-- `.flowset/contracts/review-rubric.md` (§10 5축)
-- `.flowset/known-issues/INDEX.md`
-- `.flowset/wireframes/_design-system/component-usage-matrix.json` (v1.2.2 33 patterns)
-- `.flowset/wireframes/_design-system/03-components.md` (G0~G4 + audit fix SSOT 동기)
-- `.flowset/wireframes/_design-system/components.css` (audit fix 정정)
-- `.flowset/eval-results/phase-5-full*.{eval,codex}.md` (8 평가 결과 파일)
-- `.flowset/eval-results/phase-5.pass` (Phase 5 종료 marker)
-- `.flowset/sprints/` (Phase 6 산출물 예정)
+### 신규 세션 진입 시 읽기 순서 (의무)
+
+1. **본 HANDOFF.md** (첫 작업) — Phase 6 종결 + Phase 7 진입 안내
+2. `.flowset/sprints/mvp-plan.md` — Phase 7+ SSOT (디렉토리 + 변환 정책 + Sprint 1~10)
+3. `.flowset/sprints/sprint-001.md` — Sprint 1 Day 1~14 부트스트랩 시퀀스
+4. `.flowset/backlog/stories.md` — 80 Story / 415 SP SSOT (P0~P3 그룹)
+5. `.flowset/backlog/tasks.md` — 223 Task / 838 MD (TS-001~223 분해)
+6. `.flowset/backlog/dependency-graph.md` — Sprint 1~10 의존 + 외부 의존
+7. `.flowset/backlog/estimation.md` — MD 환산 + 비용 + Sprint 용량
+8. `.flowset/backlog/epics.md` — 12 Epic 마스터
+9. `.flowset/known-issues/INDEX.md` — 활성 KI (P3 32건 트리거 도달 점검)
+10. `.flowset/prd-state.json` — current_phase: 7-dev-kickoff
+11. (필요 시) `.flowset/prd/03-tech-architecture.md` — 기술 스택 SSOT
+12. (필요 시) `.flowset/wireframes/_design-system/{tokens.css,components.css,03-components.md}` — Phase 5 DS → packages/ui 변환 원천
+13. (필요 시) `.flowset/contracts/review-system.md §7-1` — evaluator + codex 한 세트 의무
+
+### 컨텍스트 압축 시 보존 우선순위
+
+- L1 (필수): 본 HANDOFF + mvp-plan + sprint-001
+- L2 (강): backlog/{stories,tasks,dependency-graph} + INDEX + prd-state
+- L3 (참조): backlog/{estimation,epics} + prd/03-tech + wireframes/_design-system + contracts/review-system
 
 ## 9. 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — Phase 5 PRD 결함 발견 | KI-027~031 |
-| 2026-05-16 | 갱신 — G1 완료 + G2 양산 직전 | wf-v0.1.0 |
-| 2026-05-17 | 갱신 — G2 wf-v0.2.0 머지 + G3 진입 | wf-v0.2.0 tag |
-| 2026-05-18 | 갱신 — G3 wf-v0.3.0 머지 + G4 진입 | wf-v0.3.0 tag |
-| 2026-05-18 | 갱신 — G4 wf-v0.4.0 머지 + Phase 5 통합 안내 | wf-v0.4.0 tag |
-| 2026-05-18 | 1차 wf-v1.0.0 부여 → 사용자 지적 → 철회 | "45 풀화면 codex 미검증" |
-| 2026-05-18 | 갱신 — Phase 5 정식 종료 (audit hotfix2+3 후 wf-v1.0.0 재부여) | evaluator PASS 8.13 + codex 4 그룹 가중 평균 8.73 + 사용자 시각 검수 11 화면 10/11 코드 정정 (TA-09는 codex verification만) |
-| **2026-05-19** | **본 갱신 — HANDOFF 검증 사이클 (evaluator + codex 한 세트) FAIL → 증적 4 파일 보존 commit ee67a12 → 재평가 잔존 4건 mechanical fix** | **사용자 비판 정정 반영: 가중 평균 / 화면 수 / SSOT 출처 / 증적 보존** |
+| 2026-05-16~18 | Phase 5 G0~G4 + audit hotfix 1~3 + wf-v1.0.0 재부여 | 와이어프레임 양산 |
+| 2026-05-18 | Phase 5 정식 종료 + Phase 6 진입 안내 | audit 사이클 종결 |
+| **2026-05-19** | **Phase 6 정식 종료 — PR #16 (KI-013/034 closure PASS_BOTH 8.475/8.34) + PR #17 (mvp-plan + sprint-001~010 PASS_WITH_KI 9.00/8.21) 머지 + Phase 7 진입 안내** | **Phase 6 mvp-plan + sprint 작성 + codex 7건 디렉토리 SSOT 채택 + KI-071 묶음 + 신규 KI-072~074 등록** |
