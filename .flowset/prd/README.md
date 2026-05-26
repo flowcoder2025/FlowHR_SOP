@@ -23,14 +23,14 @@
 | 07 | [07-risks.md](07-risks.md) | 리스크 / 가정 / 외부 의존성 |
 | 08 | [08-success-metrics.md](08-success-metrics.md) | KPI / OKR / 성공 지표 |
 
-## 도메인 (36 화면)
+## 도메인 (44 화면)
 
 ### 공통 시스템
-- [domains/common.md](domains/common.md) — 로그인 / 알림 / 파일 / 감사로그 등 15종
+- [domains/common.md](domains/common.md) — 로그인 / 알림 / 파일 / 감사로그 등 22종 (CM-01~22, batch-003 CM-16~22 추가 반영)
 
 ### 운영사 (OP-01 ~ OP-11)
 - [domains/operator/README.md](domains/operator/README.md) — 도메인 개요
-- 화면 11개: 운영사 대시보드, 테넌트 관리, 테넌트 상세, 온보딩, 요금제, 청구, 기능 플래그, 지원 티켓, 감사 로그, 운영 리포트, 시스템 설정
+- 화면 12개: 운영사 대시보드, 테넌트 관리, 테넌트 상세, 온보딩, 요금제, 청구, 기능 플래그, 지원 티켓, 감사 로그, 운영 리포트, 시스템 설정, 운영사 본인 프로필(OP-12, batch-003 추가)
 
 ### 테넌트 관리자 (TA-01 ~ TA-14)
 - [domains/tenant-admin/README.md](domains/tenant-admin/README.md) — 도메인 개요

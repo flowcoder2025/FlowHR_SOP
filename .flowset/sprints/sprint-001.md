@@ -24,10 +24,12 @@
 
 > dependency-graph SSOT: ST-001 (없음) → ST-002~004 (← ST-001) + ST-005 (← ST-001, ST-068 동시) + ST-068/069 (← Supabase 인프라) 병렬. ST-072/078은 ST-005/068 의존.
 
+> **WI 번호 매핑 (KI-075, fix_plan.md Phase 7 SSOT)**: WI-018(모노레포 Day1~2) / WI-019(apps/web 스캐폴드 + supabase 인프라 + RLS + audit + Realtime, Day3~5·8~10) / WI-020(인증 ST-001~004 + 약관/오류, Day6~7·11~12) / WI-021(zod-openapi + CI, Day13~14). 이전 `WI-001-feat`/`WI-bootstrap` 표기는 WI-001이 docs 점유라 오용 — 본 매핑으로 정정. Day별 작업은 1 WI 내 여러 commit으로 분할 가능.
+
 ### Day 1~2: 모노레포 셋업
 ```bash
 git checkout main && git pull --ff-only origin main
-git checkout -b feature/WI-001-feat-monorepo-bootstrap
+git checkout -b feature/WI-018-feat-monorepo-bootstrap
 
 pnpm init
 # pnpm-workspace.yaml: packages: ["apps/*", "packages/*"]
@@ -35,7 +37,7 @@ pnpm init
 # tsconfig.base.json + package.json devDeps (turbo, typescript, vitest, @playwright/test)
 
 pnpm add -w -D turbo typescript vitest @playwright/test
-git commit -m "WI-001-feat 모노레포 루트 셋업 (pnpm workspaces + Turborepo)"
+git commit -m "WI-018-feat 모노레포 루트 셋업 (pnpm workspaces + Turborepo)"
 ```
 
 ### Day 3~4: apps/web + packages 스캐폴드
@@ -45,7 +47,7 @@ pnpm add -C apps/web next-pwa @supabase/supabase-js @tanstack/react-query zustan
 
 # packages/* 7개 스캐폴드 (ui/schemas/types/api-client/i18n/platform/config)
 mkdir -p packages/{ui,schemas,types,api-client,i18n,platform,config}/src
-git commit -m "WI-001-feat apps/web 초기화 + packages 7개 스캐폴드"
+git commit -m "WI-019-feat apps/web 초기화 + packages 7개 스캐폴드"
 ```
 
 ### Day 5: supabase 인프라 셋업 (RLS 정책 제외, ST-068/069 마이그레이션 기반)
@@ -56,17 +58,17 @@ pnpm supabase init  # 루트 supabase/ 생성
 # .flowset/db/migrations/00000000000010~21.sql → supabase/migrations/ (스키마만, RLS 정책 SQL 제외)
 pnpm supabase db reset --local
 pnpm supabase gen types typescript --local > packages/types/src/database.ts
-git commit -m "WI-bootstrap supabase init + 스키마 마이그레이션 12 파일 + types 자동 생성"
+git commit -m "WI-019-feat supabase init + 스키마 마이그레이션 12 파일 + types 자동 생성"
 ```
 
 ### Day 6~7: ST-001 로그인 핵심 (Supabase Auth + apps/web)
 ```bash
-git checkout -b feature/WI-001-feat-login-core
+git checkout -b feature/WI-020-feat-login-core
 # packages/ui/src/components/{Button,Input,Card,Alert}.tsx 4 base
 # packages/api-client/src/hooks/auth.ts (signIn)
 # apps/web/app/[locale]/(auth)/login/page.tsx (CM-01)
 # 5회 실패 잠금 + 역할별 리다이렉트 + audit
-git commit -m "WI-001-feat 이메일/비밀번호 로그인 (CM-01) + 5회 실패 잠금 + 역할별 리다이렉트"
+git commit -m "WI-020-feat 이메일/비밀번호 로그인 (CM-01) + 5회 실패 잠금 + 역할별 리다이렉트"
 ```
 
 ### Day 8~10: ST-002~004 + ST-005 + ST-068 + ST-069 병렬 (4 그룹 페어 분담 또는 직렬)
@@ -74,7 +76,7 @@ git commit -m "WI-001-feat 이메일/비밀번호 로그인 (CM-01) + 5회 실�
 **그룹 A — 인증 보조 (ST-002/003/004)**:
 ```bash
 # CM-02 비밀번호 찾기 + CM-03 활성화 + CM-04 2FA (speakeasy TOTP + recovery codes)
-git commit -m "WI-002-feat 비밀번호 찾기 + WI-003-feat 활성화 + WI-004-feat 2FA TOTP"
+git commit -m "WI-020-feat 비밀번호 찾기 + 활성화 + 2FA TOTP (ST-002~004)"
 ```
 
 **그룹 B — RLS 정책 SQL (ST-005)**:
@@ -82,21 +84,21 @@ git commit -m "WI-002-feat 비밀번호 찾기 + WI-003-feat 활성화 + WI-004-
 # .flowset/db/rls.md 패턴 A/B/C → CREATE POLICY SQL 작성
 # supabase/migrations/00000000000022_rls_policies.sql 신규 (KI-017 P3 → Sprint 1 처리)
 # 권한 매트릭스 자동 테스트 (6 역할 × 44 화면 핵심 엔드포인트)
-git commit -m "WI-005-feat RLS 정책 SQL 37 테이블 + 운영사 우회 + 권한 매트릭스 테스트"
+git commit -m "WI-019-feat RLS 정책 SQL 37 테이블 + 운영사 우회 + 권한 매트릭스 테스트 (ST-005)"
 ```
 
 **그룹 C — audit_logs 트리거 (ST-068)**:
 ```bash
 # supabase/migrations/00000000000023_audit_triggers.sql (21 테이블 AFTER INSERT/UPDATE/DELETE/APPROVE)
 # 5년 보관 정책 + 파티셔닝 (월 단위)
-git commit -m "WI-068-feat audit_logs 트리거 21 테이블 + 5년 보관 + 월 파티셔닝"
+git commit -m "WI-019-feat audit_logs 트리거 21 테이블 + 5년 보관 + 월 파티셔닝 (ST-068)"
 ```
 
 **그룹 D — Realtime publication (ST-069)**:
 ```bash
 # supabase/migrations/00000000000024_realtime_publication.sql (notifications/approvals/approval_steps)
 # packages/api-client/src/hooks/useRealtime.ts wrapper + 재연결 + 오프라인 fallback
-git commit -m "WI-069-feat Realtime publication + 클라이언트 wrapper + 자동 재연결"
+git commit -m "WI-019-feat Realtime publication + 클라이언트 wrapper + 자동 재연결 (ST-069)"
 ```
 
 ### Day 11~12: ST-078 약관 + ST-072 오류 페이지 (ST-005/068 의존)
@@ -105,7 +107,7 @@ git commit -m "WI-069-feat Realtime publication + 클라이언트 wrapper + 자�
 # packages/schemas: LegalDocumentSchema + UserConsentSchema (zod, ko/en 페어 검증)
 # apps/web/app/[locale]/(auth)/(legal)/terms/page.tsx (비로그인 푸터 진입)
 # apps/web/app/[locale]/(legal)/error/{404,500,503}/page.tsx + Sentry hook
-git commit -m "WI-078-feat 약관/동의 (PIPA 컴플라이언스, ko/en 페어) + WI-072-feat 오류/점검 페이지"
+git commit -m "WI-020-feat 약관/동의 (PIPA 컴플라이언스, ko/en 페어) + 오류/점검 페이지 (ST-078/072)"
 ```
 
 ### Day 13~14: zod-to-openapi + 첫 CI 통합 + Sprint 1 회고
@@ -114,7 +116,7 @@ pnpm add -C packages/schemas @asteasolutions/zod-to-openapi
 # packages/schemas/scripts/build-openapi.ts → packages/schemas/dist/openapi.yaml
 # .github/workflows/phase7-code.yml 신규 (lint/typecheck/unit-test/build 4 job)
 # PR template 갱신 (API 변경 시 .flowset/api/*.md + zod schema 동시 갱신 의무)
-git commit -m "WI-bootstrap zod-to-openapi 자동 생성 + phase7-code.yml CI 4 job + PR template"
+git commit -m "WI-021-feat zod-to-openapi 자동 생성 + phase7-code.yml CI 4 job + PR template"
 ```
 
 > **정정 사유 (2026-05-19 codex P1-4 정정)**: 이전 안은 supabase init에 RLS 정책을 묶었으나 dependency-graph.md L57 "ST-005 ← ST-001, ST-068 동시" SSOT 위반. ST-001 (로그인 핵심) → ST-002~004 / ST-005 / ST-068 / ST-069 4 그룹 병렬 순서가 정확. RLS 정책 SQL은 ST-005 그룹 B에서 별도 마이그레이션.
