@@ -118,4 +118,57 @@
 
 ## 8. 발견된 실패 패턴 (날짜순 누적)
 
-(아직 없음 — 발견 시 추가)
+- **2026-05-19 — 유료 기능 무단 산입**: Phase 1 PRD 작성 시 Claude가 사용자 명시 동의 없이 유료 기능(Supabase Pro / Vercel Pro / Sentry Team / NHN 알림톡 / Tauri 코드 서명)을 "보수적 권고"로 산출물에 산입 → `project.md §5`(외부 비용 발생 시 사용자 확인 필수) + `CLAUDE.md`(추측성 작업 금지) 위반. Phase 2~6 산출물이 이를 그대로 인용·확장. WI-InfraPolicy-docs로 전면 정정. **방지책: §9 원칙 + §10 정책 준수**.
+
+## 9. 외부 비용 / 유료 기능 산입 금지 원칙 (2026-05-19 신규 — 재발 방지)
+
+1. 외부 비용 발생 항목(유료 플랜/구독/인증서/외부 통신 단가)은 **사용자 명시 승인 전까지 산출물 본문에 의무/기본값으로 명시 금지**
+2. 산입 필요 시 "옵션 (사용자 승인 시)" 또는 별도 보류 표(`prd/07-risks.md §5 Pending Decisions`)에만 기록
+3. Free/무료 대안을 항상 먼저 제시 + 비용/위험 비교표 동반
+4. 비용 추정은 단계별(개발 무료 / 전환 시 유료)로 분리
+5. `.claude/rules/project.md §5` 사용자 확인 필수 시점 준수 — 외부 비용은 결정 전 진행 금지
+
+## 10. 인프라 운영 정책 (Free 시작 + Pro 전환 트리거, 2026-05-19 사용자 결정)
+
+> **컨텍스트**: 1인 운영 + 소기업(20~50명) 2~3사 대상 (약 150 MAU). codex 3차 협의 + 사용자 결정. **본 §이 모든 산출물의 인프라/비용 결정 SSOT**.
+
+### 10-1. 운영 전략 (codex 역제안)
+
+- Vercel preview: Supabase 미연동 mock UI
+- PR 검증: GitHub Actions ephemeral Supabase (`supabase start` 컨테이너) — RLS/audit/Realtime smoke (Claude 작성)
+- staging: Supabase Free 1개 (`flowhr-staging`) — merge 후 자동 push
+- production: 서비스 런칭 시 Pro 전환
+- 개발/CI 작성/디버깅/유지보수는 Claude+codex 수행, 사용자는 의사결정 + 외부 가입만
+
+### 10-2. 서비스별 시작 정책
+
+| 서비스 | 시작 | 전환 |
+|------|----|----|
+| Supabase | Free | 5트리거(§10-3) 도달 시 Pro |
+| Vercel | 무료 (Hobby 개발 / Cloudflare Pages·Netlify 상업적 무료) | 서비스 런칭 시 (Pro 또는 무료 대안 유지) |
+| Sentry | Free Developer | 월 5,000 이벤트 초과 시 Team |
+| 알림 | 인앱 + 이메일(Resend 3,000건/월 무료) | 카카오 알림톡 / SMS는 테넌트별 옵션 (`tenant_settings`) |
+| Tauri 코드 서명 | 자체 인증서 (0원, 설치 가이드) | 설치 UX 개선 필요 시 유료 (Mac $99 / Win OV $90~EV $250) |
+
+### 10-3. Supabase Pro 전환 5트리거 (어느 하나라도 도달 시 사용자 승인)
+
+1. **테넌트 3사 입점** (`tenants` row count)
+2. **DB 400MB 도달** (Free 500MB의 80%)
+3. **Storage 800MB 도달** (Free 1GB의 80%)
+4. **Connection 60 도달 위험 신호** (출퇴근 동시 접속)
+5. **유료 SLA / 대기업 컴플라이언스 / TDE 요구** (계약·외부 이벤트)
+
+전환 시 PITR / branch compute / CI 자동화 강화를 한 번에 묶어 처리.
+
+### 10-4. 모니터링 의무 (Claude 셋업 + Sprint 회고 점검)
+
+- Sprint 회고마다(2주) Supabase dashboard DB/Storage/Connection peak 점검
+- Supabase 용량 경고 이메일 알림 설정
+- staging weekly ping cron (7일 idle 방지)
+- staging `db push` 실패 시 Slack/이메일 알림
+
+### 10-5. staging 데이터 정책
+
+- synthetic 데이터만 (실고객 PII 금지 — 반입 필요 시 즉시 Pro 전환 검토)
+- storage prefix `tenants/{tenantId}/`
+- PR 데이터는 `tenant_id` namespace로 RLS 격리

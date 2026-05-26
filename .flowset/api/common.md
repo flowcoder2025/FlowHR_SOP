@@ -11,12 +11,13 @@
 - 클라이언트에 직접 노출되지 않음. Edge Function 또는 트리거에서 호출.
 - 채널 우선순위:
   ```
-  1. 인앱 (notifications INSERT + Realtime broadcast)
-  2. PWA Push (Web Push API, iOS 16.4+ + 홈화면 설치)
-  3. 카카오 알림톡 (30분 미열람 시) — tenant_settings.notifications.kakao_fallback
-  4. SMS (1시간 + 카카오 미수신)
-  5. 이메일 (24시간 미열람, 중요 알림만)
+  1. 인앱 (notifications INSERT + Realtime broadcast)               — 기본 (무료)
+  2. PWA Push (Web Push API, iOS 16.4+ + 홈화면 설치)               — 기본
+  3. 이메일 (Resend 3,000건/월 무료, 중요 알림 즉시 / 일반 24시간 미열람)  — 기본 (무료)
+  4. 카카오 알림톡 (30분 미열람 시) — tenant_settings.notifications.kakao_enabled  — 옵션 (DEFER)
+  5. SMS (1시간 + 카카오 미수신) — tenant_settings.notifications.sms_enabled        — 옵션
   ```
+  > **카카오 알림톡 / SMS는 옵션 기능** (사용자 결정 2026-05-19, `guardrails.md §10`). 카카오는 NHN Cloud 채널 인증(60일) 필요 → 기본 비활성(DEFER). `tenant_settings.notifications.kakao_enabled` 활성 테넌트만 발송 (첫 활성 시 NHN 신청). 미활성 테넌트는 인앱 + 푸시 + 이메일(Resend)로 충분. 이메일을 기본 폴백 채널로 승격 (기존 24시간 한정 → 중요 알림 즉시).
 - 외부 채널 발송 결과는 `integration_logs` INSERT
 
 ## 파일 업로드 (CM-09)
@@ -301,9 +302,9 @@ CM-20은 정적 페이지 — 별도 API 없음. 다만 설치 추적용 이벤�
 | GET | `/api/v1/me/locale` | self | 본인 locale 조회 (캐시 무효화용) |
 | PATCH | `/api/v1/me/profile` | self | body `{locale: 'ko'\|'en'}` 포함 — locale 즉시 변경 |
 
-알림 발송 (CM-15) 시 수신자 `users.locale` 기준 자동 분기:
-- `ko`: 인앱+푸시(ko 텍스트) → 카카오 알림톡(ko) → SMS(ko) → 이메일(ko 템플릿)
-- `en`: 인앱+푸시(en 텍스트) → SMS(en) → 이메일(en 템플릿) (카카오 skip)
+알림 발송 (CM-15) 시 수신자 `users.locale` 기준 자동 분기 (카카오/SMS는 `tenant_settings` 옵션 활성 시만 — `guardrails.md §10`):
+- `ko`: 인앱+푸시(ko) → 이메일(ko 템플릿, Resend) → [옵션] 카카오 알림톡(ko) → [옵션] SMS(ko)
+- `en`: 인앱+푸시(en) → 이메일(en 템플릿, Resend) → [옵션] SMS(en) (카카오 skip)
 
 ## 변경 이력
 
@@ -312,3 +313,4 @@ CM-20은 정적 페이지 — 별도 API 없음. 다만 설치 추적용 이벤�
 | 2026-05-15 | 초안 — 알림/파일/Excel/PDF/감사/플래그 평가/점검/헬스/Realtime 채널 | Phase 4 진입 |
 | 2026-05-15 | 헤더 알림 미니(CM-17) / 도움말(CM-19) / 약관(CM-21) / 온보딩(CM-22) / PWA 설치 이벤트(CM-20) 엔드포인트 추가 | KI-028/030 batch-003 |
 | 2026-05-16 | i18n: legal docs language 파라미터 + ko/en 페어 게시 + i18n messages API + locale별 알림 분기 | 사용자 결정 batch-005 |
+| 2026-05-19 | CM-15 알림 채널 — 카카오/SMS 옵션 기능화 (kakao_fallback → kakao_enabled + sms_enabled tenant_settings 토글) + 이메일(Resend) 기본 폴백 승격 + NHN DEFER 반영 | WI-InfraPolicy-docs — 사용자 결정 (NHN 옵션 기능). SSOT: guardrails.md §10 |

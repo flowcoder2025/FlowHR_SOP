@@ -4,7 +4,7 @@
 > **SP**: 42 (ST-001 5 + ST-002 3 + ST-003 3 + ST-004 5 + ST-005 5 + ST-068 5 + ST-069 5 + ST-072 3 + ST-078 8)
 > **목표**: Phase 7 모든 코드 작업의 토대. 인증 + RLS + audit + Realtime + 오류 페이지 + PIPA 컴플라이언스(약관) 준비 완료.
 > **SSOT**: `.flowset/backlog/tasks.md` TS-001~021 (EP-01) + TS-189~194 + TS-209~213 (ST-068/069/072/078)
-> **외부 신청 의무 Sprint 1 day 1 (D+0)**: NHN Cloud 알림톡 채널 인증 신청 (60일 보수 소요 → S6 ST-066 진입 시점 D+71에 활성 보장, 상세는 mvp-plan §5 정밀 계산)
+> **외부 신청 Sprint 1 day 1 (D+0)**: Supabase Free org + flowhr-staging + Vercel 프로젝트 (무료). **NHN Cloud 알림톡은 DEFER** (테넌트 옵션 기능 — 사용자 결정 2026-05-19, `guardrails.md §10`). 기본 알림은 인앱 + 이메일(Resend).
 
 ## Story 목록 (9 Story / 42 SP)
 
@@ -128,12 +128,12 @@ git commit -m "WI-bootstrap zod-to-openapi 자동 생성 + phase7-code.yml CI 4 
 - ST-072 ← ST-005 (RLS), ST-068 (audit), Sentry
 - ST-078 (P0 신규) ← ST-005 (RLS), ST-068 (audit)
 
-## 외부 신청 의무 (Sprint 1 day 1)
+## 외부 신청 (Sprint 1 day 1) — 사용자 결정 2026-05-19, SSOT: `guardrails.md §10`
 
-- Supabase 프로젝트 + Pro 플랜 신청 (즉시)
-- Vercel 프로젝트 + 환경변수 분리 (preview/staging/production, 즉시)
-- **NHN Cloud 알림톡 채널 인증 신청 (Sprint 1 day 1 = D+0 의무, 60일 보수적, mvp-plan §5 정밀 계산 ↔ S6 ST-066 활성 보장)**
-- Sentry 무료 플랜 계정 (S6 진입 전 활성)
+- **Supabase Free org + flowhr-staging project 생성 (즉시)** — Pro 전환은 5트리거 도달 시 (3사/DB 400MB/Storage 800MB/Connection 위험/SLA·컴플라이언스)
+- **Vercel 프로젝트 (무료, 즉시)** — preview 환경변수에 Supabase URL 미주입 (mock UI). staging만 연동. Pro 전환은 서비스 런칭 시 (또는 Cloudflare/Netlify 무료 유지)
+- **NHN Cloud 알림톡 → DEFER** (Sprint 1 day 1 의무 아님). 테넌트별 옵션 기능. 첫 옵션 활성 테넌트 또는 고객 계약 조건 시 신청 (심사 60일 보수). 기본 알림은 인앱 + 이메일(Resend 3,000건/월 무료)
+- Sentry Free Developer 계정 (S6 진입 전 활성, 무료)
 
 ## Definition of Done
 
