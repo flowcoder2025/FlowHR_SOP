@@ -15,14 +15,14 @@ wireframes/
 │   ├── prompts/             # 폐기된 이미지 프롬프트 36개
 │   ├── images/              # 폐기된 Codex 생성 이미지 (OP-01.png)
 │   └── .codex-op01-prompt.txt
-├── html/                    # 신규: HTML 와이어프레임 (Phase 5 진입점)
-│   ├── _design-tokens.css   # 공통 디자인 토큰 (style-guide.md 인용)
-│   ├── _icons.css           # 아이콘 클래스
-│   ├── _icons.svg           # Lucide outline SVG 스프라이트
-│   ├── {ID}.html            # 화면별 HTML (OP-01 ~ EM-11 + CM-* + 신규 화면)
+├── _design-system/          # DS SSOT (WI-KI-batch-004) — tokens.css / components.css / icons.svg / _layout-shell.html / _layout-auth.html / _showcase.html + spec md (03-components 등 7종)
+├── html/                    # HTML 와이어프레임 (_design-system/ SSOT 인라인 인용)
+│   ├── {ID}.html            # 화면별 HTML (OP-01~12 + TA-01~14 + EM-01~11 + CM-01~22)
 │   └── ...
 └── analysis/                # Claude 컴포넌트 분해 / 인터랙션 / 반응형 정리 ({ID}.md)
 ```
+
+> **구 SSOT 폐기**: `html/_design-tokens.css` / `_icons.css` / `_icons.svg`는 `_design-system/`(tokens.css / components.css / icons.svg) 신 SSOT로 통합 (KI-041 G0 baseline archive 처리). 본 README의 모든 자산 참조는 `_design-system/` 기준.
 
 ## 작성 정책
 
@@ -34,7 +34,7 @@ wireframes/
 - `api/{domain}.md` — 연관 API (action handler)
 
 ### 2. 컴포넌트 일관성
-- `_design-tokens.css` / `_icons.svg` 공유 — 디자인 토큰 변경 시 한 곳에서
+- `_design-system/tokens.css` / `components.css` / `icons.svg` 공유 — 디자인 토큰·컴포넌트 변경 시 한 곳에서
 - shadcn/ui 패턴 흉내 (card / button / table / badge / filter-chip / tabs / input)
 - Lucide outline 아이콘만 (emoji 금지)
 
@@ -61,7 +61,7 @@ HTML 작성 후 PRD § 1:1 매핑 체크리스트로 검증:
 
 | Step | 산출물 | evaluator |
 |------|--------|----------|
-| 5.0 | _design-tokens.css + _icons.svg + _icons.css (공통, 완료) | — |
+| 5.0 | _design-system/ (tokens.css + components.css + icons.svg + _layout-shell, 완료) | — |
 | 5.1 | OP-01.html 시범 재작성 (PRD 보강 후 §3-4 필터 / §4 액션 정합) | (수동) |
 | 5.2 | 운영사 12 화면 HTML 일괄 (OP-01~12, OP-12 신규 포함) | doc 부분 평가 |
 | 5.3 | 관리자 14 화면 HTML 일괄 (TA-01~14) | doc 부분 평가 |
@@ -72,6 +72,10 @@ HTML 작성 후 PRD § 1:1 매핑 체크리스트로 검증:
 | 5.8 | 전체 evaluator (doc 모드, 8.0+) | doc |
 
 **Phase 5 작업 범위**: 44 화면 (운영사 12 + 관리자 14 + 직원 11 + 공통 22 - 단, CM 일부는 정적 페이지/모달이라 단순 wireframe)
+
+## 렌더 증거 정책 (KI-062)
+
+각 화면의 렌더링 증거는 별도 스크린샷 파일이 아니라 **CI `playwright-smoke` job 결과**로 충족한다 (PR merge 시점 자동 생성 — file:// 렌더링 + console error 0 + svg use bbox > 0 + native appearance 검증 + screenshot artifact). `analysis/{ID}.md`는 "렌더 검증 = CI playwright-smoke artifact 참조"로 명시하며, `.pass` 마커가 0 bytes인 것은 의도된 빈 마커(통과 표식)다.
 
 ## 본 정책의 발효 조건
 
@@ -85,3 +89,4 @@ HTML 작성 후 PRD § 1:1 매핑 체크리스트로 검증:
 | 2026-05-15 | 초안 (Codex 정책) | Phase 5 진입 |
 | 2026-05-15 | 정책 변경 — Codex 폐기 / HTML 직접 작성으로 단일 채택 + PRD 누락 결함 보강 후 재시작 | HANDOFF.md 참조 |
 | 2026-05-15 | 작업 범위 36 → 44 화면 (CM-16~22 + OP-12) + 5.5/5.6 분할 | KI-028/030 batch-003 후속 |
+| 2026-05-19 | 디렉토리 트리 + 자산 참조 구 SSOT(`_design-tokens.css`/`_icons.css`/`_icons.svg`) → `_design-system/` 신 SSOT 정정 (KI-040) + 렌더 증거 정책(CI playwright-smoke) 명시 (KI-062) | WI-KI-batch-007-docs |

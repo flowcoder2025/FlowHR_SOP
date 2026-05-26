@@ -32,7 +32,9 @@
 | CM-19 도움말 ? | 상단 우측 | `.icon-btn` + `i-help` |
 | CM-17 알림 종 + 배지 | 상단 우측 | `.icon-btn` + `i-bell` + `.badge-dot` |
 | CM-16 프로필 드롭다운 | 상단 우측 | `.profile-trigger` + `.avatar` + `i-chevron-down` |
-| 푸터 | 콘텐츠 하단 | © + 약관/개인정보/도움말/문의 + 버전 |
+| 푸터 | 콘텐츠 하단 | © + 약관(`/legal/terms`) / 개인정보(`/legal/privacy`) / 도움말(`/help`) / 운영팀 문의(`/support`) + 버전 |
+
+> **footer helpers 라우트 SSOT (KI-056)**: footer 링크는 `/legal/terms` (CM-21 약관) · `/legal/privacy` (개인정보) · `/help` (CM-19 도움말 정적 페이지) · `/support` (운영팀 문의 — 비로그인은 정적 안내, 로그인 시 OP-08 티켓 연결). 14 화면 footer 28건이 본 라우트를 인용. Phase 7 라우트 구현 시 `/help` · `/support`는 `(legal)` 또는 정적 라우트 그룹에 배치.
 
 ## 사이드바 메뉴 (역할별)
 
@@ -109,3 +111,4 @@
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-16 | 초안 — AppShell + 사이드바 역할별 + CM-16 매트릭스 | KI-037 |
+| 2026-05-19 | footer helpers 라우트 SSOT 명시 (`/legal/terms`·`/legal/privacy`·`/help`·`/support`) | WI-KI-batch-007-docs (KI-056) |

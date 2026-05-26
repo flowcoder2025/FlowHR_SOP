@@ -41,8 +41,9 @@ FlowHR_SOP/
 ├── apps/
 │   ├── web/                    # Next.js 15 — Web + PWA (단일 빌드)
 │   │   ├── app/
-│   │   │   ├── (auth)/         # 로그인 / 가입 / 2FA
-│   │   │   ├── (operator)/     # OP-01 ~ OP-11
+│   │   │   ├── (auth)/         # 로그인 / 가입 / 2FA / 비밀번호 (CM-01~05)
+│   │   │   ├── (legal)/        # 약관·동의 (CM-21) / 오류·점검 (CM-06) / 정적 페이지 (CM-20·22)
+│   │   │   ├── (operator)/     # OP-01 ~ OP-12 (OP-12 운영사 본인 프로필 포함)
 │   │   │   ├── (tenant)/       # TA-01 ~ TA-14
 │   │   │   ├── (employee)/     # EM-01 ~ EM-11
 │   │   │   ├── api/            # Route Handlers (필요한 곳만)
