@@ -4,7 +4,7 @@
 
 | ID | 리스크 | 발생 시 영향 | 발생 확률 | 심각도 | 완화책 |
 |----|------|------------|---------|-------|------|
-| R-01 | Supabase 장애로 전체 서비스 다운 | 모든 테넌트 다운 | 낮음 | P0 | Supabase Pro PITR + 응급 마이그레이션 절차 + UptimeRobot 알림 |
+| R-01 | Supabase 장애로 전체 서비스 다운 | 모든 테넌트 다운 | 낮음 | P0 | **Free 단계**: 주 1회 pg_dump 백업 + 일 1회 자동 백업 + `supabase db reset` 복구 절차 + UptimeRobot 알림. **Pro 전환 후**(`guardrails.md §10` 트리거): PITR + 응급 마이그레이션 절차 |
 | R-02 | RLS 정책 누락으로 타 테넌트 데이터 노출 | 컴플라이언스 위반, 신뢰 손실 | 중간 | P0 | Phase 7 RLS 자동 검증 게이트 + audit_logs 전수 검토 |
 | R-03 | iOS PWA 푸시 미작동 (홈화면 미설치 사용자) | 결재 알림 도달 실패 | 높음 | P1 | 카카오 알림톡 + SMS 폴백 + 첫 진입 시 설치 가이드 |
 | R-04 | Tauri 2.x 자동 업데이트 실패 | 데스크톱 사용자 구버전 정체 | 중간 | P1 | `tauri-updater` 시그니처 검증 + 강제 업데이트 옵션 |
@@ -31,7 +31,8 @@
 | 직원의 90%가 iOS 16.4+ 또는 Android Chrome 100+ 사용 | PWA 푸시 도달율 | 베타 직후 사용자 통계 수집 |
 | 테넌트 평균 직원 수 30명 | 가격 모델 + 인프라 비용 | MVP+3개월 데이터 |
 | 카카오 알림톡 채널 30일 내 개설 가능 | 출시 일정 | 출시 60일 전 신청 |
-| Vercel + Supabase Pro로 100 테넌트까지 단일 인스턴스 처리 가능 | 인프라 비용 | MVP+6개월 부하 테스트 |
+| 1인 운영 + 2~3사 × 20~50명(150 MAU) 베타 컨텍스트는 Supabase Free 한도(DB 500MB / Storage 1GB / 동시 60) 내 운영 가능, 트리거 도달 시 Pro 전환 | 인프라 비용 | Sprint 회고마다 Free 한도 점검 (`guardrails.md §10`) |
+| Vercel + Supabase Pro로 100 테넌트까지 단일 인스턴스 처리 가능 (Pro 전환 후) | 인프라 비용 | MVP+6개월 부하 테스트 |
 | 한국 노동법이 v1 개발 기간 동안 큰 변경 없음 | 컴플라이언스 | 분기 1회 노무사 점검 |
 | 사용자가 한국어만 사용 | i18n 범위 | 글로벌 진출 결정 시 |
 | 사용자 디바이스 시간이 정확 (출퇴근 시각 신뢰) | 출퇴근 기록 | 서버 시간으로 dual-stamp (클라이언트 시간 + 서버 시간 모두 기록) |
@@ -40,7 +41,7 @@
 
 | 의존성 | 용도 | 대체 가능성 | SLA |
 |--------|------|-----------|-----|
-| Supabase | DB / Auth / Storage / Realtime / Edge Functions | 자체 호스팅 PG로 마이그레이션 가능 (큰 작업) | 99.9% (Pro) |
+| Supabase | DB / Auth / Storage / Realtime / Edge Functions | 자체 호스팅 PG로 마이그레이션 가능 (큰 작업) | Free: SLA 없음 (best-effort) / Pro 전환 후: 99.9% |
 | Vercel | Web/PWA 호스팅 | Cloudflare Pages / Netlify로 이전 가능 | 99.99% |
 | NHN Cloud (알림톡/SMS) | 외부 알림 | KT/LG U+ 또는 Solapi 대체 | 99.5% |
 | GitHub | 코드 호스팅 + Actions + Releases | GitLab 대체 가능 | 99.9% |
@@ -74,9 +75,14 @@
 | D-03 | 다국어 도입 시점 | 베타 +3개월 후 | next-intl 인프라는 MVP에 미리 구축 |
 | D-04 | 다크 모드 도입 | v1.2 | shadcn/ui는 기본 지원, 토글만 추가 |
 | D-05 | 4대보험 자동 계산 | v2.0 | 노무사 자문 후 결정 |
+| D-06 | Supabase Pro 전환 시점 | `guardrails.md §10` 5트리거 도달 시 | Free 시작 (사용자 결정 2026-05-19) — 3사 / DB 400MB / Storage 800MB / Connection 위험 / SLA·컴플라이언스 요구 |
+| D-07 | Vercel 호스팅 (Hobby→Pro vs Cloudflare/Netlify 무료) | Phase 7 배포 단계 (Sprint 1 이후) | 개발 무료 → 서비스 런칭 시 결정 (Cloudflare Pages/Netlify는 상업적 무료) |
+| D-08 | NHN 카카오 알림톡 도입 | 첫 옵션 활성 테넌트 또는 고객 계약 조건 | DEFER — 테넌트별 옵션 기능, 기본은 인앱+이메일(Resend) |
+| D-09 | Tauri 데스크톱 코드 서명 | Sprint 9~10 데스크톱 출시 시 | 자체 인증서 0원 (설치 가이드로 OS 경고 안내) — 유료 인증서는 UX 개선 필요 시 |
 
 ## 6. 변경 이력
 
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 18 리스크 + 8 가정 + 8 의존성 + 7 정책 + 5 보류 | Phase 1 진입 |
+| 2026-05-19 | R-01 mitigation 단계별 (Free pg_dump / Pro PITR) + 가정 (Free 한도 운영) + R-08 SLA 단계별 + D-06~09 추가 (Supabase/Vercel/NHN/Tauri 결정 보류) | WI-InfraPolicy-docs — Free 시작 결정 반영. SSOT: guardrails.md §10 |

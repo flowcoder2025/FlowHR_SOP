@@ -56,6 +56,7 @@
 ## Phase 7 — 개발 착수
 
 - [x] WI-018-feat 모노레포 부트스트랩 (pnpm@9.15.0 + Turborepo 2.9.14 + tsconfig.base + 루트 devDeps 5종, Sprint 1 Day 1~2)
+- [x] WI-InfraPolicy-docs 인프라 유료 가정 정정 (Free 시작 + Pro 전환 5트리거 + NHN DEFER + Tauri 자체 인증서 + guardrails §9/§10 규칙 보강, 사용자 결정 2026-05-19 + codex 3차 협의)
 - [ ] WI-019-feat Supabase 프로젝트 + 스키마 마이그레이션
 - [ ] WI-020-feat 인증 (이메일/2FA)
 - [ ] WI-021-feat 디자인 시스템 베이스

@@ -153,31 +153,49 @@ PR 푸시 → GitHub Actions (lint/typecheck/test/build)
 
 ### Supabase
 ```
-supabase/migrations/*.sql 변경 → PR → CI에서 dry-run
-       → 머지 → CD가 `supabase db push` 실행 (staging → production)
+supabase/migrations/*.sql 변경 → PR → CI에서 ephemeral `supabase start` + `db reset --local` + RLS/audit/Realtime smoke
+       → 머지 → CD가 Free staging에 `supabase db push` 실행
+       → production은 Pro 전환 후 staging smoke 통과 시 수동 승인 게이트로 적용
 ```
 
 ## 7. 환경 분리
 
-| 환경 | 용도 | URL |
+> **인프라 운영 전략 SSOT**: `.flowset/guardrails.md §10` (2026-05-19 사용자 결정 — Free 시작 + Pro 전환 5트리거). 본 표는 환경 매핑만.
+
+| 환경 | 용도 | URL / 백엔드 |
 |------|------|-----|
 | local | 로컬 개발 | `http://localhost:3000` + Supabase 로컬 (`supabase start`) |
-| preview | PR 미리보기 | Vercel preview URL + Supabase preview branch |
-| staging | 베타 고객 / QA | `staging.flowhr.kr` + Supabase staging project |
-| production | 실서비스 | `app.flowhr.kr` + Supabase production project |
+| preview | PR 미리보기 | Vercel preview URL + **Supabase 미연동 (mock UI 빌드 검증)** — schema/RLS/audit/Realtime 검증은 CI ephemeral `supabase start` |
+| staging | 데모 / QA | `staging.flowhr.kr` + **Supabase Free staging project** (synthetic 데이터만, 실고객 데이터 금지 — `guardrails.md §10` 트리거 도달 전) |
+| production | 실서비스 | `app.flowhr.kr` + Supabase production project (**서비스 런칭 시 Pro 전환**) |
 
-## 8. 비용 추정 (월, MVP +3개월 시점 10사 / 500명 기준)
+## 8. 비용 추정 (단계별)
 
-| 항목 | 추정 비용 |
-|------|---------|
-| Vercel Pro (월 트래픽 100GB 또는 동시 빌드 1+ 초과 시 전환) | 20$ |
-| Supabase Pro | 25$ |
-| Sentry (개발자) | 26$ |
-| GitHub Actions (사용량) | 0$ (무료 한도) |
-| 카카오 알림톡 (8.8원/건, 1만건/월) | 88,000원 |
-| 도메인 + SSL | 무료 (Vercel) |
-| Tauri 코드 서명 인증서 | macOS 99$/년, Windows EV 250$/년 |
-| 합계 (개월) | 약 200,000~300,000원 |
+> **결정 SSOT**: `.flowset/guardrails.md §10` (2026-05-19 사용자 결정). 모든 외부 비용은 **Free 시작 + 트리거 도달 시 사용자 승인 후 전환**. 외부 비용 항목은 사용자 미승인 상태로 산출물에 의무화하지 않는다 (재발 방지 — `guardrails.md §10` 원칙).
+
+### 8-1. 개발 단계 (Sprint 1~서비스 런칭 전) — 1인 운영 + 2~3사 × 20~50명 컨텍스트
+
+| 항목 | 비용 | 비고 |
+|------|----|----|
+| Supabase | **Free $0** | 트리거(3사 / DB 400MB / Storage 800MB / Connection 위험 / SLA·컴플라이언스) 도달 시 Pro |
+| Vercel | **$0** | Hobby(개발/내부) 또는 Cloudflare Pages/Netlify(상업적 무료). 서비스 런칭 시 결정 |
+| Sentry | **Free Developer $0** | 월 5,000 이벤트. 초과 시 Team $26 |
+| GitHub Actions | $0 (무료 한도) | private repo 월 2,000분 + CI ephemeral Supabase 검증 |
+| 카카오 알림톡 (NHN) | **$0 (DEFER)** | 테넌트별 옵션 기능. 첫 활성 테넌트 발생 시 신청 (60일). 실 사용량 약 750건/월 = 6,600원 |
+| 이메일 (Resend) | $0 (3,000건/월 무료) | 기본 알림 채널 |
+| 도메인 + SSL | 무료 (Vercel/Cloudflare) | |
+| Tauri 코드 서명 | **$0 (자체 인증서)** | 설치 가이드로 OS 경고 회피 안내 |
+| **개발 단계 합계** | **약 0원/월** | |
+
+### 8-2. 서비스 런칭/확장 시 전환 비용 (트리거 도달 시 사용자 승인)
+
+| 항목 | 전환 비용 | 트리거 |
+|------|--------|------|
+| Supabase Pro | $25/월 (+ PITR add-on / branch compute 별도) | 3사 / DB 400MB / Storage 800MB / Connection 위험 / SLA·컴플라이언스 |
+| Vercel Pro | $20/월 | 서비스 런칭(상업적 사용 ToS) 시 — 단 Cloudflare/Netlify는 무료 유지 가능 |
+| Sentry Team | $26/월 | 월 5,000 이벤트 초과 |
+| NHN 카카오 알림톡 | 8.8원/건 (실 750건/월 ≈ 6,600원) | 테넌트 옵션 활성 또는 고객 계약 조건 |
+| Tauri 유료 인증서 (선택) | macOS $99/년, Windows OV $90/년 또는 EV $250/년 | 설치 UX 개선 필요 시 (자체 인증서로 0원 운영 가능) |
 
 상세 운영 비용은 `.flowset/ops/cost.md`(Phase 10)에서.
 
@@ -187,3 +205,4 @@ supabase/migrations/*.sql 변경 → PR → CI에서 dry-run
 |------|------|------|
 | 2026-05-15 | 초안 — 스택 + 모노레포 + 인증 + 배포 | Phase 1 진입 |
 | 2026-05-16 | i18n: ko + en MVP 동시 (외국인 근로자) | 사용자 결정 batch-005 |
+| 2026-05-19 | §6 Supabase 배포 흐름 (CI ephemeral + staging push) + §7 환경 분리 (preview 미연동 mock / staging Free) + §8 비용 단계별 재구성 (Free 시작 + Pro 전환 5트리거) | WI-InfraPolicy-docs — 사용자 결정 (Free 시작, Phase 1 산입 유료 가정 정정). SSOT: guardrails.md §10 |

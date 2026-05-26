@@ -108,12 +108,15 @@ FlowHR_SOP/
 
 ### 작업 2 — Sprint 1 Day 1 의무 (외부 신청)
 
-- **D+0 즉시 신청 의무**:
-  - **NHN Cloud 알림톡 채널 인증** (60일 보수 → S6 ST-066 진입 시점 D+71에 활성 보장, mvp-plan §5 정밀 계산)
-  - Supabase 프로젝트 + Pro 플랜 신청
-  - Vercel 프로젝트 + 환경변수 분리 (preview/staging/production)
-- **S6 직전 신청**:
-  - Sentry 무료 플랜 계정 (S6 진입 전 활성, mvp-plan §5 / sprint-001 L136 SSOT — Sprint 1 day 1 의무 아님)
+> **인프라 결정 SSOT**: `.flowset/guardrails.md §10` (사용자 2026-05-19 — Free 시작 + Pro 전환 5트리거 + NHN DEFER + Tauri 자체 인증서).
+
+- **D+0 즉시 (무료)**:
+  - **Supabase Free org + flowhr-staging project 생성** (Pro 전환은 5트리거 도달 시)
+  - **Vercel 프로젝트 (무료)** — preview는 Supabase 미연동 mock UI, staging만 연동 (Pro 전환은 서비스 런칭 시)
+- **DEFER**:
+  - **NHN Cloud 알림톡** → 테넌트별 옵션 기능. 첫 옵션 활성 또는 고객 계약 조건 시 신청 (60일). 기본 알림은 인앱 + 이메일(Resend)
+- **S6 직전 (무료)**:
+  - Sentry Free Developer 계정 (S6 진입 전 활성)
 
 ### 작업 3 — Sprint 1 DoD 검증 (`sprint-001.md` L138~)
 

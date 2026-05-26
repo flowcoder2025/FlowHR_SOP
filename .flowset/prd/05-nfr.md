@@ -20,7 +20,7 @@
 
 | 항목 | 기준 |
 |------|------|
-| 월간 가용성 (SLO) | 99.5% (월 약 3.6시간 다운 허용) |
+| 월간 가용성 (SLO) | Free 단계: 99.5% best-effort (SLA 없음, 월 약 3.6시간 다운 허용) / Pro 전환 후: 99.9% 보장 (Supabase Pro SLA — `07-risks.md` R-08) |
 | 계획 점검 사전 공지 | 7일 전 |
 | 응급 점검 시간 제한 | 30분 / 회 |
 | 점검 시간대 | 토 02:00 ~ 토 06:00 (KST) |
@@ -110,13 +110,15 @@ audit_logs (
 
 ## 7. 백업 / 복구
 
-| 항목 | 기준 |
-|------|------|
-| RPO (Recovery Point Objective) | 1시간 (Supabase Point-in-Time Recovery Pro+) |
-| RTO (Recovery Time Objective) | 4시간 |
-| 백업 주기 | 자동 일 1회 (Supabase 기본) + PITR 7일 |
-| 백업 보관 | 30일 (자동) + 분기 1회 영구 보관 (S3 archive) |
-| 복구 테스트 | 분기 1회 staging 환경에서 |
+> **단계별 적용** (`guardrails.md §10` SSOT — Free 시작 + Pro 전환 5트리거). 아래 PITR/RPO 1시간 기준은 **Pro 전환 후(트리거 도달 시)** 목표. 개발/초기 베타 단계(Free)는 일 1회 자동 백업 + 주 1회 `pg_dump` cron으로 운영.
+
+| 항목 | Free 단계 (트리거 도달 전) | Pro 전환 후 (목표) |
+|------|------------------------|------------------|
+| RPO (Recovery Point Objective) | 24시간 (자동 백업 1회) + 주 1회 pg_dump | **1시간 (Supabase PITR, Pro+)** |
+| RTO (Recovery Time Objective) | 8시간 (수동 복구) | 4시간 |
+| 백업 주기 | 자동 일 1회 (Supabase Free 기본) + 주 1회 pg_dump cron | 자동 일 1회 + PITR 7일 |
+| 백업 보관 | 7일 (Free 자동) | 30일 (자동) + 분기 1회 영구 보관 (S3 archive) |
+| 복구 테스트 | 트리거 도달 시 도입 | 분기 1회 staging 환경에서 |
 
 ## 8. 확장성 (Scalability)
 
@@ -124,7 +126,7 @@ audit_logs (
 |---------|------|
 | 1 테넌트당 직원 1만명 | 페이지네이션 + 인덱스. Phase 3에서 검증 |
 | 1 테넌트당 일일 출퇴근 1만건 | `attendances` 파티셔닝 (월 단위) — MVP 후순위 |
-| 동시 접속 1만명 | Vercel Edge + Supabase Pro pool. Phase 7 부하 테스트 |
+| 동시 접속 1만명 | Vercel Edge + Supabase Pro pool (기술 목표). **Free 단계는 동시 접속 ~60 한도 — Connection 위험 신호 시 Pro pool 전환** (`guardrails.md §10` 트리거 4). 1인+2~3사 컨텍스트(150 MAU)에서는 영구 미도달 가능 |
 | 100 테넌트 동시 운영 | 단일 DB로 충분, 200 테넌트 초과 시 sharding 검토 |
 
 ## 9. 모니터링 / 알림

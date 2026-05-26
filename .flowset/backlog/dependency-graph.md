@@ -145,13 +145,15 @@ graph TD
 
 ## 외부 의존 (블로커 후보)
 
+> **인프라 결정 SSOT**: `.flowset/guardrails.md §10` (사용자 결정 2026-05-19 — Free 시작 + Pro 전환 5트리거 + NHN DEFER + Tauri 자체 인증서).
+
 | 외부 | 영향 Story | 진입 권장 시점 |
 |------|----------|-------------|
-| NHN Cloud 알림톡 채널 인증 | ST-055, ST-066 | Sprint 1 시작 시 신청 (NHN Cloud 가이드: 사업자 정보 검토 + 카카오 비즈 메시지 채널 심사 → 일반적으로 영업일 2~6주, 즉 14~42일. 보수적으로 60일 가정) |
-| Supabase 프로젝트 + Pro 플랜 | 모두 | Sprint 1 |
-| Vercel 프로젝트 | 모두 | Sprint 1 |
-| Sentry 프로젝트 | Sprint 7 이후 (운영 단계) | Sprint 6 말 |
-| Tauri 코드 서명 인증서 | Tauri 데스크톱 배포 | Sprint 9 |
+| **NHN Cloud 알림톡 채널 인증** | ST-055, ST-066 | **DEFER** — 테넌트별 옵션 기능. 첫 옵션 활성 테넌트 발생 또는 고객 계약 조건 시 신청 (심사 14~42일, 보수 60일). 기본 알림은 인앱+이메일(Resend) |
+| **Supabase 프로젝트 (Free)** | 모두 | Sprint 1 (Free org + flowhr-staging) — Pro 전환은 5트리거 도달 시 |
+| **Vercel 프로젝트** | 모두 | Sprint 1 (무료 — Hobby/Cloudflare/Netlify). Pro 전환은 서비스 런칭 시 |
+| Sentry 프로젝트 (Free Developer) | Sprint 7 이후 (운영 단계) | Sprint 6 말 (Free) |
+| Tauri 코드 서명 (자체 인증서) | Tauri 데스크톱 배포 | Sprint 9 — 자체 인증서 0원 |
 | 사업자등록 + 정보통신 신고 | 베타 진입 전 | Sprint 7 시작 |
 
 ## 변경 이력
@@ -160,3 +162,4 @@ graph TD
 |------|------|------|
 | 2026-05-15 | 초안 — 12 Epic / Sprint 1~10 / 외부 의존 | Phase 2 진입 |
 | 2026-05-19 | ST-073~080 신규 8 Story 의존 절 추가 (선행 + Sprint 진입 권장 + Mermaid) | KI-034 closure (Phase 6 진입 전 의무) |
+| 2026-05-19 | 외부 의존 표 정정 — Supabase Free/Vercel 무료 시작 + NHN DEFER (테넌트 옵션) + Tauri 자체 인증서 + Sentry Free Developer | WI-InfraPolicy-docs — 사용자 Free 시작 결정. SSOT: guardrails.md §10 |

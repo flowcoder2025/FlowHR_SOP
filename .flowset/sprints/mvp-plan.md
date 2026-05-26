@@ -306,24 +306,22 @@ OpenAPI YAML 자동 생성: `packages/schemas/`에서 `zod-to-openapi`로 `packa
 
 ## 5. 외부 의존 + 블로커
 
-> SSOT: `.flowset/backlog/dependency-graph.md ## 외부 의존`
+> SSOT: `.flowset/backlog/dependency-graph.md ## 외부 의존` + **`.flowset/guardrails.md §10` (인프라 결정, 사용자 2026-05-19 — Free 시작 + Pro 전환 5트리거 + NHN DEFER + Tauri 자체 인증서)**
 
 | 외부 | 영향 Sprint | 진입 권장 시점 | 보수적 일정 |
 |------|-----------|-------------|----------|
-| Supabase 프로젝트 + Pro 플랜 | S1+ | S1 day 1 | 즉시 |
-| Vercel 프로젝트 | S1+ | S1 day 1 | 즉시 |
-| NHN Cloud 알림톡 채널 인증 | S5~ | **S1 day 1 신청 의무** (60일 보수적, 14~42일 실측) | 60일 |
-| Sentry 프로젝트 | S6+ | S6 말 신청 | 1일 |
-| Tauri 코드 서명 인증서 (Mac + Win EV) | S9~ (데스크톱 배포) | S8 말 발급 시작 | EV 인증서 약 2~3주 |
+| **Supabase Free org + flowhr-staging** | S1+ | S1 day 1 (Free) | 즉시. Pro 전환은 5트리거 도달 시 |
+| **Vercel 프로젝트 (무료)** | S1+ | S1 day 1 (Hobby/Cloudflare/Netlify) | 즉시. Pro 전환은 서비스 런칭 시 |
+| **NHN Cloud 알림톡 → DEFER** | (옵션 활성 테넌트 발생 시) | 첫 옵션 활성 또는 고객 계약 조건 | 60일 (신청 시점부터) |
+| Sentry 프로젝트 (Free Developer) | S6+ | S6 말 신청 (무료) | 1일 |
+| Tauri 코드 서명 (자체 인증서) | S9~ (데스크톱 배포) | S9 (자체 인증서 0원) | 즉시 |
 | 사업자등록 + 정보통신 신고 | S7 (Phase 9 베타 진입 전) | S7 day 1 | 1~2주 |
 
-블로커 영향 분석 (NHN 60일 ↔ Sprint 일정 정밀 계산):
-- S1 day 1 = D+0 신청 의무
-- S4 종료 = D+56 (8주 × 7일) → 60일 보수 일정과 **4일 부족** (실측 14~42일은 충분 통과)
-- S5 진입 = D+57 → 60일 보수에 3일 부족. 단 S5는 휴가 본류로 NHN 직접 의존 없음 (인박스/결재만)
-- S6 ST-066 5채널 활성 검증 = D+71 (보수 60일 + 11일 마진) → 정합 ✓
-- → 보수적 절차: S4 day 1 NHN 진행 상태 점검 (D+42 시점) + S5 진입 전 SMS/이메일 폴백 코드 먼저 구현 (NHN 미활성 시 우회 가능 의무)
-- Tauri 코드 서명은 S9 데스크톱 배포 직전이라 S8 말 발급 시작 시 충분.
+블로커 영향 분석 (NHN DEFER 반영):
+- **NHN DEFER**: S1 day 1 신청 의무 폐기. 기본 알림 채널은 인앱 + 이메일(Resend 3,000건/월 무료)로 S6 ST-066 충족. 카카오 알림톡은 테넌트별 옵션 기능으로 첫 활성 시 신청 (60일). 따라서 NHN 60일 심사가 Sprint 일정 블로커 아님.
+- S5/S6 알림 기능: 인앱 + 이메일 폴백으로 구현 (NHN 미연동 전제). 카카오 알림톡 코드는 옵션 토글 기반으로 작성 (활성 테넌트만 발송).
+- Tauri 자체 인증서는 S9 데스크톱 배포 시 즉시 적용 (비용 0, 설치 가이드로 OS 경고 안내).
+- Supabase Pro 전환 시점은 5트리거 도달 시 사용자 승인 (`guardrails.md §10`).
 
 ## 6. Phase 7 CI 추가 정책
 
@@ -374,3 +372,4 @@ PR이 `apps/**` 또는 `packages/**` 변경 시 Phase 7 4 job 의무. 와이어�
 | 2026-05-19 | 초안 — 디렉토리 구조 SSOT (codex 7건 권고) + Sprint 1~10 + KI-071 정합화 동반 | Phase 6 진입 (Phase 2 백로그 4차 PASS_BOTH 후) |
 | 2026-05-19 | Phase 6 evaluator PASS 8.40 + codex FAIL 7.4 통합 hotfix — Sprint 6 SP "64→57" + 11 Story 정합 + §4-1 SP 누적 검증 표 + 218/838=26% 비율 명시 + NHN 60일 정밀 계산 (D+71 ST-066 활성) + Sprint 1 작업 순서 4 그룹 병렬 (dependency-graph SSOT 정합) + dependency-graph §Sprint 6 ST-070 placeholder 추가 + sprint-006 NHN "S2→S1 day 1 신청" 정정 + sprint-007 S6 spill 시나리오 명시 + PRD 03-tech-architecture L65 packages/utils→packages/i18n 정정 + §1 코드 vs 메타 영역 구분 추가 | Phase 6 재평가 통합 정정 (codex P1×4 + P2×4 + P3×3 mechanical closure) |
 | 2026-05-19 | 2차 재평가 통합 hotfix — evaluator 2차 PASS 9.00 + codex 2차 CONDITIONAL 7.88 신규 결함 정정: (a) §4-1 MD 합계 stale "200/320~400" → "218/838" 정정 (b) dependency-graph §진입 순서 표 Sprint 1/3/4/6 mvp-plan SSOT 정합 (c) §5 S4 행 NHN "활성화 완료" → "체크포인트 / S6 D+71 활성 보장" (d) sprint-003 헤더 "12 Story" → "11" (e) sprint-001 NHN D-1 → "Sprint 1 day 1 (D+0)" 통일 (f) §1-2 KI-072~074 신규 등록 → KI-071 묶음 하위 처리 통합 | Phase 6 2차 재평가 P1×2 + P2×3 + P3×2 mechanical closure |
+| 2026-05-19 | §5 외부 의존 표 재정의 — Supabase Free/Vercel 무료 시작 + NHN DEFER (테넌트 옵션 기능, S1 day 1 의무 폐기) + Tauri 자체 인증서 + 블로커 분석에서 NHN 60일 블로커 제거 (인앱+Resend 이메일로 S6 충족) | WI-InfraPolicy-docs — 사용자 결정 Free 시작 (Phase 1~6 산입 유료 가정 정정). SSOT: guardrails.md §10 |
