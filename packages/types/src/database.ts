@@ -303,6 +303,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "attendance_modifications_approval_tenant_fk"
+            columns: ["tenant_id", "approval_id"]
+            isOneToOne: false
+            referencedRelation: "approvals"
+            referencedColumns: ["tenant_id", "id"]
+          },
+          {
             foreignKeyName: "attendance_modifications_attendance_id_fkey"
             columns: ["attendance_id"]
             isOneToOne: false
@@ -321,13 +328,6 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_attendance_mods_approval"
-            columns: ["approval_id"]
-            isOneToOne: true
-            referencedRelation: "approvals"
             referencedColumns: ["id"]
           },
         ]
@@ -563,11 +563,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "certificate_requests_approval_id_fkey"
-            columns: ["approval_id"]
-            isOneToOne: true
+            foreignKeyName: "certificate_requests_approval_tenant_fk"
+            columns: ["tenant_id", "approval_id"]
+            isOneToOne: false
             referencedRelation: "approvals"
-            referencedColumns: ["id"]
+            referencedColumns: ["tenant_id", "id"]
           },
           {
             foreignKeyName: "certificate_requests_employee_tenant_fk"
@@ -843,11 +843,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "employee_change_requests_approval_id_fkey"
-            columns: ["approval_id"]
-            isOneToOne: true
+            foreignKeyName: "employee_change_requests_approval_tenant_fk"
+            columns: ["tenant_id", "approval_id"]
+            isOneToOne: false
             referencedRelation: "approvals"
-            referencedColumns: ["id"]
+            referencedColumns: ["tenant_id", "id"]
           },
           {
             foreignKeyName: "employee_change_requests_employee_tenant_fk"
@@ -1409,11 +1409,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_leaves_approval"
-            columns: ["approval_id"]
-            isOneToOne: true
+            foreignKeyName: "leaves_approval_tenant_fk"
+            columns: ["tenant_id", "approval_id"]
+            isOneToOne: false
             referencedRelation: "approvals"
-            referencedColumns: ["id"]
+            referencedColumns: ["tenant_id", "id"]
           },
           {
             foreignKeyName: "leaves_employee_tenant_fk"

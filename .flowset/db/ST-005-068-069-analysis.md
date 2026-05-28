@@ -9,10 +9,11 @@
 | 영역 | 마이그레이션 | 내용 |
 |------|------------|------|
 | ST-005 RLS | `27_rls_policies.sql` | 39 테이블 ENABLE RLS + 94 정책(패턴 A/B/C/D) + 헬퍼 6종 + 운영사 우회 + 컴플라이언스 불변성 |
-| KI-077 | `28_composite_fk_tenant_isolation.sql` | 부모(employees/leave_types/approvals) UNIQUE(tenant_id,id) + 핵심 자식 13 FK를 (tenant_id,ref)→(tenant_id,id) composite 전환 |
+| KI-077 | `28` + `32` | 부모(employees/leave_types/approvals) UNIQUE(tenant_id,id) + 자식 composite FK 총 19건 — 28: 15건(employees 12 + leave_types 2 + approval_steps.approval_id 1), 32: 폴리모픽 approval_id 4건(leaves/attendance_modifications/certificate_requests/employee_change_requests) |
 | ST-068 audit | `29_audit_triggers.sql` | 범용 `audit_row_change()` SECURITY DEFINER + 21 테이블 AFTER INSERT/UPDATE/DELETE + APPROVE 특례 + `prune_audit_logs()` 5년 보관 |
 | ST-069 Realtime | `30_realtime_publication.sql` | supabase_realtime publication(notifications/approvals/approval_steps) + REPLICA IDENTITY FULL |
 | 하드닝 | `31_rls_hardening.sql` | 술어헬퍼 search_path 고정 + 트리거/관리자 함수 RPC 노출 차단 + record_login_failure service_role 전용 보정 |
+| 인가 정정 | `32_rls_authz_hardening.sql` | **codex 듀얼검증 P1/P2 정정** — INSERT tenant 오귀속 차단(tickets/ticket_messages/user_consents) + 직원 자기승인 차단(leaves/attendance_modifications status 전이 제한) + approvals/approval_steps 자기승인 차단(WITH CHECK) + 라우팅 컬럼 불변 트리거 + KI-077 approval_id composite 완성 |
 | 클라이언트 | `packages/api-client/src/realtime.ts` | `createRealtimeSubscription`(비종속 매니저) + `useRealtimeSubscription`(React 훅) — 자동 재연결(지수 백오프) + 오프라인 fallback + onReconnect. `@flowhr/api-client/react` 서브패스 |
 
 ## 2. 핵심 설계 결정 (codex 협의 2026-05-29)
@@ -24,14 +25,18 @@
 
 ## 3. 검증 증거 (staging 실증)
 
-### 3-1. RLS / 격리 / FK / audit / 불변성 매트릭스 — `supabase/tests/rls_matrix_check.sql` (BEGIN..ROLLBACK)
-실행 결과 **ALL_RLS_ASSERTIONS_PASS**:
+### 3-1. RLS / 격리 / FK / audit / 불변성 / 인가 매트릭스 — `supabase/tests/rls_matrix_check.sql` (BEGIN..ROLLBACK)
+실행 결과 **ALL_RLS_ASSERTIONS_PASS** (T1~T10, 역할 operator_super/tenant_super/tenant_manager/employee 커버):
 - T1 employee A: 본인 employees 1 / leaves 1, 타테넌트 휴가 비가시, 교차테넌트 insert RLS 차단
-- T2 tenant_super A: 테넌트 전체 employees 2 / leaves 1
-- T3 operator: 전체 우회 employees 3 / leaves 2
+- T2 tenant_super A: 테넌트 전체 employees 3 / leaves 1
+- T3 operator: 전체 우회 employees 4 / leaves 2
 - T4 user_consents 불변(UPDATE/DELETE no-op)
 - T5 composite FK: 교차테넌트 직원 참조 insert 거부
 - T6 audit 트리거: employees UPDATE 시 `employees.update` audit_logs 기록
+- T7 직원 자기승인 차단(leaves status=approved 거부) + 본인 취소 허용 (codex P1-2)
+- T8 티켓 교차테넌트 INSERT 차단 (codex P1-1)
+- T9 approval_id 교차테넌트 링크 composite FK 차단 (codex P1-4 / KI-077 완성)
+- T10 매니저 팀범위: MgrA가 DeptA 팀(self+EmpA)만 가시, AdminA/타테넌트 EmpB 비가시 (evaluator P2 커버)
 
 ### 3-2. 적용 상태
 RLS 활성 40 테이블(39 + login_attempts) / audit 트리거 21 / RLS 정책 94 / Realtime 3 테이블.
@@ -60,8 +65,16 @@ turbo typecheck 7/7 + lint 8/8 + unit test 13(api-client realtime 6 + auth 7) + 
 
 부모 UNIQUE(tenant_id,id) + 자식 composite FK로 "동일 테넌트 부모" DB 강제. T5 실증으로 교차테넌트 참조 거부 확인 → **resolved**.
 
-## 6. 변경 이력
+## 6. 듀얼검증 (evaluator + codex)
+
+- **evaluator**: PASS 8.80/10 (4축 ≥7.5, 독립 재실행으로 typecheck/lint/test/build 재확인). P0/P1 0건.
+- **codex 1차**: FAIL — P1 4건(tickets INSERT tenant 누락 / 직원 자기 leaves·근태수정 status 자기승인 / approvals·approval_steps 라우팅 컬럼·자기승인 미차단 / KI-077 approval_id composite 미완성) + P2 2건 + P3 2건. **전부 실제 결함으로 검증(false alarm 0)**.
+- **정정**(마이그레이션 32 + realtime.ts): P1 4 + P2 2 + P3 2 전부 해소. RLS 매트릭스에 T7~T10 회귀 케이스 추가 + staging 재실증 PASS. typecheck/lint/test/build 재통과.
+- evaluator NON_BLOCKING P2 2건(approval 자기승인 WITH CHECK / 매니저 팀범위 미테스트)도 본 정정으로 함께 해소.
+
+## 7. 변경 이력
 
 | 일자 | 변경 |
 |------|------|
 | 2026-05-29 | 초안 — ST-005/068/069 + KI-077 구현 + staging 실증 + codex 4종 협의 |
+| 2026-05-29 | codex 듀얼검증 P1/P2 정정 — 마이그레이션 32(인가 강화 + approval_id composite 완성 + 라우팅 컬럼 잠금) + realtime P3 + T7~T10 회귀 테스트 |

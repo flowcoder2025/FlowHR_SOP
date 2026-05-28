@@ -221,7 +221,10 @@ export function useRealtimeSubscription<Row extends Record<string, unknown>>(
   onReconnectRef.current = opts.onReconnect;
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      setStatus('offline'); // 비활성화 시 직전 상태(subscribed 등) 잔류 방지
+      return;
+    }
     const sub = createRealtimeSubscription<Row>({
       client,
       table,
@@ -232,9 +235,14 @@ export function useRealtimeSubscription<Row extends Record<string, unknown>>(
       onReconnect: () => onReconnectRef.current?.(),
       onStatus: setStatus,
       connectivity: opts.connectivity,
+      baseBackoffMs: opts.baseBackoffMs,
+      maxBackoffMs: opts.maxBackoffMs,
+      setTimeoutFn: opts.setTimeoutFn,
+      clearTimeoutFn: opts.clearTimeoutFn,
     });
     return () => sub.unsubscribe();
-    // 재구독 트리거는 아래 식별 키 변경 시로 한정 — onChange/onReconnect/connectivity는 ref/안정 참조로 처리.
+    // 재구독 트리거는 아래 식별 키 변경 시로 한정. onChange/onReconnect는 ref로,
+    // connectivity/백오프 설정은 구독 시점 1회 적용(매 렌더 재구독 회피) — 안정 참조 전달 가정.
   }, [client, table, event, schema, filter, enabled]);
 
   return status;
