@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@flowhr/api-client": "workspace:*",
@@ -16,6 +17,7 @@
     "@flowhr/schemas": "workspace:*",
     "@flowhr/types": "workspace:*",
     "@flowhr/ui": "workspace:*",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.62.0",
     "lucide-react": "^0.469.0",
@@ -23,6 +25,7 @@
     "next-intl": "^3.26.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "server-only": "^0.0.1",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

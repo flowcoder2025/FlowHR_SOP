@@ -1,0 +1,21 @@
+WI: WI-020-feat 로그인 핵심 (Supabase Auth SSR + CM-01 + 5회 잠금 + 역할 리다이렉트 + audit)
+일자: 2026-05-29
+듀얼검증 (review-system.md §4 통합 매트릭스):
+- evaluator: PASS 8.38/10 (4축 전부 ≥ 7.5)
+- codex: CONDITIONAL (P1×1, P2×3, P3×2)
+
+정정 반영 (커밋 c40454f):
+- service_role server-only 경계 + @flowhr/api-client/server 서브패스 분리 (codex P2)
+- return_url 소비 + 오픈리다이렉트 방지 + E2E 2건 (evaluator+codex)
+
+KI 등록 (사용자 승인 deferral 2026-05-29):
+- KI-078(P1) 분산 무차별대입 하드닝 (CAPTCHA + per-IP 429 rate-limit + TOCTOU) — 인증 하드닝 WI
+- KI-079(P2) rememberMe 세션 TTL 미반영 — 세션관리 ST-005
+- KI-080(P3) 역할불일치 /forbidden(CM-05) 미적용 + /me 폴백
+- KI-081(P3) 잠금 윈도우 경계 문서화/단위
+- KI-082(P3) 핵심 로그인 E2E CI 자동화
+- KI-083(P3) audit best-effort 실패 알림 보강
+
+검증 실측: typecheck 7/7, lint 8/8, 단위 12, next build, Playwright E2E 9/9 (실 로그인→/ko/me, 5회 잠금, return_url 보안, audit staging 실증).
+
+통합 판정(verdict): PASS_WITH_KI — 머지 승인.

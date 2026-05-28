@@ -62,7 +62,10 @@
 - [~] WI-019-feat apps/web + packages 7개 스캐폴드 + Supabase 인프라 (스키마/RLS/audit/Realtime, Sprint 1 Day 3~5·8~10)
   - [x] Day 3~5: apps/web(Next 15.5 + next-intl ko/en) + packages 7개 + supabase init + ERD 39엔티티 스키마 마이그레이션 1~20 원격 staging 적용 + database.ts 생성 (typecheck/build/런타임 스모크 PASS)
   - [ ] Day 8~10: RLS 정책 SQL(ST-005) + audit 트리거(ST-068) + Realtime publication(ST-069) — ST-001 로그인(WI-020) 의존
-- [ ] WI-020-feat 인증 (로그인/2FA/활성화/비밀번호 ST-001~004) + 약관/오류 (ST-078/072, Day 6~7·11~12)
+- [~] WI-020-feat 인증 (로그인/2FA/활성화/비밀번호 ST-001~004) + 약관/오류 (ST-078/072, Day 6~7·11~12)
+  - [x] ST-001 로그인 핵심 (Supabase Auth SSR + CM-01 + 5회 잠금 + 역할 리다이렉트 + audit + return_url) — login_attempts 마이그레이션 26 + record_login_failure RPC + 미들웨어 인증가드 + 랜딩 placeholder 3종. 듀얼검증 PASS_WITH_KI(evaluator 8.38 / codex CONDITIONAL→정정), E2E 9/9 staging 실증. KI-078~083 등록.
+  - [ ] ST-002 비밀번호 찾기 (CM-02) / ST-003 활성화 (CM-03) / ST-004 2FA (CM-04)
+  - [ ] ST-078 약관/동의 (CM-21) / ST-072 오류·점검 (CM-06)
 - [ ] WI-021-feat zod-to-openapi + CI(phase7-code.yml 4 job) + 디자인 시스템 베이스 (Day 13~14)
 
 ## Phase 8 — QA 시나리오

@@ -15,5 +15,43 @@
     "description": "근태·휴가·결재·문서를 한 곳에서. 웹·모바일·데스크톱 어디서나.",
     "getStarted": "시작하기",
     "localeName": "한국어"
+  },
+  "auth": {
+    "brand_subtitle": "멀티테넌트 HR SaaS",
+    "footer": {
+      "terms": "이용약관",
+      "privacy": "개인정보처리방침"
+    },
+    "login": {
+      "title": "로그인",
+      "subtitle": "이메일과 비밀번호를 입력하세요.",
+      "email": "이메일",
+      "email_placeholder": "you@example.com",
+      "password": "비밀번호",
+      "remember": "로그인 유지",
+      "forgot": "비밀번호 찾기",
+      "submit": "로그인",
+      "submitting": "로그인 중…",
+      "show_password": "비밀번호 표시",
+      "hide_password": "비밀번호 숨기기",
+      "activate_prompt": "회사 초대를 받으셨나요?",
+      "activate_invite": "계정 활성화",
+      "error": {
+        "invalid_input": "입력값을 확인해 주세요.",
+        "invalid_credentials": "이메일 또는 비밀번호가 올바르지 않습니다.",
+        "remaining": "남은 시도 {count}회",
+        "locked": "5회 실패로 계정이 잠겼습니다. {minutes}분 후 다시 시도하세요."
+      }
+    }
+  },
+  "app": {
+    "signed_in_as": "{role} 역할로 로그인되었습니다.",
+    "logout": "로그아웃",
+    "placeholder_notice": "이 화면은 후속 스프린트에서 구현됩니다.",
+    "dashboard": {
+      "operator": "운영사 대시보드",
+      "admin": "관리자 대시보드",
+      "employee": "내 대시보드"
+    }
   }
 }

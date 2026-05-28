@@ -1,8 +1,54 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-28 batch B (Phase 7 Sprint 1 — WI-019 머지+정정 완료 + 듀얼검증 게이트 구축. WI-020 로그인 대기)
-> **신규 세션 첫 작업**: 본 문서 **§-1 (2026-05-28 batch B)** 정독 → **WI-020-feat 로그인 핵심** (`feature/WI-020-feat-login-core` 브랜치를 최신 main에 rebase 후 진행). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-05-19 Phase 6 종료 / 2026-05-28 batch A (모노레포+인프라 연동, §-2)
+> **갱신**: 2026-05-29 batch C (Phase 7 Sprint 1 — WI-020 ST-001 로그인 핵심 완료 + 듀얼검증 PASS_WITH_KI). WI-020 잔여(ST-002~004 + 078/072) 또는 WI-019 Day8~10 대기.
+> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch C)** 정독 → **WI-020 잔여(ST-002~004 인증보조 + ST-078 약관 + ST-072 오류)** 또는 **WI-019 Day8~10(RLS/audit트리거/Realtime)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-05-28 batch B (듀얼검증 게이트 구축 + WI-019, §-1) / batch A (모노레포+인프라, §-2) / 2026-05-19 Phase 6 종료
+
+## -0. 2026-05-29 batch C 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-020 ST-001 로그인 핵심 (Sprint 1 Day 6~7)
+
+`feature/WI-020-feat-login-core` (커밋 fcf6542 base UI 5종 + d6582ca 로그인 핵심 + c40454f 듀얼검증 정정), auto-merge PR.
+
+| 영역 | 산출물 |
+|------|--------|
+| 인증 | `@supabase/ssr` 서버/서비스롤 클라이언트(`packages/api-client/src/{server,service-role}.ts`, `/server` 서브패스 server-only) + 미들웨어 세션갱신·인증가드(`apps/web/middleware.ts` + `lib/supabase/middleware.ts`) |
+| CM-01 | `app/[locale]/(auth)/login/{page,login-form,actions}.tsx` + `(auth)/layout.tsx` — 서버액션 + useActionState, ko/en i18n, 비밀번호 토글, return_url 소비(오픈리다이렉트 방지) |
+| 5회 잠금 | `supabase/migrations/26_login_attempts.sql` (login_attempts RLS+정책0 + `record_login_failure` RPC SECURITY DEFINER, service_role 단독 grant, (email,ip) 5회→5분, 15분 윈도우) |
+| 역할 리다이렉트 | `roleToRedirectPath`/`canAccessPath`(api-client) + 최소 랜딩 placeholder 3종 `(operator)/(tenant)/(employee)` (후속 OP-01/TA-01/EM-01 대체) |
+| audit | `auth.login`/`login_failed`/`locked` (service_role, best-effort) |
+| 검증 | typecheck 7/7 + lint 8/8 + 단위 12 + next build + **Playwright E2E 9/9 (실 로그인→/ko/me, 5회 잠금, return_url 보안, audit staging 실증)** |
+
+### 듀얼검증 (PASS_WITH_KI)
+
+- evaluator PASS 8.38/10 (4축 ≥7.5) / codex CONDITIONAL → **정정 2건**(service_role server-only 경계 + return_url 소비) + **KI 6건 등록** → `.flowset/eval-results/WI-020-feat.{eval,codex,pass}.md`.
+- **사용자 승인 deferral (2026-05-29)**: codex P1(분산 무차별대입 하드닝)을 KI-078로 등록 후 머지 (CAPTCHA+per-IP 429+TOCTOU는 명세가 후속으로 미뤄둔 항목).
+
+### 신규 KI (batch C)
+
+| KI | 등급 | 내용 |
+|----|----|----|
+| KI-078 | P1 | 분산/멀티-IP 무차별대입 하드닝 (CAPTCHA + per-IP 429 rate-limit + TOCTOU 사전예약) — 인증 하드닝 WI |
+| KI-079 | P2 | rememberMe 세션 TTL(30d/12h) 미반영 — 세션관리 ST-005 |
+| KI-080 | P3 | 역할불일치 /forbidden(CM-05) 미적용 + /me 폴백 |
+| KI-081 | P3 | 잠금 윈도우 경계 문서화/단위 |
+| KI-082 | P3 | 핵심 로그인 E2E CI 자동화 (WI-021 phase7-code.yml) |
+| KI-083 | P3 | audit best-effort 실패 알림 보강 |
+
+### 인프라/환경 상태 (batch C)
+
+- staging `nwcttwuvdnelfbpjeqzr`: public **40 테이블** (39 + login_attempts) + `record_login_failure` 함수. RLS는 login_attempts만 활성(정책0/service_role 전용) — **나머지 39 테이블 RLS 미적용, Day8 ST-005 예정**.
+- **테스트 사용자 시드** (staging): `test-employee@flowhr.test` / `Test1234!@` (role=employee). E2E 재현용 — 유지. (auth.users 직접 INSERT + 토큰컬럼 '' 보정, public.users role 매핑)
+- **`SUPABASE_SERVICE_ROLE_KEY`**: 로컬 `apps/web/.env.local`에만 입력됨(gitignore). **Vercel staging/preview엔 미배포** — staging 배포 시 주입 필요. preview는 mock(미연동) 전략 유지.
+- E2E 실행: `cd apps/web && E2E_TEST_EMAIL=test-employee@flowhr.test E2E_TEST_PASSWORD='Test1234!@' pnpm exec playwright test` (DASHBOARD env는 MSYS 경로변환 주의 — 미설정 시 기본 /me).
+
+### 다음 세션 첫 작업 후보
+
+1. **WI-020 잔여**: ST-002 비번찾기(CM-02) + ST-003 활성화(CM-03) + ST-004 2FA(CM-04) + ST-078 약관(CM-21) + ST-072 오류(CM-06). 2FA는 Supabase MFA(AAL) 또는 auth.md custom 플로우 결정 필요.
+2. **WI-019 Day8~10**: ST-005 RLS 정책 SQL(39테이블, KI-077 composite FK 결정) + ST-068 audit 트리거(21테이블) + ST-069 Realtime publication.
+3. **WI-021**: zod-to-openapi + `phase7-code.yml` CI 4 job (KI-082 E2E 자동화 포함).
+
+---
 
 ## -1. 2026-05-28 batch B 세션 진척 — **신규 세션 여기부터**
 
