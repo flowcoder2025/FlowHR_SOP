@@ -430,3 +430,57 @@ jobs:
           name: playwright-screenshots
           path: .flowset/eval-results/screenshots/
           retention-days: 14
+
+  dual-verification-gate:
+    name: Dual Verification Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require fresh evaluator+codex PASS marker for code WIs
+        shell: bash
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # 코드 변경(apps/packages/supabase)이 없으면 게이트 skip (docs/wireframe PR)
+          if ! git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qE '^(apps|packages|supabase)/'; then
+            echo "비코드 PR — 듀얼검증 게이트 skip"
+            exit 0
+          fi
+
+          WI=$(printf '%s' "$PR_TITLE" | grep -oE 'WI-[A-Za-z0-9][A-Za-z0-9+_-]*' | head -1)
+          if [ -z "$WI" ]; then
+            echo "::error::PR 제목에서 WI-ID를 찾지 못함 (예: 'WI-020-feat ...')"
+            exit 1
+          fi
+          echo "코드 WI 감지: $WI"
+
+          PASS=$(ls .flowset/eval-results/${WI}*.pass 2>/dev/null | head -1)
+          if [ -z "$PASS" ]; then
+            echo "::error::${WI} 듀얼검증 .pass 마커 없음 — 머지 전 evaluator + codex 한 세트 실행 후 .flowset/eval-results/${WI}.pass 커밋 필요 (project.md §1-1)"
+            exit 1
+          fi
+          echo "마커 발견: $PASS"
+
+          # 통합 verdict가 PASS 계열인지
+          if ! grep -qiE 'PASS_BOTH|통합.*PASS|verdict[^A-Za-z]*PASS' "$PASS"; then
+            echo "::error::${PASS} 통합 verdict가 PASS_BOTH가 아님"
+            exit 1
+          fi
+
+          # 신선도: 마커가 이 PR에서 갱신됐고, 마지막 코드 커밋이 마커 커밋의 조상이어야 함
+          pass_commit=$(git log -1 --format=%H "$BASE_SHA..$HEAD_SHA" -- "$PASS")
+          if [ -z "$pass_commit" ]; then
+            echo "::error::${PASS}가 이 PR에서 갱신되지 않음 — 과거 마커 재사용 금지 (재검증 필요)"
+            exit 1
+          fi
+          last_code=$(git log -1 --format=%H "$BASE_SHA..$HEAD_SHA" -- 'apps' 'packages' 'supabase')
+          if [ -n "$last_code" ] && ! git merge-base --is-ancestor "$last_code" "$pass_commit"; then
+            echo "::error::코드 커밋($last_code)이 마커 커밋($pass_commit) 이후 — 코드 변경 후 재검증 필요"
+            exit 1
+          fi
+
+          echo "듀얼검증 게이트 통과: $WI ($PASS)"

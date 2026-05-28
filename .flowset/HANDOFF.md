@@ -178,9 +178,11 @@ FlowHR_SOP/
 - [ ] CI 신규 4 job (`phase7-code.yml`) 통과
 - [ ] PR template 갱신 (API/스키마 동시 갱신 의무)
 
-### 작업 4 — Sprint 1 종료 시 의무
+### 작업 4 — 코드 WI별 머지 게이트 (의무, 절대 스킵 금지)
 
-- evaluator + codex 한 세트 호출 (Phase 7 mode: **code**, Phase 7 첫 WI라 review-system.md §7-1 full review)
+> **정정 (2026-05-28)**: 듀얼검증은 "Sprint 종료 시"가 아니라 **각 코드 WI 머지 전** 의무다 (`.claude/rules/project.md §1-1` SSOT). CI `dual-verification-gate`가 기계적으로 강제. 이전 "Sprint 1 종료 시" 표기로 WI-019를 검증 없이 머지한 사고 재발 방지.
+
+- 코드 WI(`apps/**`/`packages/**`/`supabase/**`) 머지 전 evaluator + codex 한 세트 호출 (Phase 7 mode: **code**, 첫 WI는 review-system.md §7-1 full review)
 - `.flowset/eval-results/WI-XXX.{eval,codex,pass}.md` 저장
 - KI-072/073/074 점검 (Phase 7 Sprint 1 실측 후 처리 예정 P3 3건)
 - prd-state.json `7-dev-kickoff` status 갱신 (`in_progress` → 부분 진행 / `completed` → Sprint 1 종료)

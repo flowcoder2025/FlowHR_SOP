@@ -15,12 +15,20 @@
 | 4 API | `.flowset/api/openapi.yaml` | doc | evaluator PASS + api-standard 정합 |
 | 5 와이어프레임 | 36개 analysis/*.md + images/*.png | doc | evaluator PASS |
 | 6 스프린트 | mvp-plan.md + sprint-001~N.md | doc | evaluator PASS |
-| 7 개발 | Sprint 1 첫 WI 완료 | code | WI별 evaluator PASS |
+| 7 개발 | WI별 코드 완료 | code | **WI별 듀얼검증(evaluator + codex) PASS_BOTH — 머지 전 의무** |
 | 8 QA | scenarios.md + e2e.md | doc | evaluator PASS |
 | 9 베타 | onboarding.md | doc | evaluator PASS + 1호 고객 확정 |
 | 10 운영 | runbook.md + SLA | doc | evaluator PASS |
 
 **evaluator는 `.flowset/guardrails.md §5-1, §7` 절차로 매 Phase 종료 시 의무 호출.**
+
+### 1-1. Phase 7 코드 WI 머지 게이트 (절대 스킵 금지)
+
+Phase 7의 모든 코드 WI(`apps/**`/`packages/**`/`supabase/**` 변경)는 **머지 전 듀얼검증(evaluator + codex 한 세트)을 의무 실행**하고 `.flowset/eval-results/<WI>.pass`(PASS_BOTH) 마커를 남긴다. 이는 기계적으로 강제된다 — CI `dual-verification-gate` 필수 체크(`pr-checks.yml`)가 마커 부재/stale 시 머지를 차단한다.
+
+- "Sprint/그룹 종료 시에만"이라는 해석 금지 — **WI 단위**다. (HANDOFF의 "Sprint 종료 시" 표기는 보조 메모일 뿐, 본 §1-1이 SSOT)
+- 단독(evaluator만/codex만) 호출 금지. 두 통지 대기 후 `review-system.md §4` 매트릭스로 통합 판정.
+- 머지를 듀얼검증보다 먼저 실행 금지. (2026-05-28 WI-019 사전 머지 사고 재발 방지)
 
 ## 2. 산출물 작성 규칙
 
