@@ -1,8 +1,54 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **작성**: 2026-05-19 (Phase 6 정식 종료 — PR #16/#17 머지 + PASS_BOTH/PASS_WITH_KI + Phase 7 진입 준비)
-> **신규 세션 첫 작업**: 본 문서 §3 정독 → Phase 7 Sprint 1 부트스트랩 진입 (`sprint-001.md` Day 1~14 시퀀스)
-> **이전 핸드오프**: 2026-05-18 Phase 5 wf-v1.0.0 재부여 + Phase 6 진입 안내
+> **갱신**: 2026-05-28 (Phase 7 Sprint 1 진행 중 — 모노레포 + 인프라 연동 완료, WI-019 대기)
+> **신규 세션 첫 작업**: 본 문서 **§-1 (2026-05-28 진척)** 정독 → **WI-019-feat** (apps/web + packages 7개 스캐폴드 + supabase 인프라, Sprint 1 Day 3~5)
+> **이전 핸드오프**: 2026-05-19 Phase 6 종료 + Phase 7 진입 안내
+
+## -1. 2026-05-28 세션 진척 (Phase 7 Sprint 1 진행 중) — **신규 세션 여기부터**
+
+### 완료 (PR #20~24, main `baba6da` 기준 — `git log`로 최신 확인)
+
+| PR | WI | 내용 |
+|----|----|----|
+| #20 | WI-018-feat | 모노레포 루트 셋업 (pnpm@9.15.0 workspaces + Turborepo 2.9.14 + tsconfig.base + devDeps 5종) |
+| #21 | WI-InfraPolicy-docs | **유료 가정 정정** — Phase 1~6 무단 산입 유료 기능(Supabase Pro/Vercel Pro/Sentry/NHN/Tauri 인증서) → Free 시작 + Pro 전환 5트리거. `guardrails.md §9(산입 금지 원칙)/§10(인프라 정책 SSOT)` 신설 |
+| #22 | WI-KI-batch-007-docs | 문서 정합 9건 (KI-032/033/040/042/056/062/074/075 resolved + KI-016 NHN DEFER) |
+| #23 | WI-KI-batch-008-wf | 와이어프레임 정정 5건 (권한매트릭스 15화면 역할\|권한 2열 + TA-13/CM-04/CM-21) + Phase 7 재분류 8건. **wf-v1.0.1** tag |
+| #24 | WI-env-chore | **Supabase ↔ Vercel 연동** + supabase MCP/skills 셋업 |
+
+### 인프라 연동 완료 (SSOT: `guardrails.md §10` + `prd-state.json infra_connection`)
+
+- **Supabase** `nwcttwuvdnelfbpjeqzr` (Free) ↔ **Vercel** `flowhr-sop` (yh-devs-projects/kryou2922, 나중 flowcoder25 이전)
+- production env: `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`(legacy JWT). **service_role은 WI-020 시점**.
+- **프로젝트 supabase MCP** (`.mcp.json`, project_ref 직결, OAuth 인증 완료) — 마이그레이션/스키마 직접 조작 가능
+- **supabase agent skills** 설치 (`.agents/skills/{supabase,supabase-postgres-best-practices}`) — Phase 7 DB 작업 시 모범사례
+- 운영 전략 (codex 역제안): preview = Supabase 미연동 mock / PR 검증 = CI ephemeral `supabase start` / staging = Free 1개
+- ⚠️ **기존 yh-devs/flowhr(별개 payroll 프로젝트)는 무관 — 건드리지 말 것**
+
+### 핵심 정책 (이번 세션 확립)
+
+- **외부 비용/유료 기능은 사용자 명시 승인 전 산출물 의무화 금지** (`guardrails.md §9`). 협업: 사용자=기획/결정, AI=개발/유지보수.
+- **Pro 전환 5트리거**: 3사 입점 / DB 400MB / Storage 800MB / Connection 60 위험 / SLA·컴플라이언스 요구.
+
+### 다음 세션 첫 작업 — WI-019-feat (Sprint 1 Day 3~5)
+
+`sprint-001.md` Day 3~5 (WI 매핑 주석 참조 — WI-018 모노레포 / **WI-019 인프라(apps/web 스캐폴드 + supabase init + RLS + audit + Realtime)** / WI-020 인증+약관 / WI-021 zod-openapi+CI):
+1. `pnpm dlx create-next-app apps/web` (Next.js 15 + Tailwind + App Router + `[locale]` i18n)
+2. `packages/{ui,schemas,types,api-client,i18n,platform,config}` 7개 스캐폴드
+3. `supabase init` (루트) + Phase 3 마이그레이션 변환 + `packages/types/database.ts` 생성 (supabase MCP 활용)
+4. `.env.local` 동기화 (`vercel env pull --environment=production` 또는 로컬 supabase)
+
+### KI 현황 (2026-05-28)
+
+| 등급 | 활성 | 비고 |
+|------|----|----|
+| P0/P1 | 0 | — |
+| P2 | 2 | KI-054/061 (Phase 7 React 변환 scheduled) |
+| P3 | 22 | 전부 Phase 7~10 코드/단계 의존 scheduled — 지금 docs/wf batch로 처리 가능한 KI는 소진 |
+
+### 환경 (실측)
+
+pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playwright/test 1.60.0 / node 24.12.0 / Vercel CLI 50.1.6 (kryou2922-4113 로그인) / supabase MCP 인증됨
 
 ## 0. Phase 6 종료 사이클 (2026-05-19)
 
