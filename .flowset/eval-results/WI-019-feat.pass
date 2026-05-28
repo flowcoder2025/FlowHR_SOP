@@ -1,0 +1,14 @@
+WI-019-feat — 듀얼검증 통합 판정: PASS_BOTH (2026-05-29)
+
+RLS 39테이블 + audit 트리거 21 + Realtime + composite FK (KI-077) + 인가 강화 (Sprint 1 Day 8~10).
+
+- evaluator: PASS 8.62/10 (4축 ≥7.5, P0/P1 0). 1·2차 8.80 PASS → 3차 8.62 PASS.
+- codex: PASS (P0 0 / P1 0). 1차 FAIL(P1 4) → 2차 FAIL(P1 2 + P2 1) → 3차 PASS. 검출 결함 전수 실제·정정 완료.
+- 통합 verdict: PASS_BOTH (review-system.md §4).
+
+검증: staging RLS 매트릭스 T1~T13 ALL_RLS_ASSERTIONS_PASS + 로그인 무손상 + typecheck 7/7 + lint 8/8 + test 13 + build(/ko·/en) + security advisor 잔여 수용(RLS 헬퍼 EXECUTE 설계상 필수).
+
+정정: 마이그레이션 32(인가 강화 + approval_id composite) + 33(SET NULL 컬럼지정 + self-approval/self-routing 차단).
+KI: KI-077 resolved / KI-084~087 등록(access-token-hook 표준화 / audit 파티셔닝 / leaked-password / 결재 SoD Sprint 6).
+
+마커 커밋은 마지막 코드 커밋(supabase/ 9ddf407)의 후손.
