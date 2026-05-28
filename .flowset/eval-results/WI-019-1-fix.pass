@@ -1,0 +1,14 @@
+WI-019-1-fix — 듀얼검증 PASS marker (2026-05-28)
+
+evaluator: PASS 8.85/10 (P0/P1 0건, turbo lint 8/8 + typecheck 7/7 + build PASS 독립 재현)
+codex: 실질 결함 0건 (verdict CONDITIONAL은 자문 프롬프트 SHA 오기로 인한 커밋 신원 미확인뿐 — HEAD 31b1dbd 파일 일치 확인, 스키마/lint 전 항목 통과)
+
+통합 판정 (review-system §4): PASS_BOTH
+
+정정 내용:
+- P2-SCHEMA-002: approval_id UNIQUE 4테이블 (leaves/attendance_modifications/certificate_requests/employee_change_requests)
+- P2-SCHEMA-003: users.employee_id UNIQUE (employees.user_id와 함께 양방향 1:1)
+- P2(evaluator): packages 7개 eslint.config.mjs + lint 스크립트 (turbo lint 전 패키지 커버)
+- 마이그레이션 25 (append-only v1.1) 원격 staging nwcttwuvdnelfbpjeqzr 적용
+
+본 마커는 dual-verification-gate(pr-checks.yml)의 첫 실전 통과 케이스 — 코드 커밋(31b1dbd) 이후 마지막 커밋으로 생성.
