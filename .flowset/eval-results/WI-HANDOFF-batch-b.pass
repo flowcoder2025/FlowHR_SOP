@@ -1,0 +1,16 @@
+HANDOFF.md batch B — 듀얼검증 PASS marker (2026-05-28)
+
+evaluator: PASS(CONDITIONAL) 8.075/10 — 사실 정확성 9.0 (§-1 신규 세션 진입점 주장 12건 전수 PASS, 사실오류 0건). 정합성 7.0 감점 사유 = batch B가 손대지 않은 하위 Phase6-close 섹션 stale 5건 (NON_BLOCKING).
+codex: CONDITIONAL — 6중 5 PASS, P3×1 (환경 줄 정확버전 vs package.json range 혼동). 6대 사실 주장(PR/HEAD/게이트/KI-077/마이그레이션25/WI-020 브랜치) 전부 정확.
+
+통합 판정 (review-system §4): CONDITIONAL → NON_BLOCKING 6건 hotfix 정정 → PASS
+
+hotfix 정정 내역:
+- §0 이하 "2026-05-19 Phase 6 종료 스냅샷" 배너 추가 (브랜치/카운트/PR/테이블 수 = 그 시점 기준 명시)
+- §1 헤더 "현재 상태 요약" → "상태 요약(2026-05-19 스냅샷)"
+- §3 헤더 "신규 세션 첫 작업" → "(2026-05-19 작성) 참고용 — 실제 진입점은 §-1"
+- §1 브랜치 줄: 8ac2d6c(2026-05-19) + 현재 HEAD 5e7d451은 §-1 지시
+- ERD 행 "37 테이블" → "39 테이블" (내부 모순 해소)
+- §-1 환경 줄: 실측 설치 버전 vs package.json semver 범위 구분 명시 (codex P3)
+
+→ §-1(신규 세션 진입점)은 양 검증 모두 정확 확인. WI-020 안전 착수 가능.

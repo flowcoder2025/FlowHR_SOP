@@ -1,10 +1,55 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-28 (Phase 7 Sprint 1 진행 중 — 모노레포 + 인프라 연동 완료, WI-019 대기)
-> **신규 세션 첫 작업**: 본 문서 **§-1 (2026-05-28 진척)** 정독 → **WI-019-feat** (apps/web + packages 7개 스캐폴드 + supabase 인프라, Sprint 1 Day 3~5)
-> **이전 핸드오프**: 2026-05-19 Phase 6 종료 + Phase 7 진입 안내
+> **갱신**: 2026-05-28 batch B (Phase 7 Sprint 1 — WI-019 머지+정정 완료 + 듀얼검증 게이트 구축. WI-020 로그인 대기)
+> **신규 세션 첫 작업**: 본 문서 **§-1 (2026-05-28 batch B)** 정독 → **WI-020-feat 로그인 핵심** (`feature/WI-020-feat-login-core` 브랜치를 최신 main에 rebase 후 진행). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-05-19 Phase 6 종료 / 2026-05-28 batch A (모노레포+인프라 연동, §-2)
 
-## -1. 2026-05-28 세션 진척 (Phase 7 Sprint 1 진행 중) — **신규 세션 여기부터**
+## -1. 2026-05-28 batch B 세션 진척 — **신규 세션 여기부터**
+
+### 완료 (PR #26~28, main `5e7d451` 기준 — `git log`로 최신 확인)
+
+| PR | WI | 내용 |
+|----|----|----|
+| #26 | WI-019-feat | apps/web 스캐폴드(Next 15.5 + Tailwind v4 + next-intl `[locale]` ko/en) + packages 7개 + supabase init + ERD 39엔티티 스키마 마이그레이션 1~20 원격 staging 적용 + `packages/types/database.ts` 생성 (Day 3~5) |
+| #27 | WI-DualGate-chore | **듀얼검증 머지 게이트 구축** — CI `dual-verification-gate`(branch protection 필수체크) + `project.md §1-1` 신설 + KI-077 등록 |
+| #28 | WI-019-1-fix | WI-019 듀얼검증 정정 — approval_id UNIQUE 4테이블 + users.employee_id UNIQUE (마이그레이션 25) + packages 7개 lint 커버리지 |
+
+### 이번 세션 핵심 — 듀얼검증 게이트 (절대 스킵 금지)
+
+- **코드 WI(`apps`/`packages`/`supabase`)는 머지 전 evaluator + codex 한 세트 PASS_BOTH + `.flowset/eval-results/<WI>.pass` 마커 필수.** CI `dual-verification-gate`(pr-checks.yml, branch protection 필수체크)가 마커 부재/stale 시 **기계적으로 머지 차단**. PR #28에서 실전 통과 입증.
+- WI-019 듀얼검증: evaluator PASS 8.35 / codex CONDITIONAL → 정정(PR #28, evaluator 8.85 / codex 결함0 → PASS_BOTH).
+- **교훈(사용자 지적)**: 듀얼검증은 "Sprint 종료 시"가 아니라 **WI별 머지 전** 의무. 메모가 아닌 CI 게이트로 강제함. **핸드오프 갱신도 검증 대상**.
+
+### 인프라/스키마 상태
+
+- 원격 staging `nwcttwuvdnelfbpjeqzr`: public **39 테이블** + UNIQUE 보강 (마이그레이션 1~20 + 25) 적용됨. **RLS 전 테이블 미적용 — Day 8 ST-005 예정 (staging 비어있는 비프로덕션)**.
+- **Docker 미설치** → 마이그레이션/타입은 **supabase MCP(원격)** 경로. `supabase db reset --local` 불가. (`project_supabase-local-workflow` 메모)
+- `apps/web/.env.example`만 커밋(키 없음). 로컬 `.env.local` 미생성.
+- 디렉토리 구조 SSOT = `mvp-plan.md §1` (현 코드 정합). WI-020 로그인은 `app/[locale]/(auth)/login/`.
+
+### 다음 세션 첫 작업 — WI-020-feat 로그인 핵심 (Sprint 1 Day 6~7)
+
+- `feature/WI-020-feat-login-core` 브랜치(base UI 컴포넌트 5종 Button/Input/Label/Card/Alert 커밋 보존, 미머지) → **최신 main rebase 후** 진행.
+- ST-001: Supabase Auth(@supabase/ssr) 로그인 + CM-01 페이지 + 5회 실패 잠금 + 역할별 리다이렉트 + audit. (Task #5/#6)
+- ⚠️ **5회 잠금**: 현 `users` 스키마에 `failed_login_count`/`locked_until` 없음 → `api/auth.md` 설계 확인 후 마이그레이션 필요 가능성.
+- 머지 시 **듀얼검증 게이트 통과 필수** (`<WI>.pass` 마커가 마지막 코드 커밋의 후손이어야 함).
+
+### KI 현황 (2026-05-28 batch B)
+
+| 등급 | 활성 | 비고 |
+|------|----|----|
+| P0 | 0 | — |
+| P1 | 1 | **KI-077** (WI-019 교차테넌트 FK, Day8 ST-005 일괄 결정 — 사용자 defer) |
+| P2 | 2 | KI-054/061 (Phase 7 React 변환 scheduled) |
+| P3 | 22 | Phase 7~10 scheduled |
+
+### 환경 (실측)
+
+**실측 설치 버전** (package.json은 semver 범위, 예: turbo `^2.3.0` / typescript `^5.7.0` / next-intl `^3.26.3` / tailwindcss `^4` / node `>=20.0.0`): pnpm 9.15.0 / turbo 2.9.14 / typescript 5.9.3 / next 15.5.18 / react 19.1.0 / next-intl 3.26.5 / supabase CLI 2.101.0 / tailwind 4.3.0 / node 24.12.0 / supabase MCP 인증됨. (세션 시작 시 재측정 권장)
+
+---
+
+## -2. 2026-05-28 batch A 세션 진척 (모노레포 + 인프라 연동) — 완료
 
 ### 완료 (PR #20~24, main `baba6da` 기준 — `git log`로 최신 확인)
 
@@ -30,7 +75,7 @@
 - **외부 비용/유료 기능은 사용자 명시 승인 전 산출물 의무화 금지** (`guardrails.md §9`). 협업: 사용자=기획/결정, AI=개발/유지보수.
 - **Pro 전환 5트리거**: 3사 입점 / DB 400MB / Storage 800MB / Connection 60 위험 / SLA·컴플라이언스 요구.
 
-### 다음 세션 첫 작업 — WI-019-feat (Sprint 1 Day 3~5)
+### (batch A 당시) 다음 작업이었던 WI-019 — ✅ **완료** (PR #26 Day3~5 + PR #28 정정, batch B에서 처리). Day 8~10(RLS/audit/Realtime)은 WI-020 후 잔여.
 
 `sprint-001.md` Day 3~5 (WI 매핑 주석 참조 — WI-018 모노레포 / **WI-019 인프라(apps/web 스캐폴드 + supabase init + RLS + audit + Realtime)** / WI-020 인증+약관 / WI-021 zod-openapi+CI):
 1. `pnpm dlx create-next-app apps/web` (Next.js 15 + Tailwind + App Router + `[locale]` i18n)
@@ -49,6 +94,8 @@
 ### 환경 (실측)
 
 pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playwright/test 1.60.0 / node 24.12.0 / Vercel CLI 50.1.6 (kryou2922-4113 로그인) / supabase MCP 인증됨
+
+> ⚠️ **§0 이하는 2026-05-19 Phase 6 종료 시점 스냅샷** — 브랜치/카운트/PR/테이블 수 등은 그 시점 기준이며, **현재 상태는 위 §-1(batch B)이 최신·정확**. 신규 세션은 §-1만 따르면 충분(§0 이하는 이력 참고).
 
 ## 0. Phase 6 종료 사이클 (2026-05-19)
 
@@ -74,7 +121,7 @@ pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playw
 - codex 검토 범위 한계 인지 (4차 P1 잔존이 사실 false alarm — L282 산식 누락 검출). 산수 정밀도 결함은 mechanical fix이지만 closure 검증 시 라인 범위 명시
 - 사용자가 옵션 결정 떠넘기지 말고 codex와 follow-up으로 단일 최적안 도출 후 보고
 
-## 1. 현재 상태 요약
+## 1. 상태 요약 (2026-05-19 Phase 6 종료 스냅샷 — 현재는 §-1)
 
 ### Phase 5/6 완전 종료 + Phase 7 진입 대기
 
@@ -83,7 +130,7 @@ pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playw
 | 0 셋업 | `.flowset/` 구조 + CLAUDE.md | (생략) | — | ✅ |
 | 1 PRD | `.flowset/prd/` 50 파일 | PASS 8.15 → 재평가 9.13 | — | ✅ |
 | 2 백로그 | `.flowset/backlog/` 6 파일 (80 Story / 415 SP / 223 Task / 838 MD) | PASS 8.29 → 재평가 8.03 → 4차 재평가 PASS_BOTH 8.475/8.34 | PR #16 | ✅ |
-| 3 ERD | `.flowset/db/` 23 파일 (39 entity + 37 테이블 + RLS) | PASS 8.68 → 재평가 8.21 | — | ✅ |
+| 3 ERD | `.flowset/db/` 23 파일 (39 entity + 39 테이블 + RLS) | PASS 8.68 → 재평가 8.21 | — | ✅ |
 | 4 API | `.flowset/api/` (280 endpoint, Markdown) | PASS 8.78 → 재평가 8.40 | — | ✅ |
 | 5 와이어프레임 | 45 화면 HTML + DS SSOT (wf-v1.0.0) | PASS 8.13 / codex 4 그룹 가중 8.73 | wf-v1.0.0 | ✅ |
 | 6 스프린트 계획 | `mvp-plan.md` + `sprint-001~010.md` 11 파일 | **PASS_WITH_KI 9.00/8.21** | PR #17 | ✅ |
@@ -92,7 +139,7 @@ pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playw
 | 9 베타 | (Phase 8 후 진입) | — | — | ⏳ |
 | 10 운영 | (Phase 9 후 진입) | — | — | ⏳ |
 
-**현재 브랜치**: `main` (Phase 6 종료 commit: `8ac2d6c`. `git log -1 --format=%h main`으로 최신 확인)
+**브랜치 (2026-05-19 시점)**: `main` (Phase 6 종료 commit `8ac2d6c`). **현재 main HEAD는 §-1 참조(`5e7d451`)** — `git log -1 --format=%h main`으로 최신 확인.
 
 **전체 MVP 합계 (보강 후)**: 80 Story / 415 SP / 223 Task / 218 MD 순수 / 838 MD 보수 / 10 Sprint × 2주 = **19~20주 (약 4.6개월)** — mvp-plan §4-1 정밀 계산 (415 SP × 0.5 / 20 MD/sprint = 약 10.4 sprint, 9.5~10 sprint 흡수)
 
@@ -136,7 +183,7 @@ FlowHR_SOP/
 6. **packages/platform 채택**: web/pwa/tauri 분기 + iOS 제약 중앙화
 7. **packages/config 채택**: Turborepo 표준 공유 설정
 
-## 3. 신규 세션 첫 작업 — Phase 7 Sprint 1 부트스트랩
+## 3. (2026-05-19 작성) Phase 7 Sprint 1 부트스트랩 시퀀스 — 참고용. **실제 진입점은 §-1**
 
 ### 작업 1 — Sprint 1 Day 1~14 시퀀스 (`sprint-001.md` SSOT)
 
