@@ -68,13 +68,16 @@ turbo typecheck 7/7 + lint 8/8 + unit test 13(api-client realtime 6 + auth 7) + 
 ## 6. 듀얼검증 (evaluator + codex)
 
 - **evaluator**: PASS 8.80/10 (4축 ≥7.5, 독립 재실행으로 typecheck/lint/test/build 재확인). P0/P1 0건.
-- **codex 1차**: FAIL — P1 4건(tickets INSERT tenant 누락 / 직원 자기 leaves·근태수정 status 자기승인 / approvals·approval_steps 라우팅 컬럼·자기승인 미차단 / KI-077 approval_id composite 미완성) + P2 2건 + P3 2건. **전부 실제 결함으로 검증(false alarm 0)**.
-- **정정**(마이그레이션 32 + realtime.ts): P1 4 + P2 2 + P3 2 전부 해소. RLS 매트릭스에 T7~T10 회귀 케이스 추가 + staging 재실증 PASS. typecheck/lint/test/build 재통과.
-- evaluator NON_BLOCKING P2 2건(approval 자기승인 WITH CHECK / 매니저 팀범위 미테스트)도 본 정정으로 함께 해소.
+- **codex 1차**: FAIL — P1 4건(tickets INSERT tenant 누락 / 직원 자기 leaves·근태수정 status 자기승인 / approvals·approval_steps 라우팅 컬럼·자기승인 미차단 / KI-077 approval_id composite 미완성) + P2 2 + P3 2. 전부 실제 결함(false alarm 0).
+  → **정정 1**(마이그레이션 32 + realtime.ts): T7~T10 회귀 추가 + staging 재실증.
+- **codex 2차**: FAIL — 개방 P1 2(admin 겸직 직원 self-approve / requester self-routing) + 신규 P2 1(SET NULL composite FK가 tenant_id NOT NULL 위반으로 부모 DELETE 실패 — 9건 전수). 검증 결과 실제 결함(SET NULL은 codex 본 것보다 광범위).
+  → **정정 2**(마이그레이션 33): (1) SET NULL composite FK 9건을 `on delete set null (<ref col>)` 컬럼지정(PG17)으로 — tenant_id 보존 + 부모 DELETE 정상. (2) approval_steps INSERT를 관리자 전용 → requester self-routing 차단. (3) leaves/attmod의 approved/rejected 직접 UPDATE를 employee·admin 공통 차단 → 승인/반려는 service_role 결재 RPC 매개(admin self-approve 폐쇄). RLS 매트릭스 T11~T13 추가 + staging 재실증 PASS.
+- evaluator round2 NON_BLOCKING도 반영: approval self-approval WITH CHECK·매니저 팀범위(정정1) + requester self-routing(정정2) 해소. drop policy는 마이그레이션 33부터 `if exists` 적용. rls.md §1 SSOT drift는 KI-084로 추적.
 
 ## 7. 변경 이력
 
 | 일자 | 변경 |
 |------|------|
 | 2026-05-29 | 초안 — ST-005/068/069 + KI-077 구현 + staging 실증 + codex 4종 협의 |
-| 2026-05-29 | codex 듀얼검증 P1/P2 정정 — 마이그레이션 32(인가 강화 + approval_id composite 완성 + 라우팅 컬럼 잠금) + realtime P3 + T7~T10 회귀 테스트 |
+| 2026-05-29 | codex 듀얼검증 1차 P1/P2 정정 — 마이그레이션 32(인가 강화 + approval_id composite 완성 + 라우팅 컬럼 잠금) + realtime P3 + T7~T10 회귀 테스트 |
+| 2026-05-29 | codex 듀얼검증 2차 P1/P2 정정 — 마이그레이션 33(SET NULL 9건 컬럼지정 + approval_steps INSERT 관리자 전용 + leaves/attmod approved/rejected 직접전이 차단) + T11~T13 회귀 테스트. KI-087(결재 워크플로 SoD/전이 가드 Sprint 6) 등록 |

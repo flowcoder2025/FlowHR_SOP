@@ -30,7 +30,8 @@ insert into employees (id, tenant_id, name, role, user_id, department_id) values
   ('b0000000-0000-4000-8000-000000000002','11111111-1111-1111-1111-111111111111','AdminA','tenant_super','a0000000-0000-4000-8000-000000000002',null),
   ('b0000000-0000-4000-8000-000000000003','11111111-1111-1111-1111-111111111111','EmpA','employee','a0000000-0000-4000-8000-000000000003','90000000-0000-4000-8000-000000000001'),
   ('b0000000-0000-4000-8000-000000000004','22222222-2222-2222-2222-222222222222','EmpB','employee','a0000000-0000-4000-8000-000000000004',null),
-  ('b0000000-0000-4000-8000-000000000005','11111111-1111-1111-1111-111111111111','MgrA','tenant_manager','a0000000-0000-4000-8000-000000000005','90000000-0000-4000-8000-000000000001');
+  ('b0000000-0000-4000-8000-000000000005','11111111-1111-1111-1111-111111111111','MgrA','tenant_manager','a0000000-0000-4000-8000-000000000005','90000000-0000-4000-8000-000000000001'),
+  ('b0000000-0000-4000-8000-000000000006','11111111-1111-1111-1111-111111111111','SubA','employee',null,null);
 update public.users set employee_id='b0000000-0000-4000-8000-000000000002' where id='a0000000-0000-4000-8000-000000000002';
 update public.users set employee_id='b0000000-0000-4000-8000-000000000003' where id='a0000000-0000-4000-8000-000000000003';
 update public.users set employee_id='b0000000-0000-4000-8000-000000000004' where id='a0000000-0000-4000-8000-000000000004';
@@ -64,17 +65,17 @@ do $$ declare ok boolean := false; begin
   if not ok then raise exception 'T1d cross-tenant insert NOT blocked by RLS'; end if;
 end $$;
 
--- ===== T2: tenant_super A (tenant-wide: AdminA + EmpA + MgrA = 3) =====
+-- ===== T2: tenant_super A (tenant-wide: AdminA + EmpA + MgrA + SubA = 4) =====
 reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000002","role":"authenticated"}'; set local role authenticated;
 do $$ begin
-  if (select count(*) from employees) <> 3 then raise exception 'T2a adminA employees=% (exp 3)', (select count(*) from employees); end if;
+  if (select count(*) from employees) <> 4 then raise exception 'T2a adminA employees=% (exp 4)', (select count(*) from employees); end if;
   if (select count(*) from leaves) <> 1 then raise exception 'T2b adminA leaves=% (exp 1)', (select count(*) from leaves); end if;
 end $$;
 
--- ===== T3: operator (cross-tenant bypass: 4 employees / 2 leaves) =====
+-- ===== T3: operator (cross-tenant bypass: 5 employees / 2 leaves) =====
 reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000001","role":"authenticated"}'; set local role authenticated;
 do $$ begin
-  if (select count(*) from employees) <> 4 then raise exception 'T3a operator employees=% (exp 4)', (select count(*) from employees); end if;
+  if (select count(*) from employees) <> 5 then raise exception 'T3a operator employees=% (exp 5)', (select count(*) from employees); end if;
   if (select count(*) from leaves) <> 2 then raise exception 'T3b operator leaves=% (exp 2)', (select count(*) from leaves); end if;
 end $$;
 
@@ -146,6 +147,38 @@ do $$ begin
   if not exists (select 1 from employees where id='b0000000-0000-4000-8000-000000000003') then raise exception 'T10b manager cannot see team member EmpA'; end if;
   if exists (select 1 from employees where id='b0000000-0000-4000-8000-000000000002') then raise exception 'T10c manager sees non-team AdminA'; end if;
   if exists (select 1 from employees where id='b0000000-0000-4000-8000-000000000004') then raise exception 'T10d manager sees other-tenant EmpB'; end if;
+end $$;
+
+-- ===== T11: 관리자 직접 승인 차단 (codex P1-2) — adminA가 leave status=approved 직접 UPDATE 시도 =====
+reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000002","role":"authenticated"}'; set local role authenticated;
+do $$ declare ok boolean := false; begin
+  begin update leaves set status='approved' where id='d0000000-0000-4000-8000-000000000001';
+  exception when others then ok := true; end;
+  if not ok then raise exception 'T11 admin direct-approve NOT blocked (approved via PostgREST)'; end if;
+  -- 양성: 관리자 비승인 상태 전이는 허용
+  update leaves set status='in_progress' where id='d0000000-0000-4000-8000-000000000001';
+  if (select status from leaves where id='d0000000-0000-4000-8000-000000000001') <> 'in_progress' then raise exception 'T11b admin non-approval transition should be allowed'; end if;
+end $$;
+
+-- ===== T12: requester self-routing 차단 (codex P1-3) — empA가 자기 approval에 step 직접 insert 시도 =====
+reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000003","role":"authenticated"}'; set local role authenticated;
+do $$ declare ok boolean := false; begin
+  begin
+    insert into approval_steps (tenant_id, approval_id, step_order, approver_id, status)
+      values ('11111111-1111-1111-1111-111111111111','70000000-0000-4000-8000-000000000001',1,'b0000000-0000-4000-8000-000000000003','pending');
+  exception when others then ok := true; end;
+  if not ok then raise exception 'T12 requester self-routing (approval_step insert) NOT blocked'; end if;
+end $$;
+
+-- ===== T13: SET NULL 컬럼지정 — 직원 삭제 시 ref 컬럼만 NULL화, tenant_id 보존 (codex 신규 P2) =====
+reset role;
+do $$ declare survives boolean; sub uuid; begin
+  update leaves set substitute_employee_id='b0000000-0000-4000-8000-000000000006' where id='d0000000-0000-4000-8000-000000000001';
+  delete from employees where id='b0000000-0000-4000-8000-000000000006'; -- SET NULL (substitute_employee_id) 발화 — tenant_id NOT NULL 위반 없어야 함
+  select exists(select 1 from leaves where id='d0000000-0000-4000-8000-000000000001'), substitute_employee_id
+    into survives, sub from leaves where id='d0000000-0000-4000-8000-000000000001';
+  if not survives then raise exception 'T13a leave row deleted (SET NULL composite FK broke parent delete)'; end if;
+  if sub is not null then raise exception 'T13b substitute_employee_id not nulled'; end if;
 end $$;
 
 reset role;
