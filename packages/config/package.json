@@ -8,6 +8,9 @@
     "./eslint-base": "./eslint-base.mjs",
     "./tsconfig-base": "./tsconfig-base.json"
   },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0"
+  },
   "dependencies": {
     "@eslint/js": "^9.18.0",
     "globals": "^15.14.0",

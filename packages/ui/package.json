@@ -9,6 +9,7 @@
     "./styles/tokens.css": "./src/styles/tokens.css"
   },
   "scripts": {
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
