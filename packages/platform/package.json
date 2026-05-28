@@ -1,0 +1,21 @@
+{
+  "name": "@flowhr/platform",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "web/pwa/tauri 디바이스 분기 + iOS 제약(포그라운드 GPS / 16.4+ 푸시) 중앙화.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@flowhr/config": "workspace:*",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.7.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

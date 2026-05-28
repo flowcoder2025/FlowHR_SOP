@@ -1,0 +1,21 @@
+{
+  "name": "@flowhr/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "next-intl 네임스페이스 SSOT (ko + en MVP). 화면별 카탈로그는 Sprint 진행에 따라 점진 추가 (08-i18n.md 컨벤션).",
+  "exports": {
+    ".": "./src/index.ts",
+    "./locales/*": "./src/locales/*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next-intl": "^3.26.3"
+  },
+  "devDependencies": {
+    "@flowhr/config": "workspace:*",
+    "typescript": "^5.7.0"
+  }
+}

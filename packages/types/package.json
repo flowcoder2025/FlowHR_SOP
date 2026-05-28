@@ -1,0 +1,18 @@
+{
+  "name": "@flowhr/types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FlowHR DB/도메인 TypeScript 타입. database.ts는 supabase gen types로 자동 생성.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./database": "./src/database.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@flowhr/config": "workspace:*",
+    "typescript": "^5.7.0"
+  }
+}

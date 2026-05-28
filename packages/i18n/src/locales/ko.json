@@ -1,0 +1,19 @@
+{
+  "components": {
+    "button": {
+      "cancel": "취소",
+      "save": "저장",
+      "next": "다음",
+      "previous": "이전",
+      "confirm": "확인"
+    },
+    "loading": "불러오는 중…"
+  },
+  "landing": {
+    "title": "FlowHR",
+    "subtitle": "멀티테넌트 HR SaaS",
+    "description": "근태·휴가·결재·문서를 한 곳에서. 웹·모바일·데스크톱 어디서나.",
+    "getStarted": "시작하기",
+    "localeName": "한국어"
+  }
+}

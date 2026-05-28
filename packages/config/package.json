@@ -1,0 +1,20 @@
+{
+  "name": "@flowhr/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FlowHR 공유 개발 설정 (ESLint flat config + TypeScript base). Tailwind v4는 CSS-first이므로 디자인 토큰은 @flowhr/ui/styles/tokens.css가 SSOT.",
+  "exports": {
+    "./eslint-base": "./eslint-base.mjs",
+    "./tsconfig-base": "./tsconfig-base.json"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.18.0",
+    "globals": "^15.14.0",
+    "typescript-eslint": "^8.20.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0",
+    "typescript": "^5.0.0"
+  }
+}

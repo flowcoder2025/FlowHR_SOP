@@ -1,0 +1,19 @@
+{
+  "components": {
+    "button": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "next": "Next",
+      "previous": "Previous",
+      "confirm": "Confirm"
+    },
+    "loading": "Loading…"
+  },
+  "landing": {
+    "title": "FlowHR",
+    "subtitle": "Multi-tenant HR SaaS",
+    "description": "Attendance, leave, approvals, and documents in one place — on web, mobile, and desktop.",
+    "getStarted": "Get started",
+    "localeName": "English"
+  }
+}
