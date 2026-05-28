@@ -51,3 +51,7 @@ shamefully-hoist.log
 .flowset/wireframes/images/*.tmp.png
 .flowset/.local/
 .claude/settings.local.json
+.claude/skills/
+
+.vercel
+.env*.local
