@@ -6,7 +6,8 @@
   "description": "Supabase 클라이언트 래퍼 + TanStack Query 기반. 도메인별 hooks(auth/operator/tenant/employee/common)는 Sprint 1~ 점진 추가.",
   "exports": {
     ".": "./src/index.ts",
-    "./server": "./src/server-index.ts"
+    "./server": "./src/server-index.ts",
+    "./react": "./src/realtime.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings=0",
@@ -20,8 +21,13 @@
     "@tanstack/react-query": "^5.62.0",
     "server-only": "^0.0.1"
   },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
   "devDependencies": {
     "@flowhr/config": "workspace:*",
+    "@types/react": "^19",
+    "react": "^19.1.0",
     "typescript": "^5.7.0"
   }
 }

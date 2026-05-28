@@ -1,10 +1,46 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-29 batch C (Phase 7 Sprint 1 — WI-020 ST-001 로그인 핵심 완료 + 듀얼검증 PASS_WITH_KI). WI-020 잔여(ST-002~004 + 078/072) 또는 WI-019 Day8~10 대기.
-> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch C)** 정독 → **WI-020 잔여(ST-002~004 인증보조 + ST-078 약관 + ST-072 오류)** 또는 **WI-019 Day8~10(RLS/audit트리거/Realtime)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-05-28 batch B (듀얼검증 게이트 구축 + WI-019, §-1) / batch A (모노레포+인프라, §-2) / 2026-05-19 Phase 6 종료
+> **갱신**: 2026-05-29 batch D (Phase 7 Sprint 1 — WI-019 Day8~10 완료: RLS 39테이블 + KI-077 composite FK + audit 트리거 21 + Realtime + useRealtime wrapper). 듀얼검증 후 머지.
+> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch D)** 정독 → **WI-020 잔여(ST-002 비번찾기 + ST-003 활성화 + ST-004 2FA[=custom TOTP 결정됨] + ST-078 약관 + ST-072 오류)** 또는 **WI-021(zod-to-openapi + phase7-code.yml CI 4 job)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-05-29 batch C (WI-020 ST-001 로그인, §-0b) / 2026-05-28 batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2) / 2026-05-19 Phase 6 종료
 
-## -0. 2026-05-29 batch C 세션 진척 — **신규 세션 여기부터**
+## -0. 2026-05-29 batch D 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-019 Day8~10 (RLS + audit + Realtime + composite FK)
+
+`feature/WI-019-feat-rls-audit-realtime`, 듀얼검증 후 auto-merge PR.
+
+| 영역 | 산출물 |
+|------|--------|
+| ST-005 RLS | 마이그레이션 `27` — 39테이블 ENABLE RLS + 94정책(패턴 A/B/C/D) + 헬퍼 6종 **SECURITY DEFINER public.users 조회 기반**(JWT 클레임 부재 + hosted hook MCP 불가 → codex 협의, KI-084로 표준화 후속) + my_team_employee_ids + 운영사 우회 + 컴플라이언스 불변성 |
+| KI-077 composite FK | 마이그레이션 `28` — employees/leave_types/approvals 부모 UNIQUE(tenant_id,id) + 자식 13 FK를 (tenant_id,ref)→(tenant_id,id) 전환. **KI-077 resolved** |
+| ST-068 audit | 마이그레이션 `29` — 범용 `audit_row_change()` SECURITY DEFINER + 21테이블 AFTER INSERT/UPDATE/DELETE + APPROVE 특례 + `prune_audit_logs()` 5년 보관(pg_cron 조건부). KI-026: 폴리모픽 자식 3개 제외. 월 파티셔닝 KI-085 유보 |
+| ST-069 Realtime | 마이그레이션 `30` — supabase_realtime publication(notifications/approvals/approval_steps) + REPLICA IDENTITY FULL. 클라이언트 `packages/api-client/src/realtime.ts` (`useRealtimeSubscription` + 비종속 매니저, 자동 재연결 백오프 + 오프라인 fallback, `@flowhr/api-client/react` 서브패스) |
+| 하드닝 | 마이그레이션 `31` — 술어헬퍼 search_path 고정 + audit_row_change/prune_audit_logs/record_login_failure RPC 노출 차단 |
+| 검증 | RLS 매트릭스 T1~T6 staging 실증 PASS(`supabase/tests/rls_matrix_check.sql`) + 로그인 무손상 + typecheck 7/7 + lint 8/8 + test 13 + build(/ko·/en) + security advisor 해소 |
+
+### 신규 KI (batch D)
+
+| KI | 등급 | 내용 |
+|----|----|----|
+| KI-084 | P3 | RLS 헬퍼 Custom Access Token Hook 표준화 (현 SECURITY DEFINER public.users 조회 → JWT 클레임. dashboard 활성화 필요) |
+| KI-085 | P3 | audit_logs 월 파티셔닝 (현 비파티션 + 트리거/보관함수 제공. 스케일 시 전환) |
+| KI-086 | P3 | Auth leaked-password protection dashboard 활성 |
+
+### 인프라/환경 상태 (batch D)
+
+- staging `nwcttwuvdnelfbpjeqzr`: **39테이블 RLS 활성 + 94정책** (마이그레이션 27) + composite FK(28) + audit 트리거 21(29) + Realtime publication 3(30) + 하드닝(31). 마이그레이션 원격 적용 완료(1~20, 25~31).
+- **RLS 헬퍼 클레임 소스**: `auth.uid()` → `public.users` 조회(SECURITY DEFINER, search_path 고정). JWT 커스텀 클레임 미사용 — KI-084로 표준화 예정.
+- 테스트 유저 시드(`test-employee@flowhr.test`) + audit_logs 기존 row 유지. RLS 매트릭스 테스트는 BEGIN..ROLLBACK으로 비영속.
+
+### 다음 세션 첫 작업 후보
+
+1. **WI-020 잔여**: ST-002 비번찾기(CM-02) + ST-003 활성화(CM-03) + ST-004 2FA(CM-04, **custom TOTP=speakeasy+challengeToken+복구코드8 결정됨**) + ST-078 약관(CM-21) + ST-072 오류(CM-06). ST-072/078은 RLS+audit 의존(이제 충족).
+2. **WI-021**: zod-to-openapi + `phase7-code.yml` CI 4 job (build→typecheck 순서 주의 — `.next/types` include). KI-082 로그인 E2E CI 자동화 포함.
+
+---
+
+## -0b. 2026-05-29 batch C 세션 진척 (WI-020 ST-001 로그인)
 
 ### 완료 — WI-020 ST-001 로그인 핵심 (Sprint 1 Day 6~7)
 
