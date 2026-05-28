@@ -1,5 +1,5 @@
 import 'server-only';
-import { createServiceRoleClient } from '@flowhr/api-client';
+import { createServiceRoleClient } from '@flowhr/api-client/server';
 
 type AuditResult = 'success' | 'failed' | 'denied';
 

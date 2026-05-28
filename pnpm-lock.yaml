@@ -123,6 +123,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.62.0
         version: 5.100.14(react@19.1.0)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@flowhr/config':
         specifier: workspace:*

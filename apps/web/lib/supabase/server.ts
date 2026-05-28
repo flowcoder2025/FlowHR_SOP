@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@flowhr/api-client';
+import { createServerSupabaseClient } from '@flowhr/api-client/server';
 import { cookies } from 'next/headers';
 
 /** Server Component / Server Action 용 Supabase 클라이언트 (next/headers 쿠키 연결). */

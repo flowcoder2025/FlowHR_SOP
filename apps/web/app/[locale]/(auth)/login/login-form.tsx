@@ -9,7 +9,7 @@ import { loginAction, type LoginState } from './actions';
 
 const INITIAL: LoginState = { status: 'idle' };
 
-export function LoginForm() {
+export function LoginForm({ returnUrl }: { returnUrl?: string }) {
   const t = useTranslations('auth.login');
   const locale = useLocale();
   const [state, formAction, pending] = useActionState<LoginState, FormData>(
@@ -21,6 +21,7 @@ export function LoginForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
+      {returnUrl && <input type="hidden" name="returnUrl" value={returnUrl} />}
       {state.status === 'error' && (
         <Alert variant="danger">
           <span>

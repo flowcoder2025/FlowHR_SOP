@@ -73,4 +73,22 @@ test.describe('CM-01 로그인', () => {
     await page.getByRole('button', { name: '로그인' }).click();
     await expect(page).toHaveURL(new RegExp(`/ko${dashboard}$`));
   });
+
+  test('접근 불가 return_url 은 무시하고 역할 기본 경로로 (employee→/operator 차단)', async ({ page }) => {
+    test.skip(!email || !password, 'E2E_TEST_EMAIL/PASSWORD 미설정 — 시드 사용자 필요');
+    await page.goto('/ko/login?return_url=%2Fko%2Foperator');
+    await page.locator('#email').fill(email!);
+    await page.locator('#password').fill(password!);
+    await page.getByRole('button', { name: '로그인' }).click();
+    await expect(page).toHaveURL(/\/ko\/me$/);
+  });
+
+  test('외부 URL return_url 은 무시 (오픈 리다이렉트 방지)', async ({ page }) => {
+    test.skip(!email || !password, 'E2E_TEST_EMAIL/PASSWORD 미설정 — 시드 사용자 필요');
+    await page.goto('/ko/login?return_url=https%3A%2F%2Fevil.example.com');
+    await page.locator('#email').fill(email!);
+    await page.locator('#password').fill(password!);
+    await page.getByRole('button', { name: '로그인' }).click();
+    await expect(page).toHaveURL(/\/ko\/me$/);
+  });
 });

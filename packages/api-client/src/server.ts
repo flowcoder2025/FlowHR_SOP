@@ -1,3 +1,4 @@
+import 'server-only';
 import type { Database } from '@flowhr/types';
 import { type CookieMethodsServer, createServerClient } from '@supabase/ssr';
 import type { FlowHRSupabaseClient } from './client';

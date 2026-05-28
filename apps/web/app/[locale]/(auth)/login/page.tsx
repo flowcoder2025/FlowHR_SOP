@@ -9,10 +9,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function LoginPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ return_url?: string }>;
 }) {
   const { locale } = await params;
+  const { return_url: returnUrl } = await searchParams;
   setRequestLocale(locale);
 
   // 이미 인증된 사용자는 역할별 대시보드로 이동 (09-routing.md §3).
@@ -36,7 +39,7 @@ export default async function LoginPage({
         <h1 className="text-lg font-semibold text-text">{t('title')}</h1>
         <p className="mt-1 text-[13px] text-text-muted">{t('subtitle')}</p>
       </header>
-      <LoginForm />
+      <LoginForm returnUrl={returnUrl} />
     </div>
   );
 }

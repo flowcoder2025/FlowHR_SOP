@@ -1,5 +1,5 @@
 import 'server-only';
-import { createServiceRoleClient } from '@flowhr/api-client';
+import { createServiceRoleClient } from '@flowhr/api-client/server';
 
 /** 5회 실패 시 잠금 (api/auth.md). record_login_failure RPC의 c_threshold와 일치. */
 export const LOCK_THRESHOLD = 5;

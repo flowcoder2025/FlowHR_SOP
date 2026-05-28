@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@flowhr/api-client';
+import { createServerSupabaseClient } from '@flowhr/api-client/server';
 import type { User } from '@supabase/supabase-js';
 import type { NextRequest } from 'next/server';
 

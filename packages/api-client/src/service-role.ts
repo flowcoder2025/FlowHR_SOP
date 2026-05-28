@@ -1,3 +1,4 @@
+import 'server-only';
 import type { Database } from '@flowhr/types';
 import { createClient } from '@supabase/supabase-js';
 import type { FlowHRSupabaseClient } from './client';
