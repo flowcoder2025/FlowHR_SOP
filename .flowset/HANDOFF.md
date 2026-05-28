@@ -45,7 +45,7 @@
 
 ### 환경 (실측)
 
-pnpm 9.15.0 / turbo 2.9.14 / typescript 5.9.3 / next 15.5.18 / react 19.1.0 / next-intl 3.26.5 / supabase CLI 2.101.0 / tailwind 4.3.0 / node 24.12.0 / supabase MCP 인증됨
+**실측 설치 버전** (package.json은 semver 범위, 예: turbo `^2.3.0` / typescript `^5.7.0` / next-intl `^3.26.3` / tailwindcss `^4` / node `>=20.0.0`): pnpm 9.15.0 / turbo 2.9.14 / typescript 5.9.3 / next 15.5.18 / react 19.1.0 / next-intl 3.26.5 / supabase CLI 2.101.0 / tailwind 4.3.0 / node 24.12.0 / supabase MCP 인증됨. (세션 시작 시 재측정 권장)
 
 ---
 
@@ -95,6 +95,8 @@ pnpm 9.15.0 / turbo 2.9.14 / typescript 5.9.3 / next 15.5.18 / react 19.1.0 / ne
 
 pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playwright/test 1.60.0 / node 24.12.0 / Vercel CLI 50.1.6 (kryou2922-4113 로그인) / supabase MCP 인증됨
 
+> ⚠️ **§0 이하는 2026-05-19 Phase 6 종료 시점 스냅샷** — 브랜치/카운트/PR/테이블 수 등은 그 시점 기준이며, **현재 상태는 위 §-1(batch B)이 최신·정확**. 신규 세션은 §-1만 따르면 충분(§0 이하는 이력 참고).
+
 ## 0. Phase 6 종료 사이클 (2026-05-19)
 
 신규 세션 진입 후 사용자 명령 "핸드오프 읽고 작업 진행해"로 시작:
@@ -119,7 +121,7 @@ pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playw
 - codex 검토 범위 한계 인지 (4차 P1 잔존이 사실 false alarm — L282 산식 누락 검출). 산수 정밀도 결함은 mechanical fix이지만 closure 검증 시 라인 범위 명시
 - 사용자가 옵션 결정 떠넘기지 말고 codex와 follow-up으로 단일 최적안 도출 후 보고
 
-## 1. 현재 상태 요약
+## 1. 상태 요약 (2026-05-19 Phase 6 종료 스냅샷 — 현재는 §-1)
 
 ### Phase 5/6 완전 종료 + Phase 7 진입 대기
 
@@ -128,7 +130,7 @@ pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playw
 | 0 셋업 | `.flowset/` 구조 + CLAUDE.md | (생략) | — | ✅ |
 | 1 PRD | `.flowset/prd/` 50 파일 | PASS 8.15 → 재평가 9.13 | — | ✅ |
 | 2 백로그 | `.flowset/backlog/` 6 파일 (80 Story / 415 SP / 223 Task / 838 MD) | PASS 8.29 → 재평가 8.03 → 4차 재평가 PASS_BOTH 8.475/8.34 | PR #16 | ✅ |
-| 3 ERD | `.flowset/db/` 23 파일 (39 entity + 37 테이블 + RLS) | PASS 8.68 → 재평가 8.21 | — | ✅ |
+| 3 ERD | `.flowset/db/` 23 파일 (39 entity + 39 테이블 + RLS) | PASS 8.68 → 재평가 8.21 | — | ✅ |
 | 4 API | `.flowset/api/` (280 endpoint, Markdown) | PASS 8.78 → 재평가 8.40 | — | ✅ |
 | 5 와이어프레임 | 45 화면 HTML + DS SSOT (wf-v1.0.0) | PASS 8.13 / codex 4 그룹 가중 8.73 | wf-v1.0.0 | ✅ |
 | 6 스프린트 계획 | `mvp-plan.md` + `sprint-001~010.md` 11 파일 | **PASS_WITH_KI 9.00/8.21** | PR #17 | ✅ |
@@ -137,7 +139,7 @@ pnpm 9.15.0 (corepack) / turbo 2.9.14 / typescript 5.9.3 / vitest 2.1.9 / @playw
 | 9 베타 | (Phase 8 후 진입) | — | — | ⏳ |
 | 10 운영 | (Phase 9 후 진입) | — | — | ⏳ |
 
-**현재 브랜치**: `main` (Phase 6 종료 commit: `8ac2d6c`. `git log -1 --format=%h main`으로 최신 확인)
+**브랜치 (2026-05-19 시점)**: `main` (Phase 6 종료 commit `8ac2d6c`). **현재 main HEAD는 §-1 참조(`5e7d451`)** — `git log -1 --format=%h main`으로 최신 확인.
 
 **전체 MVP 합계 (보강 후)**: 80 Story / 415 SP / 223 Task / 218 MD 순수 / 838 MD 보수 / 10 Sprint × 2주 = **19~20주 (약 4.6개월)** — mvp-plan §4-1 정밀 계산 (415 SP × 0.5 / 20 MD/sprint = 약 10.4 sprint, 9.5~10 sprint 흡수)
 
@@ -181,7 +183,7 @@ FlowHR_SOP/
 6. **packages/platform 채택**: web/pwa/tauri 분기 + iOS 제약 중앙화
 7. **packages/config 채택**: Turborepo 표준 공유 설정
 
-## 3. 신규 세션 첫 작업 — Phase 7 Sprint 1 부트스트랩
+## 3. (2026-05-19 작성) Phase 7 Sprint 1 부트스트랩 시퀀스 — 참고용. **실제 진입점은 §-1**
 
 ### 작업 1 — Sprint 1 Day 1~14 시퀀스 (`sprint-001.md` SSOT)
 
