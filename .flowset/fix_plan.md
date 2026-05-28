@@ -59,7 +59,9 @@
 - [x] WI-InfraPolicy-docs 인프라 유료 가정 정정 (Free 시작 + Pro 전환 5트리거 + NHN DEFER + Tauri 자체 인증서 + guardrails §9/§10 규칙 보강, 사용자 결정 2026-05-19 + codex 3차 협의)
 - [x] WI-KI-batch-007-docs 차기 docs batch 문서 정합 9건 (KI-032/033/040/042/056/062/074/075 resolved + KI-016 NHN DEFER 시점 갱신)
 - [x] WI-KI-batch-008-wf 와이어프레임 정정 5건 resolved (KI-043 CM-21 i18n + KI-044 CM-04 selector + KI-049/069 권한매트릭스 15화면 역할\|권한 2열 + KI-060 TA-13 font-weight) + Phase 7 재분류 8건 (KI-038/054/057/061/064/065/068/070 — React 변환 시 해소, 이중작업 회피)
-- [ ] WI-019-feat apps/web + packages 7개 스캐폴드 + Supabase 인프라 (스키마/RLS/audit/Realtime, Sprint 1 Day 3~5·8~10)
+- [~] WI-019-feat apps/web + packages 7개 스캐폴드 + Supabase 인프라 (스키마/RLS/audit/Realtime, Sprint 1 Day 3~5·8~10)
+  - [x] Day 3~5: apps/web(Next 15.5 + next-intl ko/en) + packages 7개 + supabase init + ERD 39엔티티 스키마 마이그레이션 1~20 원격 staging 적용 + database.ts 생성 (typecheck/build/런타임 스모크 PASS)
+  - [ ] Day 8~10: RLS 정책 SQL(ST-005) + audit 트리거(ST-068) + Realtime publication(ST-069) — ST-001 로그인(WI-020) 의존
 - [ ] WI-020-feat 인증 (로그인/2FA/활성화/비밀번호 ST-001~004) + 약관/오류 (ST-078/072, Day 6~7·11~12)
 - [ ] WI-021-feat zod-to-openapi + CI(phase7-code.yml 4 job) + 디자인 시스템 베이스 (Day 13~14)
 
