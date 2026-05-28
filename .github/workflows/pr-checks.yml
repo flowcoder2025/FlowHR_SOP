@@ -321,8 +321,10 @@ jobs:
           node-version: '20'
       - name: Install Playwright + chromium only
         run: |
+          # playwright 버전을 루트 @playwright/test(1.60.0 고정)과 일치시켜
+          # playwright-core/브라우저 빌드 버전 drift(chromium not found) 방지.
           npm init -y > /dev/null 2>&1
-          npm install --save-dev playwright@1.49.0 > /dev/null
+          npm install --save-dev playwright@1.60.0 > /dev/null
           npx playwright install chromium --with-deps > /dev/null 2>&1
       - name: Run smoke (모든 화면 file:// open + console/error/svg-bbox)
         shell: bash
