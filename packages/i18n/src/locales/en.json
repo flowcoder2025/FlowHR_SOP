@@ -15,5 +15,43 @@
     "description": "Attendance, leave, approvals, and documents in one place — on web, mobile, and desktop.",
     "getStarted": "Get started",
     "localeName": "English"
+  },
+  "auth": {
+    "brand_subtitle": "Multi-tenant HR SaaS",
+    "footer": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
+    },
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Enter your email and password.",
+      "email": "Email",
+      "email_placeholder": "you@example.com",
+      "password": "Password",
+      "remember": "Keep me signed in",
+      "forgot": "Forgot your password?",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "show_password": "Show password",
+      "hide_password": "Hide password",
+      "activate_prompt": "Received an invitation?",
+      "activate_invite": "Activate your account",
+      "error": {
+        "invalid_input": "Please check your input.",
+        "invalid_credentials": "Incorrect email or password.",
+        "remaining": "{count} attempt(s) left",
+        "locked": "Locked after 5 failed attempts. Try again in {minutes} minute(s)."
+      }
+    }
+  },
+  "app": {
+    "signed_in_as": "Signed in as {role}.",
+    "logout": "Sign out",
+    "placeholder_notice": "This screen will be implemented in a later sprint.",
+    "dashboard": {
+      "operator": "Operator dashboard",
+      "admin": "Admin dashboard",
+      "employee": "My dashboard"
+    }
   }
 }

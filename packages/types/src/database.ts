@@ -326,7 +326,7 @@ export type Database = {
           {
             foreignKeyName: "fk_attendance_mods_approval"
             columns: ["approval_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "approvals"
             referencedColumns: ["id"]
           },
@@ -565,7 +565,7 @@ export type Database = {
           {
             foreignKeyName: "certificate_requests_approval_id_fkey"
             columns: ["approval_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "approvals"
             referencedColumns: ["id"]
           },
@@ -845,7 +845,7 @@ export type Database = {
           {
             foreignKeyName: "employee_change_requests_approval_id_fkey"
             columns: ["approval_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "approvals"
             referencedColumns: ["id"]
           },
@@ -1411,7 +1411,7 @@ export type Database = {
           {
             foreignKeyName: "fk_leaves_approval"
             columns: ["approval_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "approvals"
             referencedColumns: ["id"]
           },
@@ -1500,6 +1500,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      login_attempts: {
+        Row: {
+          attempt_count: number
+          email: string
+          id: string
+          ip: string
+          locked_until: string | null
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          email: string
+          id?: string
+          ip: string
+          locked_until?: string | null
+          updated_at?: string
+          window_started_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          email?: string
+          id?: string
+          ip?: string
+          locked_until?: string | null
+          updated_at?: string
+          window_started_at?: string
+        }
+        Relationships: []
       }
       maintenance_windows: {
         Row: {
@@ -2240,7 +2270,7 @@ export type Database = {
           {
             foreignKeyName: "fk_users_employee"
             columns: ["employee_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "employees"
             referencedColumns: ["id"]
           },
@@ -2320,6 +2350,13 @@ export type Database = {
       is_operator: { Args: never; Returns: boolean }
       is_operator_super: { Args: never; Returns: boolean }
       is_tenant_admin: { Args: never; Returns: boolean }
+      record_login_failure: {
+        Args: { p_email: string; p_ip: string }
+        Returns: {
+          out_attempt_count: number
+          out_locked_until: string
+        }[]
+      }
     }
     Enums: {
       approval_request_type:

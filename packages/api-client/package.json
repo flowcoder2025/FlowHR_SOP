@@ -9,10 +9,12 @@
   },
   "scripts": {
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@flowhr/types": "workspace:*",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.62.0"
   },

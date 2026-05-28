@@ -12,3 +12,4 @@ export const registry = new OpenAPIRegistry();
 
 export { z };
 export * from './common';
+export * from './auth';

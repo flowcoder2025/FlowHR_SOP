@@ -14,7 +14,13 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
       {...props}
     >
       {children}
-      {required && <span className="text-danger"> *</span>}
+      {/* 시각적 필수 표시 — 접근성 이름에서 제외(required 상태는 input의 required 속성으로 전달). */}
+      {required && (
+        <span aria-hidden="true" className="text-danger">
+          {' '}
+          *
+        </span>
+      )}
     </label>
   ),
 );
