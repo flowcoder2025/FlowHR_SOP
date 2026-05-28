@@ -6,6 +6,8 @@
 
 ## 1. 기본 헬퍼 함수
 
+> **구현 정합 노트 (Phase 7 WI-019, 2026-05-29)**: 아래 헬퍼는 JWT 커스텀 클레임을 읽는 설계이나, WI-020 로그인이 클레임을 JWT에 주입하지 않고 hosted Supabase에서 Custom Access Token Hook 활성화가 MCP로 불가하여, **실제 마이그레이션 27은 `current_tenant_id`/`current_role_key`/`current_employee_id`를 `auth.uid()` 기반 `public.users` 조회 SECURITY DEFINER STABLE(`search_path` 고정) 함수로 구현**한다(codex 협의). JWT-클레임 방식으로의 표준화는 [[KI-084]]. 마이그레이션 31에서 `is_operator`/`is_operator_super`/`is_tenant_admin`도 `search_path` 고정.
+
 ```sql
 -- JWT에서 tenant_id 추출
 CREATE OR REPLACE FUNCTION current_tenant_id() RETURNS uuid
@@ -159,6 +161,8 @@ CREATE POLICY immutable_no_delete ON {table} FOR DELETE USING (false);
 | `integration_logs` | ON | 패턴 A SELECT만 |
 | `api_keys` | ON | `is_operator_super()` (운영사 키) OR `tenant_super` AND `owner_type='tenant'` AND tenant_id 격리 |
 | `signatures` | ON | document 테이블 격리 상속 |
+
+> **구현 정합 노트 (Phase 7 WI-019, 2026-05-29)**: 마이그레이션 32/33에서 결재 인가 강화 적용 — (a) `approvals`/`approval_steps` UPDATE WITH CHECK + 라우팅 컬럼 불변 트리거(operator/service_role 우회)로 라우팅/소유 컬럼 변조·요청자 자기승인 차단, (b) `approval_steps` INSERT는 관리자(+service_role) 전용으로 requester self-routing 차단, (c) `leaves`/`attendance_modifications`의 `status='approved'/'rejected'` 직접 UPDATE는 employee·admin 공통 차단 → 승인/반려는 service_role 결재 RPC 매개. 정식 상태전이 SoD + leaves 미러 RPC는 [[KI-087]](Sprint 6 결재 처리 WI).
 
 ## 4. KI-014 해소 — Approval Polymorphic Routing
 
