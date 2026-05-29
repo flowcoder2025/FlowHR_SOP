@@ -2,7 +2,7 @@ import { Alert } from '@flowhr/ui';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { Link } from '../../../../i18n/navigation';
-import { RECOVERY_MARKER_COOKIE } from '@/lib/auth/recovery';
+import { RECOVERY_MARKER_COOKIE, verifyRecoveryMarker } from '@/lib/auth/recovery';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ResetForm } from './reset-form';
 
@@ -29,7 +29,7 @@ export default async function ResetPasswordPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const recovered = Boolean(user && marker && marker === user.id);
+  const recovered = Boolean(user && verifyRecoveryMarker(marker, user.id));
 
   if (!recovered || error === 'invalid_token') {
     return (

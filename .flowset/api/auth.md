@@ -314,7 +314,7 @@ Next.js App Router + @supabase/ssr 구현은 본 명세의 토큰-바디 API(`{ 
 - **콜백 라우트**: `GET /auth/confirm?token_hash=&type=recovery&redirect_to=` (locale prefix 없음, middleware `/auth` 제외). verifyOtp 로 recovery 세션 쿠키 수립 후 `redirect_to`(동일 origin 검증) 로 이동. 실패 시 `?error=invalid_token`.
 - **재설정 폼**: `/{locale}/reset-password` 는 토큰을 싣지 않는다(이미 /auth/confirm 가 세션으로 소비). recovery 세션 확인 → `updateUser({ password })` → `signOut({ scope:'global' })`(현재 recovery 세션 포함 전 세션 무효화, AC-3) → `/login?reset=success`.
 - **계정 열거 방지(AC-1)**: forgot-password 는 미등록/오류 모두 동일 `sent` 응답 + obscureTiming(응답 시간 균일화).
-- **복구 흐름 게이트**: /auth/confirm 가 recovery verifyOtp 성공 시에만 단기 HttpOnly 마커(`fh-pw-recovery`=userId, 15분)를 설정. reset-password 페이지/액션이 recovery 세션 **+ 마커(=본인)** 를 모두 요구 → 일반 로그인 세션의 직접 재설정 차단(codex 듀얼검증 P1).
+- **복구 흐름 게이트**: /auth/confirm 가 recovery verifyOtp 성공 시에만 **HMAC 서명** 단기 HttpOnly 마커(`fh-pw-recovery` = `userId.exp.HMAC`, 15분, 키=SUPABASE_SERVICE_ROLE_KEY)를 설정. reset-password 페이지/액션이 recovery 세션 **+ 유효 서명 마커(=본인)** 를 모두 요구 → 일반/탈취 로그인 세션이 마커를 위조해 재인증 없이 비밀번호를 바꾸는 경로 차단(codex 듀얼검증 P1-1, 서명으로 위조 불가).
 - **감사 로그**: `auth.password_reset_requested`(forgot 요청, best-effort) / `auth.password_reset`(reset 결과 — signOut 실패 시 `result=failed` 로 세션 잔존 위험 기록).
 - **이메일 템플릿 의존**: 위 흐름은 Recovery 메일이 `/auth/confirm` 으로 token_hash 를 전달하도록 **이메일 템플릿 커스터마이즈**가 전제. 로컬은 `supabase/config.toml [auth.email.template.recovery]` + `supabase/templates/recovery.html`. **원격(staging/prod)은 대시보드 수동 설정 필요(KI-098)** + Redirect URL allow-list 에 배포 도메인 등록.
 - **검증 경계**: 실메일 발송 + cross-device 클릭 자동 E2E 는 Free SMTP + 대시보드 의존으로 미검증(KI-097). 스키마/정책/동일응답/세션-없는-만료안내는 unit + E2E 로 검증.

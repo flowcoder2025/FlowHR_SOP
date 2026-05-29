@@ -31,6 +31,7 @@ function PolicyChecklist({ value }: { value: string }) {
 
 export function ResetForm() {
   const t = useTranslations('auth.reset');
+  const tp = useTranslations('auth.password');
   const locale = useLocale();
   const [state, formAction, pending] = useActionState<ResetState, FormData>(
     resetPasswordAction.bind(null, locale),
@@ -68,7 +69,7 @@ export function ResetForm() {
           </button>
         </div>
         <div className="mt-2 rounded-md border border-border bg-surface p-3">
-          <p className="mb-1.5 text-[13px] font-medium text-text">{t('policy_title')}</p>
+          <p className="mb-1.5 text-[13px] font-medium text-text">{tp('policy_title')}</p>
           <PolicyChecklist value={password} />
         </div>
       </div>

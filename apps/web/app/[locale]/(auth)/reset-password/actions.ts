@@ -2,7 +2,7 @@
 
 import { resetPasswordSchema } from '@flowhr/schemas';
 import { writeAuthAudit, type AuthAuditInput } from '@/lib/auth/audit';
-import { RECOVERY_MARKER_COOKIE } from '@/lib/auth/recovery';
+import { RECOVERY_MARKER_COOKIE, verifyRecoveryMarker } from '@/lib/auth/recovery';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -52,8 +52,8 @@ export async function resetPasswordAction(
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 복구 흐름 전용 — recovery 세션 + 마커(=해당 user)가 모두 있어야 한다(P1-1).
-  if (!user || !marker || marker !== user.id) {
+  // 복구 흐름 전용 — recovery 세션 + 유효 HMAC 서명 마커(=해당 user)가 모두 있어야 한다(P1-1).
+  if (!user || !verifyRecoveryMarker(marker, user.id)) {
     return { status: 'error', messageKey: 'error.session_invalid' };
   }
 
