@@ -8,6 +8,11 @@ node_modules/
 dist/
 build/
 out/
+# OpenAPI 계약 SSOT (packages/schemas/dist/openapi.yaml) — zod-to-openapi 생성물이지만
+# phase7-code.yml 의 OpenAPI diff 게이트 대상이라 추적한다. 다른 dist 산출물은 계속 무시.
+!packages/schemas/dist/
+packages/schemas/dist/*
+!packages/schemas/dist/openapi.yaml
 
 # Env
 .env

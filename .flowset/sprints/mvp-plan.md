@@ -145,6 +145,7 @@ FlowHR_SOP/
 - **deps**: `zod`, `@asteasolutions/zod-to-openapi`
 - **출력**: `packages/schemas/dist/openapi.yaml` (CI에서 자동 생성)
 - **Sprint 1 부트스트랩**: 39 entity zod schema + `.flowset/api/schemas.md` 변환
+  - **WI 분할 (사용자 결정 2026-05-29)**: WI-021 = zod-to-openapi **파이프라인 + CI(phase7-code.yml) + 로그인 E2E**, WI-021-1 = **39 entity zod schema 변환**. 둘 다 Sprint 1 — 연기 아님 (CI 토대 먼저 머지 후 entity 집중). endpoint(~280) schema는 sprint-001 §위험대로 Sprint 2~6 점진.
 
 ### 2-6. packages/types — `@flowhr/types`
 

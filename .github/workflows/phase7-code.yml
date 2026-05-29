@@ -1,0 +1,200 @@
+name: Phase 7 Code Checks
+
+# Phase 7 코드 게이트 — apps/** + packages/** 변경 시 lint/typecheck/unit-test/build 검증.
+# mvp-plan.md §6 + sprint-001.md Day 13~14 (WI-021) SSOT.
+# 와이어프레임 정적 체크(pr-checks.yml 9 job)와 path-scope 분리 — 코드 PR만 본 워크플로 트리거.
+# supabase/** (SQL 마이그레이션)은 본 워크플로 비대상 — TS lint/typecheck/build 와 무관하다.
+# supabase 변경의 머지 게이트는 pr-checks.yml 의 dual-verification-gate 가 커버.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'turbo.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.base.json'
+      - '.github/workflows/phase7-code.yml'
+
+concurrency:
+  group: phase7-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-lint-${{ github.sha }}
+          restore-keys: turbo-lint-
+      - name: ESLint (turbo)
+        run: pnpm turbo run lint
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-typecheck-${{ github.sha }}
+          restore-keys: turbo-typecheck-
+      # turbo.json: typecheck dependsOn build → apps/web next build 가 .next/types 를
+      # 먼저 생성하므로 tsc 가 라우트 생성 타입까지 포함해 완전 검증한다 (핸드오프 build→typecheck 순서).
+      # build job 과 web build 가 중복되나 정확성 우선 — 효율 최적화는 KI-088 (CI 성숙 시).
+      - name: tsc --noEmit (turbo, build 선행)
+        run: pnpm turbo run typecheck
+
+  unit-test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-test-${{ github.sha }}
+          restore-keys: turbo-test-
+      - name: Vitest (turbo)
+        run: pnpm turbo run test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-build-${{ github.sha }}
+          restore-keys: turbo-build-
+      # turbo build = packages/schemas (zod-to-openapi → dist/openapi.yaml) + apps/web (next build)
+      - name: Turbo build (web + schemas openapi)
+        run: pnpm turbo run build
+      - name: OpenAPI 명세 최신성 검증 (zod-to-openapi)
+        shell: bash
+        run: |
+          # (1) openapi.yaml 이 git 추적 대상인지 먼저 확인 — untracked 면 git diff 가 변경을
+          #     못 잡아 false pass 가능(.gitignore dist 예외 누락/삭제 방어, codex P2-1).
+          if ! git ls-files --error-unmatch packages/schemas/dist/openapi.yaml >/dev/null 2>&1; then
+            echo "::error::packages/schemas/dist/openapi.yaml 이 git 미추적 — .gitignore 예외 + 커밋 필요"
+            exit 1
+          fi
+          # (2) build 가 재생성한 openapi.yaml 이 커밋본과 일치해야 한다.
+          #     zod 스키마를 고치고 openapi.yaml 재생성/커밋을 누락하면 여기서 차단.
+          if ! git diff --exit-code -- packages/schemas/dist/openapi.yaml; then
+            echo "::error::openapi.yaml 이 zod 스키마와 불일치 — 'pnpm --filter @flowhr/schemas build' 후 dist/openapi.yaml 커밋 필요 (PR template 의무)"
+            exit 1
+          fi
+          echo "OpenAPI 명세 최신 — zod 스키마와 일치"
+
+  # ── KI-082: 로그인 E2E CI 자동화 (secrets 조건부) ──────────────────────────
+  # repo secrets 전체 주입 시 실 staging 백엔드로 로그인 E2E 회귀(9 케이스).
+  # 미설정 시 graceful skip — 4 필수 job 머지를 막지 않는 advisory 체크.
+  e2e-gate:
+    name: E2E Gate
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: 필수 secrets 묶음 전체 확인
+        id: check
+        shell: bash
+        env:
+          # 풀 로그인 E2E(9 케이스)는 staging 백엔드 + 서버액션(service_role) + 시드 계정이
+          # 모두 있어야 동작. 하나라도 누락 시 부분 실패 대신 graceful skip (codex P3-3).
+          URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          ANON: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+        run: |
+          if [ -n "$URL" ] && [ -n "$ANON" ] && [ -n "$SROLE" ] && [ -n "$EMAIL" ] && [ -n "$PASSWORD" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "E2E 필수 secrets 전체 감지 — 로그인 E2E 실행"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "E2E 필수 secrets 미흡(URL/ANON/SERVICE_ROLE/EMAIL/PASSWORD 중 누락) — 로그인 E2E skip (KI-082: 전체 주입 시 자동 활성)"
+          fi
+
+  e2e:
+    name: Login E2E (staging)
+    needs: e2e-gate
+    if: needs.e2e-gate.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      E2E_TEST_DASHBOARD: ${{ secrets.E2E_TEST_DASHBOARD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Playwright chromium 설치 (루트 @playwright/test 1.60.0 일치)
+        run: pnpm exec playwright install --with-deps chromium
+      - name: apps/web 빌드 (next start webServer 전제)
+        run: pnpm turbo run build --filter=@flowhr/web
+      - name: 로그인 E2E (playwright)
+        run: pnpm --filter @flowhr/web test:e2e
+      # trace 는 인증 세션/입력값을 담을 수 있어 실패 시에만 + 짧은 보관 (codex P2-2).
+      - name: Playwright trace 업로드 (실패 시만)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-trace
+          path: apps/web/test-results/
+          retention-days: 5
+          if-no-files-found: ignore

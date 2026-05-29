@@ -1,0 +1,57 @@
+openapi: 3.1.0
+info:
+  title: FlowHR API
+  version: 0.1.0
+  description: FlowHR 멀티테넌트 HR SaaS API 명세. zod 스키마(@flowhr/schemas)에서
+    zod-to-openapi 로 자동 생성한다. 엔드포인트/엔티티 스키마는 Sprint 2~6 에 점진 확장.
+components:
+  schemas:
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 1
+          format: email
+        password:
+          type: string
+          minLength: 1
+        rememberMe:
+          type: boolean
+          default: false
+      required:
+        - email
+        - password
+    Uuid:
+      type: string
+      format: uuid
+    IsoTimestamp:
+      type: string
+      format: date-time
+    Timestamps:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - created_at
+        - updated_at
+    PaginationQuery:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+  parameters: {}
+paths: {}
+webhooks: {}
