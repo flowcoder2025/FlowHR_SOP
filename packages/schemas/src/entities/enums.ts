@@ -20,7 +20,9 @@ export const backupKindEnum = z.enum(['auto', 'manual']);
 export const operatorRoleEnum = z.enum(['operator_super', 'operator_staff']);
 export const billingCycleEnum = z.enum(['monthly', 'annual']);
 
-// ── 역할 (6 역할 통합 — api/schemas.md Role) ─────────────────────
+// ── 역할 (6 역할, api/schemas.md Role) — 애플리케이션 입력/권한 검증용 ──────
+// DB employees.role/users.role 은 text 컬럼이라 entity 스키마엔 z.string() 적용(DB Row 정합).
+// 본 enum 은 로그인 후 역할 리다이렉트/권한 게이트 등 입력 검증에 사용 (entity 미적용).
 export const appRoleEnum = z.enum([
   'operator_super',
   'operator_staff',

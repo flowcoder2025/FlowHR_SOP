@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { uuidSchema, isoTimestampSchema } from '../common';
 import {
-  appRoleEnum,
   employmentTypeEnum,
   employeeStatusEnum,
   notificationTypeEnum,
@@ -11,7 +10,8 @@ import {
 
 /**
  * HR 도메인 entity (database.ts Row 1:1, snake_case).
- * employees.role / users.role 는 DB text 컬럼이나 6 역할(api/schemas.md Role)로 검증.
+ * employees.role / users.role 는 DB text 컬럼이라 z.string()(DB Row 정합) — 6 역할 enum(appRoleEnum)은
+ * 애플리케이션 입력/권한 검증용이며 entity(DB row 표현)엔 적용하지 않는다 (WI-021-1 듀얼검증 정정).
  */
 
 // departments
@@ -30,7 +30,7 @@ export const departmentSchema = z.object({
   updated_at: isoTimestampSchema,
 });
 
-// employees (birth_date/joined_at/left_at/probation_ends_at 은 DB date)
+// employees (birth_date/joined_at/left_at/probation_ends_at 은 DB date, role 은 DB text)
 export const employeeSchema = z.object({
   id: uuidSchema,
   tenant_id: uuidSchema,
@@ -44,7 +44,7 @@ export const employeeSchema = z.object({
   job_title: z.string().nullable(),
   employment_type: employmentTypeEnum,
   status: employeeStatusEnum,
-  role: appRoleEnum,
+  role: z.string(),
   birth_date: z.string().date().nullable(),
   joined_at: z.string().date().nullable(),
   left_at: z.string().date().nullable(),
@@ -59,12 +59,12 @@ export const employeeSchema = z.object({
   updated_at: isoTimestampSchema,
 });
 
-// users (last_login_ip 은 text)
+// users (role/last_login_ip 은 DB text)
 export const userSchema = z.object({
   id: uuidSchema,
   employee_id: uuidSchema.nullable(),
   tenant_id: uuidSchema.nullable(),
-  role: appRoleEnum.nullable(),
+  role: z.string().nullable(),
   locale: z.string(),
   totp_enabled: z.boolean(),
   totp_secret_encrypted: z.string().nullable(),
@@ -98,7 +98,7 @@ export const notificationSchema = z.object({
   created_at: isoTimestampSchema,
 });
 
-// audit_logs (ip 은 text, no updated_at)
+// audit_logs (ip/request_id 은 DB text, no updated_at)
 export const auditLogSchema = z.object({
   id: uuidSchema,
   tenant_id: uuidSchema.nullable(),
@@ -112,7 +112,7 @@ export const auditLogSchema = z.object({
   result: auditResultEnum,
   ip: z.string().nullable(),
   user_agent: z.string().nullable(),
-  request_id: uuidSchema.nullable(),
+  request_id: z.string().nullable(),
   created_at: isoTimestampSchema,
 });
 

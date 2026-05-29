@@ -31,7 +31,7 @@ export const userConsentSchema = z.object({
   tenant_id: uuidSchema.nullable(),
   user_id: uuidSchema,
   document_id: uuidSchema,
-  document_type: legalDocumentTypeEnum,
+  document_type: z.string(),
   version: z.string(),
   source: consentSourceEnum,
   ip_address: z.string(),

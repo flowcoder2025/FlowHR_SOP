@@ -887,13 +887,6 @@ components:
             - inactive
         role:
           type: string
-          enum: &a1
-            - operator_super
-            - operator_staff
-            - tenant_super
-            - tenant_hr_admin
-            - tenant_manager
-            - employee
         birth_date:
           type:
             - string
@@ -994,7 +987,6 @@ components:
           type:
             - string
             - "null"
-          enum: *a1
         locale:
           type: string
         totp_enabled:
@@ -1175,7 +1167,6 @@ components:
           type:
             - string
             - "null"
-          format: uuid
         created_at:
           type: string
           format: date-time
@@ -1798,7 +1789,7 @@ components:
             - outside
         status:
           type: string
-          enum: &a3
+          enum: &a2
             - draft
             - pending
             - in_progress
@@ -2053,7 +2044,7 @@ components:
           type: string
         request_type:
           type: string
-          enum: &a2
+          enum: &a1
             - leave
             - attendance_mod
             - certificate
@@ -2097,7 +2088,7 @@ components:
           format: uuid
         request_type:
           type: string
-          enum: *a2
+          enum: *a1
         request_object_id:
           type:
             - string
@@ -2109,7 +2100,7 @@ components:
             - "null"
         status:
           type: string
-          enum: *a3
+          enum: *a2
         current_step:
           type: integer
         total_steps:
@@ -2410,7 +2401,7 @@ components:
           format: uuid
         type:
           type: string
-          enum: &a4
+          enum:
             - terms
             - privacy
         version:
@@ -2485,7 +2476,6 @@ components:
           format: uuid
         document_type:
           type: string
-          enum: *a4
         version:
           type: string
         source:
