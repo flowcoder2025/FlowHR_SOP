@@ -1,0 +1,16 @@
+WI-020-3-feat ST-072 오류/점검 (CM-06 404/500/503 + 점검모드 미들웨어 + Sentry 추상화훅)
+
+통합 verdict: PASS_BOTH
+- evaluator: PASS 8.40/10 (기능 8.5 / 품질 8.5 / 테스트 8.0 / 계약 8.5 — 4축 전부 ≥8.0)
+- codex: 라운드1 CONDITIONAL(P1×1+P2×1+P3×1) → hotfix(5ea19b7) → 라운드2 PASS_VERIFIED
+
+정정(hotfix):
+- P1 점검 면제 exact match (isMaintenanceExempt Set.has)
+- P2 CM-06 §4 catalog 확장상태 유보 명시 (dead key 방지)
+- P3 RLS created_by 노출 → KI-096
+
+KI 등록: KI-093(P3) / KI-094(P2) / KI-095(P3) / KI-096(P3). P2 누적 5건 트리거 도달.
+
+검증: turbo typecheck/lint/build 20/20 + vitest 14/14 + Playwright E2E 19/19 + staging 점검 활성/복귀 실증.
+
+날짜: 2026-05-29

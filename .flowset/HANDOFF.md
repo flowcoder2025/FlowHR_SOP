@@ -1,8 +1,58 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-29 batch F (Phase 7 Sprint 1 — WI-020-2 ST-078 약관/동의 PIPA 완료). 듀얼검증 PASS_BOTH 후 머지(PR #38, `84a1853`).
-> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch F)** 정독 → **WI-020-3 ST-072 오류/점검(CM-06 404/500/503 + 점검모드 maintenance_windows + Sentry 추상화훅, codex 협의 A안)** 또는 **WI-020 인증보조(ST-002~004)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-05-29 batch E (WI-021 사이클 CI/OpenAPI/39 entity zod, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-05-29 batch G (Phase 7 Sprint 1 — WI-020-3 ST-072 오류/점검 완료). 듀얼검증 PASS_BOTH 후 머지(PR #40).
+> **신규 세션 첫 작업**: 본 문서 **§-0g (2026-05-29 batch G)** 정독 → **WI-020 인증보조(ST-002 비번찾기 / ST-003 활성화 / ST-004 2FA)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`. ⚠️ **P2 KI 누적 5건 트리거 도달** — 사용자에 batch WI 권장 보고됨(KI-054/061/079/092/094).
+> **이전 핸드오프**: 2026-05-29 batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+
+## -0g. 2026-05-29 batch G 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-020-3-feat ST-072 오류/점검 (CM-06, codex 협의 A안)
+
+PR #40 머지. 듀얼검증 **PASS_BOTH**(evaluator 8.40 / codex CONDITIONAL→hotfix→PASS_VERIFIED).
+
+| 영역 | 산출물 |
+|------|--------|
+| 404 | `app/[locale]/not-found.tsx`(getTranslations) + `[...rest]/page.tsx` catch-all(미매칭 라우트 → 커스텀 404, next-intl 권장) + `components/error-state.tsx`(서버·클라 공용 인라인 SVG hero) |
+| 500 | `app/[locale]/error.tsx`(boundary, `error.digest`=참조번호 + `NEXT_PUBLIC_SENTRY_DSN` 시 Sentry 안내 + 재시도) + `app/global-error.tsx`(루트 레이아웃 오류 — 자급자족 인라인/이중언어) |
+| Sentry 추상화훅 | `lib/observability/sentry.ts`(`captureServerError` — DSN 미설정 no-op 구조화 로그 / DSN 시 sentryPending, **@sentry/nextjs 미설치 — S6 연동**) + `instrumentation.ts` `onRequestError` 연결(Next 15 안정) |
+| 점검모드(503) | `lib/maintenance/queries.ts`(`getActiveMaintenance` TTL 15s 캐시 + `getUserRole` + `computeRetryAfterSeconds`/`isMaintenanceExempt` 순수함수) + `middleware.ts`(status=active 시 비-`operator_super` → `/maintenance` **503 rewrite + Retry-After**, `operator_super` 우회, `/login`·`/maintenance` **exact** 예외) + `maintenance/page.tsx`(활성/비활성 분기) + `countdown.tsx`. `lib/supabase/middleware.ts` refreshSession 가 client 반환(재사용) |
+| i18n / 정합 | `ko/en` `system.error.{notFound,internal,maintenance}.*`(CM-06 §4 catalog 정합, 확장상태 serviceUnavailable/network 는 §8 유보=dead key 방지) + matrix.json MaintenanceWindow R=`pending`(public_view 읽기) + CM-06.md §8 구현 노트 + apps/web **vitest 인프라 신규**(vitest.config + test script) |
+
+### 듀얼검증 (codex 실결함 검출 — 게이트 모범 사례)
+
+| 라운드 | evaluator | codex | 정정 |
+|------|------|------|------|
+| 1차 | PASS 8.40 | **CONDITIONAL** P1×1+P2×1+P3×1 | — |
+| hotfix(`5ea19b7`) | (유지) | **PASS_VERIFIED** | P1 점검 면제 prefix→exact match(`Set.has`, 중첩경로 503 누수 차단) / P2 CM-06 §4 catalog 유보 명시 / P3 RLS created_by 노출→KI-096 |
+| → **PASS_BOTH** | | | `.flowset/eval-results/WI-020-3-feat.pass` |
+
+### 신규 KI (batch G) — **P2 트리거 5건 도달**
+
+| KI | 등급 | 내용 |
+|----|----|----|
+| KI-093 | P3 | 점검 active 503/operator_super 우회 자동 E2E 공백(staging seed fixture 필요, KI-089/091 동류). 비활성 E2E 5 + unit 14 + staging 수동 실증으로 핵심 커버 |
+| KI-094 | P2 | `maintenance_windows` `message_en` 컬럼 부재 — 운영사 점검 본문 ko 단일(제목/기본안내는 i18n). 글로벌 출시 전 컬럼+fallback |
+| KI-095 | P3 | 점검 미들웨어 TTL 15s 캐시 best-effort(Edge 인스턴스별) — 토글 반영 ≤15s 지연. Realtime/edge-config 무효화 후속 |
+| KI-096 | P3 | `maintenance_windows` RLS `using(true)`(기존 mig 27) anon 직접조회 시 `created_by` 노출. 미들웨어는 안전컬럼만 select. column-level grants/public_view |
+
+**⚠️ P2 활성 5건(KI-054/061/079/092/094) = 트리거 임계 도달** — 사용자 승인 후 batch WI 처리 권장(전부 Phase 7 React 변환/세션·점검·운영사 감사 scheduled).
+
+### staging 상태 (batch G)
+
+- `nwcttwuvdnelfbpjeqzr`: 마이그레이션 변경 없음(`maintenance_windows` 는 mig 4 기존 + RLS mig 27 기존). **점검 실증용 임시 active 창은 검증 후 삭제 — 현재 maintenance_windows 0행**(login/legal E2E 회귀 보존).
+- 점검 활성 실증: anon `/ko/me`·`/ko` → 503 + `Retry-After`(scheduled_end 계산), `/ko/maintenance`·`/ko/login` 예외 200(활성 본문/로그인), 창 제거 후 `/ko/me` → 307 로그인 복귀.
+- staging 에 **operator_super 계정 부재** → operator_super 라이브 우회는 unit(getUserRole/bypass)으로 검증(anon/employee 차단은 실증).
+
+### 검증 (batch G)
+
+- turbo typecheck/lint/build **20/20** + apps/web vitest **14**(computeRetryAfterSeconds/isMaintenanceExempt exact/getActiveMaintenance 매퍼·TTL/getUserRole) + Playwright E2E **19/19**(error-maintenance 5 신규 + login 9 + legal 5 회귀) + staging 점검 활성/복귀 실증.
+
+### 다음 세션 첫 작업 — WI-020 인증보조 (ST-002~004)
+
+- **ST-002 비번찾기(CM-02)**: 토큰 60분 + 미등록 이메일 동일응답(계정노출 방지) + 재설정 후 활성세션 무효화. `POST /auth/forgot-password` + `/reset-password`. **신규 top-level 경로(`/forgot-password`·`/reset-password`)는 점검 면제 목록(`isMaintenanceExempt`)에 명시 등록 필요** — 현재 exact match `/login`·`/maintenance`만.
+- **ST-003 활성화(CM-03)**: 7일 토큰 1회용 + 약관 동의 흐름(ST-078 `recordConsent(source='activate')` 재사용) + 2FA. `users.role==='operator_*'` 시 "건너뛰기(직원)" 숨김(KI-045).
+- **ST-004 2FA(CM-04)**: custom TOTP=speakeasy(미설치) + challengeToken + 복구코드 8. `users.totp_*` 컬럼 존재.
+- 인접 KI: KI-080(/forbidden CM-05) / KI-079(rememberMe 세션 TTL).
 
 ## -0. 2026-05-29 batch F 세션 진척 — **신규 세션 여기부터**
 
