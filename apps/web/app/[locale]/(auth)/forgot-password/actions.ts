@@ -41,7 +41,8 @@ export async function forgotPasswordAction(
 
   const parsed = forgotPasswordSchema.safeParse({ email: formData.get('email') });
   if (!parsed.success) {
-    return { status: 'error', messageKey: 'auth.forgot.error.invalid' };
+    // 폼은 useTranslations('auth.forgot') 네임스페이스로 해석 → 상대 키를 반환한다(login 패턴 정합).
+    return { status: 'error', messageKey: 'error.invalid' };
   }
   const { email } = parsed.data;
 

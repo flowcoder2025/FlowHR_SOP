@@ -1,6 +1,8 @@
 import { Alert } from '@flowhr/ui';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import { Link } from '../../../../i18n/navigation';
+import { RECOVERY_MARKER_COOKIE } from '@/lib/auth/recovery';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { ResetForm } from './reset-form';
 
@@ -19,14 +21,17 @@ export default async function ResetPasswordPage({
   setRequestLocale(locale);
   const t = await getTranslations('auth.reset');
 
-  // /auth/confirm 이 verifyOtp 로 recovery 세션을 수립했는지 확인.
-  // 세션이 없거나 토큰 검증이 실패(error=invalid_token)면 만료/무효 안내를 보여준다.
+  // /auth/confirm 이 verifyOtp 로 recovery 세션 + 재설정 마커를 수립했는지 확인(P1-1).
+  // 세션·마커가 없거나(일반 로그인 세션 직접 접근 차단) 토큰 검증 실패(error=invalid_token)면 만료/무효 안내.
+  const cookieStore = await cookies();
+  const marker = cookieStore.get(RECOVERY_MARKER_COOKIE)?.value;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const recovered = Boolean(user && marker && marker === user.id);
 
-  if (!user || error === 'invalid_token') {
+  if (!recovered || error === 'invalid_token') {
     return (
       <div className="flex flex-col gap-5">
         <header>

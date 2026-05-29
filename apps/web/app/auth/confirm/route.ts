@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@flowhr/api-client/server';
 import { defaultLocale } from '@flowhr/i18n';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import { RECOVERY_MARKER_COOKIE, recoveryMarkerOptions } from '@/lib/auth/recovery';
 
 // 이메일 OTP(token_hash) 검증 콜백. 비밀번호 재설정/계정 확인 링크가 이 라우트로 들어온다.
 // PKCE(code_verifier) 대신 stateless 한 token_hash 검증을 사용해 "다른 기기에서 링크 클릭"을 지원한다.
@@ -53,8 +54,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         for (const { name, value, options } of toSet) successRes.cookies.set(name, value, options);
       },
     });
-    const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
-    if (!error) return successRes;
+    const { data, error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
+    if (!error) {
+      // recovery 흐름만 재설정 마커를 부여 — /reset-password 가 이 마커+세션을 함께 요구한다(P1-1).
+      if (type === 'recovery' && data.user) {
+        successRes.cookies.set(RECOVERY_MARKER_COOKIE, data.user.id, recoveryMarkerOptions());
+      }
+      return successRes;
+    }
   }
 
   // 토큰 누락/만료/무효 — 재설정 화면이 만료 상태를 안내하도록 error 플래그를 붙여 보낸다.

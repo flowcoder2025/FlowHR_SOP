@@ -93,6 +93,7 @@
       "request_new": "Request a new link",
       "error": {
         "invalid": "Please check your input.",
+        "weak_password": "Your password doesn't meet the requirements. Please satisfy all the rules below.",
         "mismatch": "The two passwords do not match.",
         "session_invalid": "Your session has expired. Please request a new reset link.",
         "update_failed": "Failed to reset your password. Please try again."
