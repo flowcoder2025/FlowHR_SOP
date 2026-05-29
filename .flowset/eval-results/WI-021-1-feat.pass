@@ -1,0 +1,24 @@
+PASS_BOTH
+
+WI-021-1-feat 듀얼검증 통합 판정 (2026-05-29)
+scope: ERD 39 entity zod schema 변환 (DB snake_case 1:1, Sprint 1 잔여 — WI-021 분할)
+
+- evaluator: 1차 FAIL 8.25(테스트 커버리지 축 6.0 하드게이트 미달) → 재평가 PASS 8.75 (기능 9 / 품질 9 / 테스트 8 / 계약 9, 각 축 ≥7.5)
+- codex: 1차 FAIL(P1 진짜 3 + false 4) → 2차 FAIL(ip_address 진짜 P1) → 3차 FAIL(required false alarm) → 4차 PASS (false alarm 인정)
+- 통합 verdict: PASS_BOTH (P0/P1 0건)
+
+진짜 결함 정정:
+- employees.role / users.role / user_consents.document_type / audit_logs.request_id: DB text 인데 enum/uuid 강제 → z.string() (codex P1×3 + evaluator P2, DB Row 1:1 원칙)
+- user_consents.ip_address: DB nullable inet → z.string().nullable() (codex P1 — database.ts Row `unknown` 표현이 nullable 을 가린 결함을 codex 가 마이그레이션/SQL 로 정확 검출. information_schema is_nullable=YES 확인)
+- entities.test.ts 23 tests(36+ assertions): date↔datetime 양방향 / enum·uuid·email 음성 / DB text 필드 허용 / location 좌표범위
+
+codex false alarm (실측 확인 후 정정 안 함):
+- certificate_requests.issued_at = staging timestamptz (codex 의 date 판정은 invoices.issued_at 혼동)
+- component name PascalCase = OpenAPI 스키마명 관례 (필드 properties 만 snake_case)
+- rememberMe = auth.ts loginSchema 입력 폼(WI-020), entity 아님 (WI-021-1 범위 밖)
+- .flowset/spec/enums.md 없음 = 실제 .flowset/db/enums.md 존재, 값 일치
+- user_consents.ip_address required 잔존 = zod .nullable() 정확 출력(필드 존재+값 null), nullable 필드 3개 일관. codex 4차 인정
+
+검증: turbo 19 task PASS(lint 8/typecheck 7/test 28/build 2) + openapi.yaml 45 components 결정적 재빌드 + date/date-time/inet/time format 정확
+
+신규 KI (P3): KI-090 (entity 단위 테스트 39 중 11 직접 + work_policies time/user_consents inet 형식 refine 부재 — 후속 WI)

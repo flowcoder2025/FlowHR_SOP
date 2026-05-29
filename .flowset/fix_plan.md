@@ -68,7 +68,7 @@
   - [ ] ST-078 약관/동의 (CM-21) / ST-072 오류·점검 (CM-06)
 - [~] WI-021-feat CI(phase7-code.yml 4 job) + zod-to-openapi 파이프라인 + 로그인 E2E 자동화 (Day 13~14)
   - [x] phase7-code.yml 4 job(lint/typecheck/unit-test/build, apps·packages path-scope) + OpenAPI diff 게이트(ls-files+diff) + KI-082 로그인 E2E job(secrets 5종 묶음 조건부) + build-openapi.ts(zod→OpenAPI 3.1 파이프라인) + dist/openapi.yaml(gitignore 예외 추적) + turbo typecheck→build 선행 + PR template 코드 PR 게이트. 로컬 19 task/18 unit/E2E 9/9/openapi 결정성 PASS. 듀얼검증: evaluator 1차 FAIL(39 entity 분리 결정) → codex 1차 CONDITIONAL(P2 2건 정정) → 재평가.
-- [ ] WI-021-1-feat 39 entity zod schema 변환 (ERD/api·schemas.md → packages/schemas, openapi.yaml 39 components) — Sprint 1 잔여, WI-021에서 분할 (사용자 결정 2026-05-29: CI 토대 먼저 머지 + 39 entity 집중 작업). 연기 아님 — 둘 다 Sprint 1.
+- [x] WI-021-1-feat 39 entity zod schema 변환 — packages/schemas/src/entities/{enums,operator,hr,settings,attendance,leave,approval,compliance}.ts (DB snake_case 1:1, database.ts Row 정합) + openapi.yaml 45 components + entities.test.ts 23 + api/schemas.md SSOT 정합 노트. 듀얼검증 PASS_BOTH(evaluator 1차 FAIL 8.25→재평가 8.75 / codex 4라운드 PASS — role/document_type/request_id DB text + ip_address nullable inet 정정, false alarm 5건 입증). KI-090 등록. Sprint 1 잔여(WI-021 분할, 사용자 결정 2026-05-29).
 
 ## Phase 8 — QA 시나리오
 
