@@ -1,8 +1,37 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-29 batch H (Phase 7 Sprint 1 — WI-020-4 ST-002 비번찾기/재설정 완료 + WI-020-5 ST-004 2FA codex 설계 확정). 듀얼검증 PASS_BOTH 후 머지(PR #41).
-> **신규 세션 첫 작업**: 본 문서 **§-0h (2026-05-29 batch H)** 정독 → **WI-020-5 ST-004 2FA(CM-04) 구현** (codex 설계 §-0h 에 확정·캡처됨, 그대로 실행). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`. ⚠️ **선행: env 시크릿 2개(`AUTH_TOTP_ENC_KEY`/`AUTH_CHALLENGE_SECRET`) 로컬+staging 프로비저닝 필요**.
-> **이전 핸드오프**: 2026-05-29 batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-05-29 batch I (Phase 7 Sprint 1 — WI-020-5 ST-004 2FA TOTP(CM-04) 완료). 듀얼검증 PASS_BOTH 후 머지(PR #43).
+> **신규 세션 첫 작업**: 본 문서 **§-0i (2026-05-29 batch I)** 정독 → **WI-020-6 ST-003 계정 활성화(CM-03) 구현**. ⚠️ **착수 전 사용자 승인 필요** — 커스텀 `invitations` 테이블 = DB schema 변경(`project.md §5/§7-2`). 약관 동의는 ST-078 `recordConsent(source='activate')` 재사용, 선택 2FA 는 ST-004 enable 재사용. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-05-29 batch H (WI-020-4 ST-002 비번찾기/재설정 + WI-020-5 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+
+## -0i. 2026-05-29 batch I 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-020-5-feat ST-004 2FA TOTP (CM-04, PR #43 머지)
+
+커스텀 TOTP(speakeasy) — Supabase 네이티브 MFA 미사용. codex 설계 7항목(§-0h) 그대로 실행. **선행 env 2키 프로비저닝 완료**(로컬).
+
+| 영역 | 산출물 |
+|------|--------|
+| challenge(핵심) | login actions 가 **격리 클라이언트**(`createIsolatedSupabaseClient`, no-op 쿠키)로 비번 검증→세션토큰만 획득(쿠키 미발급). `totp_enabled` 면 `{userId,email,access/refresh,returnTo,jti,exp+300s}` 를 `AUTH_CHALLENGE_SECRET` AES-256-GCM 봉인→`fh-2fa-challenge` HttpOnly/Secure/Lax → `/{locale}/two-factor`. 2FA 미사용은 cookie 클라 `setSession` |
+| verify | `(auth)/two-factor/*` — challenge 해제(purpose/exp)→OTP 잠금확인→`verifyTotp`(speakeasy ±1) 또는 복구코드→통과 시 `setSession`+challenge 삭제(1회용)+잠금 초기화+약관가드 재적용→returnTo. 실패 `recordLoginFailure`(5회→/login?error=locked) |
+| enable/disable | `(employee)/me/security/*`(OP-12/EM-09 보안탭 최소) — **단일 영속 패널**(revalidate 후 복구코드 화면 유지): enable(speakeasy 비밀→qrcode QR→pending 비밀 `fh-2fa-setup` 봉인→6자리 검증→`totp_enabled`+암호화 비밀+복구코드 8 scrypt 1회표시) / disable(현재 비번 격리검증+TOTP·복구코드, **operator 차단**) |
+| 복구코드 | `XXXX-XXXX`(혼동문자 제외) 8개, scrypt(코드별 salt)+timingSafe, `users.recovery_codes_hash text[]`. **`.contains` CAS 원자 소비**(동일 코드 병렬 1회만, codex P2 정정) |
+| operator 강제 2FA | `operator-2fa-guard.ts` + login 직후, `system_settings.require_operator_2fa`(기본 true). 약관 우선 |
+| 인프라 | 전용 env 2키(`AUTH_TOTP_ENC_KEY`/`AUTH_CHALLENGE_SECRET`, 32B base64) fail-closed. 점검 면제 `/two-factor`·`/me/security`. audit 5종. `createIsolatedSupabaseClient` 추가 |
+
+**듀얼검증 PASS_BOTH** (evaluator 8.93 / codex 1차 **FAIL** — 실결함 4건 검출: **P1 프로필 조회 실패 시 2FA fail-open**[일시 RLS 실패→OTP 없이 세션] + P2 operator 가드/disable role fail-open + P2 복구코드 비원자 → 정정 `5f981dc`[fail-closed 3건 + `.contains` CAS] → **PASS_VERIFIED**. jti 재생 단일사용은 DB 저장소 필요로 **KI-101 deferral**[recovery-marker 선례·HttpOnly 5분 완화, 머지 비차단]). 검증: turbo 20/20 + 단위(crypto 9+recovery 10+totp 5+schemas 7 / web 48+schemas 47) + **E2E 29/29 직렬**(workers:1, 2FA 가드 3 + staging 전체흐름 2[enable→재로그인 challenge→오답거부→TOTP통과→복구코드통과→disable, speakeasy 산출, test-employee service-role teardown] + login 9 회귀).
+
+**신규 KI**: KI-099(P3 Vercel env 수동 프로비저닝) / KI-100(P3 2FA E2E env게이트·직렬·teardown, CI 자동화는 KI-082 secrets 동반) / KI-101(P3 jti 단일사용 하드닝 — DB 저장소 사용자 승인) / KI-102(P3 2FA 관리 재확인 rate-limit — 이미 인증+2차 게이트로 완화).
+
+### ⚠️ 교훈 (이번 세션)
+- **듀얼검증이 evaluator 가 놓친 P1 fail-open 을 검출** — 단독 evaluator(8.93 PASS) 만으로 머지했다면 2FA 우회 결함 출고. WI별 codex 병행 의무(project.md §1-1)의 가치 실증.
+- **E2E 가 PoC 로 못 잡는 결함 검출** — enable 확인 시 서버 revalidate 가 조건부 분기(EnrollFlow)를 교체해 복구코드 미표시 → 단일 영속 패널로 통합. 구현 중 staging 실증 E2E 필수.
+- **service-role 클라이언트 함정** — supabase-js 에서 `signInWithPassword` 호출한 클라이언트는 이후 요청을 사용자 토큰으로 보냄(service_role 상실→RLS no-op). 앱 코드는 `createServiceRoleClient`(signIn 안 함) 사용으로 정상이나, E2E teardown 헬퍼는 별도 pristine 클라이언트 분리 필요.
+
+### 다음 세션 첫 작업 — WI-020-6 ST-003 계정 활성화 (CM-03)
+- ⚠️ **착수 전 사용자 승인** — 커스텀 `invitations` 테이블(7일 토큰 1회용) = **DB schema 변경**(§5/§7-2). 마이그레이션 35 신규.
+- 7일 토큰 + 1회용 + 비밀번호 설정(passwordSchema 재사용) + **약관 동의 흐름**(ST-078 `recordConsent(source='activate')` 재사용) + **선택 2FA**(ST-004 enable 흐름 재사용 — 이래서 ST-004 선행).
+- `users.role==='operator_*'` 시 "건너뛰기(직원)" 숨김(KI-045). API `POST /auth/activate` + `GET /auth/activate/:token` + `POST /auth/invitations/resend`(auth.md).
 
 ## -0h. 2026-05-29 batch H 세션 진척 — **신규 세션 여기부터**
 

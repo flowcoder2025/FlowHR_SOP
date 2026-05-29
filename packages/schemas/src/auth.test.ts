@@ -6,6 +6,10 @@ import {
   loginSchema,
   passwordSchema,
   resetPasswordSchema,
+  totpCodeSchema,
+  totpDisableSchema,
+  totpEnableSchema,
+  twoFactorVerifySchema,
 } from './auth';
 
 describe('loginSchema', () => {
@@ -96,5 +100,40 @@ describe('resetPasswordSchema', () => {
     expect(
       resetPasswordSchema.safeParse({ newPassword: 'weak', confirmPassword: 'weak' }).success,
     ).toBe(false);
+  });
+});
+
+describe('2FA 스키마 (ST-004)', () => {
+  it('totpCodeSchema — 6자리 숫자만 통과 + trim', () => {
+    expect(totpCodeSchema.safeParse('123456').success).toBe(true);
+    expect(totpCodeSchema.safeParse(' 123456 ').success).toBe(true);
+    expect(totpCodeSchema.safeParse('12345').success).toBe(false);
+    expect(totpCodeSchema.safeParse('1234567').success).toBe(false);
+    expect(totpCodeSchema.safeParse('abcdef').success).toBe(false);
+  });
+
+  it('twoFactorVerifySchema — mode=totp 는 6자리 숫자 강제', () => {
+    expect(twoFactorVerifySchema.safeParse({ mode: 'totp', code: '123456' }).success).toBe(true);
+    expect(twoFactorVerifySchema.safeParse({ mode: 'totp', code: 'ABCD-EFGH' }).success).toBe(false);
+  });
+
+  it('twoFactorVerifySchema — mode=recovery 는 비어있지 않으면 통과(정규화는 서버)', () => {
+    expect(twoFactorVerifySchema.safeParse({ mode: 'recovery', code: 'abcd-efgh' }).success).toBe(true);
+    expect(twoFactorVerifySchema.safeParse({ mode: 'recovery', code: '' }).success).toBe(false);
+  });
+
+  it('twoFactorVerifySchema — 알 수 없는 mode 거부', () => {
+    expect(twoFactorVerifySchema.safeParse({ mode: 'sms', code: '123456' }).success).toBe(false);
+  });
+
+  it('totpEnableSchema — 6자리 코드', () => {
+    expect(totpEnableSchema.safeParse({ code: '654321' }).success).toBe(true);
+    expect(totpEnableSchema.safeParse({ code: '1' }).success).toBe(false);
+  });
+
+  it('totpDisableSchema — 비밀번호 + 코드 모두 필요', () => {
+    expect(totpDisableSchema.safeParse({ password: 'pw', code: '123456' }).success).toBe(true);
+    expect(totpDisableSchema.safeParse({ password: '', code: '123456' }).success).toBe(false);
+    expect(totpDisableSchema.safeParse({ password: 'pw', code: '' }).success).toBe(false);
   });
 });
