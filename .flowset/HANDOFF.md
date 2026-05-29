@@ -8,16 +8,25 @@
 
 ### 완료 — WI-019 Day8~10 (RLS + audit + Realtime + composite FK)
 
-`feature/WI-019-feat-rls-audit-realtime`, 듀얼검증 후 auto-merge PR.
+`feature/WI-019-feat-rls-audit-realtime` → PR #32 머지(`07d18d5`). 듀얼검증 PASS_BOTH(evaluator 8.62 + codex 3차 PASS).
 
 | 영역 | 산출물 |
 |------|--------|
 | ST-005 RLS | 마이그레이션 `27` — 39테이블 ENABLE RLS + 94정책(패턴 A/B/C/D) + 헬퍼 6종 **SECURITY DEFINER public.users 조회 기반**(JWT 클레임 부재 + hosted hook MCP 불가 → codex 협의, KI-084로 표준화 후속) + my_team_employee_ids + 운영사 우회 + 컴플라이언스 불변성 |
-| KI-077 composite FK | 마이그레이션 `28` — employees/leave_types/approvals 부모 UNIQUE(tenant_id,id) + 자식 13 FK를 (tenant_id,ref)→(tenant_id,id) 전환. **KI-077 resolved** |
+| KI-077 composite FK | 마이그레이션 `28`+`32` — employees/leave_types/approvals 부모 UNIQUE(tenant_id,id) + 자식 **19 FK**(28: 15건 employees 12/leave_types 2/approval_steps 1, 32: 폴리모픽 approval_id 4)를 (tenant_id,ref)→(tenant_id,id) 전환. **KI-077 resolved** |
 | ST-068 audit | 마이그레이션 `29` — 범용 `audit_row_change()` SECURITY DEFINER + 21테이블 AFTER INSERT/UPDATE/DELETE + APPROVE 특례 + `prune_audit_logs()` 5년 보관(pg_cron 조건부). KI-026: 폴리모픽 자식 3개 제외. 월 파티셔닝 KI-085 유보 |
 | ST-069 Realtime | 마이그레이션 `30` — supabase_realtime publication(notifications/approvals/approval_steps) + REPLICA IDENTITY FULL. 클라이언트 `packages/api-client/src/realtime.ts` (`useRealtimeSubscription` + 비종속 매니저, 자동 재연결 백오프 + 오프라인 fallback, `@flowhr/api-client/react` 서브패스) |
 | 하드닝 | 마이그레이션 `31` — 술어헬퍼 search_path 고정 + audit_row_change/prune_audit_logs/record_login_failure RPC 노출 차단 |
-| 검증 | RLS 매트릭스 T1~T6 staging 실증 PASS(`supabase/tests/rls_matrix_check.sql`) + 로그인 무손상 + typecheck 7/7 + lint 8/8 + test 13 + build(/ko·/en) + security advisor 해소 |
+| 인가 정정(codex 듀얼검증) | 마이그레이션 `32`/`33` — INSERT tenant 오귀속 차단(tickets/ticket_messages/user_consents) + 직원·admin status 자기승인 차단(leaves/attmod approved·rejected→service_role 매개) + approvals/approval_steps 라우팅 컬럼 불변 트리거 + requester self-routing 차단 + SET NULL composite FK 9건 `set null (<col>)` 컬럼지정(PG17, tenant_id NOT NULL 보존) |
+| 검증 | RLS 매트릭스 **T1~T13** staging 실증 PASS(`supabase/tests/rls_matrix_check.sql`) + 로그인 무손상 + typecheck 7/7 + lint 8/8 + test 13 + build(/ko·/en) + security advisor 잔여 수용 |
+
+### 듀얼검증 경과 (codex가 실제 결함 2라운드 검출 — 게이트 모범 사례)
+
+| 라운드 | evaluator | codex | 정정 |
+|------|------|------|------|
+| 1차 | PASS 8.80 | FAIL P1 4 | mig32 (INSERT tenant 가드 + 자기승인 차단 + approval_id composite) |
+| 2차 | PASS 8.80 | FAIL P1 2+P2 1 | mig33 (SET NULL 9건 컬럼지정[부모삭제 깨짐] + self-routing/admin self-approve 차단) |
+| 3차 | PASS 8.62 | **PASS** | → **PASS_BOTH** |
 
 ### 신규 KI (batch D)
 
@@ -26,11 +35,13 @@
 | KI-084 | P3 | RLS 헬퍼 Custom Access Token Hook 표준화 (현 SECURITY DEFINER public.users 조회 → JWT 클레임. dashboard 활성화 필요) |
 | KI-085 | P3 | audit_logs 월 파티셔닝 (현 비파티션 + 트리거/보관함수 제공. 스케일 시 전환) |
 | KI-086 | P3 | Auth leaked-password protection dashboard 활성 |
+| KI-087 | P3 | 결재 워크플로 SoD/상태전이 정식 가드 + leaves 미러 service_role RPC (Sprint 6 결재 처리 WI) |
 
 ### 인프라/환경 상태 (batch D)
 
-- staging `nwcttwuvdnelfbpjeqzr`: **39테이블 RLS 활성 + 94정책** (마이그레이션 27) + composite FK(28) + audit 트리거 21(29) + Realtime publication 3(30) + 하드닝(31). 마이그레이션 원격 적용 완료(1~20, 25~31).
-- **RLS 헬퍼 클레임 소스**: `auth.uid()` → `public.users` 조회(SECURITY DEFINER, search_path 고정). JWT 커스텀 클레임 미사용 — KI-084로 표준화 예정.
+- staging `nwcttwuvdnelfbpjeqzr`: **39테이블 RLS 활성 + 94정책** (마이그레이션 27) + composite FK(28/32/33) + audit 트리거 21(29) + Realtime publication 3(30) + 하드닝/인가정정(31/32/33). 마이그레이션 원격 적용 완료(1~20, 25~33).
+- **RLS 헬퍼 클레임 소스**: `auth.uid()` → `public.users` 조회(SECURITY DEFINER, search_path 고정). JWT 커스텀 클레임 미사용 — KI-084로 표준화 예정. rls.md §1/§4에 구현 정합 노트 반영.
+- **승인/반려 전이**: leaves/attendance_modifications의 status=approved/rejected는 PostgREST 직접 UPDATE 차단 → service_role 결재 RPC 매개(정식 RPC는 Sprint 6 KI-087). approval_steps INSERT는 관리자/service_role 전용.
 - 테스트 유저 시드(`test-employee@flowhr.test`) + audit_logs 기존 row 유지. RLS 매트릭스 테스트는 BEGIN..ROLLBACK으로 비영속.
 
 ### 다음 세션 첫 작업 후보
