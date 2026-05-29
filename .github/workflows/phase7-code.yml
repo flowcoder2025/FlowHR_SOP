@@ -1,31 +1,53 @@
 name: Phase 7 Code Checks
 
-# Phase 7 코드 게이트 — apps/** + packages/** 변경 시 lint/typecheck/unit-test/build 검증.
+# Phase 7 코드 게이트 — lint/typecheck/unit-test/build (apps/** + packages/**).
 # mvp-plan.md §6 + sprint-001.md Day 13~14 (WI-021) SSOT.
-# 와이어프레임 정적 체크(pr-checks.yml 9 job)와 path-scope 분리 — 코드 PR만 본 워크플로 트리거.
-# supabase/** (SQL 마이그레이션)은 본 워크플로 비대상 — TS lint/typecheck/build 와 무관하다.
+#
+# required status check 등록 대응(WI-021-2): on.paths 필터 대신 changes job + 각 job if 로
+# 코드 변경을 게이트한다. paths 필터를 쓰면 비코드 PR(docs/wireframe)에서 workflow 가 아예
+# 트리거되지 않아 required check 가 영구 pending → 머지 차단된다. changes job 으로 모든 PR 을
+# 트리거하되 비코드 PR 은 4 job 을 skip(=required 통과로 간주)시켜 차단을 피한다.
+#
+# supabase/** (SQL 마이그레이션)은 비대상 — TS lint/typecheck/build 와 무관.
 # supabase 변경의 머지 게이트는 pr-checks.yml 의 dual-verification-gate 가 커버.
 
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'apps/**'
-      - 'packages/**'
-      - 'turbo.json'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - 'tsconfig.base.json'
-      - '.github/workflows/phase7-code.yml'
 
 concurrency:
   group: phase7-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Code Changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 코드(apps/packages/빌드설정) 변경 감지
+        id: filter
+        shell: bash
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --name-only "$BASE" "$HEAD" | grep -qE '^(apps/|packages/|turbo\.json|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig\.base\.json|\.github/workflows/phase7-code\.yml)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "코드 변경 감지 — phase7 4 job 실행"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+            echo "코드 변경 없음 — phase7 4 job skip (required는 skipped=통과로 간주)"
+          fi
+
   lint:
     name: Lint
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +70,8 @@ jobs:
 
   typecheck:
     name: Type Check
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,6 +97,8 @@ jobs:
 
   unit-test:
     name: Unit Test
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,6 +121,8 @@ jobs:
 
   build:
     name: Build
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -132,11 +160,13 @@ jobs:
           fi
           echo "OpenAPI 명세 최신 — zod 스키마와 일치"
 
-  # ── KI-082: 로그인 E2E CI 자동화 (secrets 조건부) ──────────────────────────
+  # ── KI-082: 로그인 E2E CI 자동화 (코드 변경 + secrets 조건부) ──────────────
   # repo secrets 전체 주입 시 실 staging 백엔드로 로그인 E2E 회귀(9 케이스).
-  # 미설정 시 graceful skip — 4 필수 job 머지를 막지 않는 advisory 체크.
+  # 미설정 시 graceful skip — advisory(필수체크 아님).
   e2e-gate:
     name: E2E Gate
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
@@ -163,8 +193,8 @@ jobs:
 
   e2e:
     name: Login E2E (staging)
-    needs: e2e-gate
-    if: needs.e2e-gate.outputs.enabled == 'true'
+    needs: [changes, e2e-gate]
+    if: needs.changes.outputs.code == 'true' && needs.e2e-gate.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
