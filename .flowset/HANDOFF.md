@@ -1,10 +1,51 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-29 batch D (Phase 7 Sprint 1 — WI-019 Day8~10 완료: RLS 39테이블 + KI-077 composite FK + audit 트리거 21 + Realtime + useRealtime wrapper). 듀얼검증 후 머지.
-> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch D)** 정독 → **WI-020 잔여(ST-002 비번찾기 + ST-003 활성화 + ST-004 2FA[=custom TOTP 결정됨] + ST-078 약관 + ST-072 오류)** 또는 **WI-021(zod-to-openapi + phase7-code.yml CI 4 job)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-05-29 batch C (WI-020 ST-001 로그인, §-0b) / 2026-05-28 batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2) / 2026-05-19 Phase 6 종료
+> **갱신**: 2026-05-29 batch E (Phase 7 Sprint 1 — WI-021 CI 토대 + WI-021-2 required 게이트 + WI-021-1 39 entity zod schema 완료). 듀얼검증 PASS_BOTH 후 머지.
+> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch E)** 정독 → **WI-020 약관/오류(ST-078 PIPA + ST-072 오류, codex 2순위)** 또는 **WI-020 인증보조(ST-002~004)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-05-29 batch D (WI-019 Day8~10 RLS/audit/Realtime, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0. 2026-05-29 batch D 세션 진척 — **신규 세션 여기부터**
+## -0. 2026-05-29 batch E 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-021 사이클 (CI 토대 + OpenAPI 파이프라인 + 39 entity zod schema)
+
+codex 우선순위 협의(WI-021 → WI-020 약관/오류 → WI-020 인증보조)로 진행. WI-021 계열 3건 머지(PR #34/#35/#36):
+
+| WI | PR | 내용 | 듀얼검증 |
+|----|----|----|------|
+| WI-021-feat | #34 | `phase7-code.yml` CI 4 job(lint/typecheck/unit-test/build, `apps`·`packages` path-scope) + zod-to-openapi 파이프라인(`packages/schemas/scripts/build-openapi.ts`→`dist/openapi.yaml`) + OpenAPI diff 게이트 + 로그인 E2E job(KI-082, secrets 조건부) + PR template 코드 게이트 + turbo typecheck→build 선행 | PASS_BOTH (evaluator 8.40 / codex 5건 정정) |
+| WI-021-2-ci | #35 | required 게이트 함정 해소 — `phase7-code.yml` **changes-gate 패턴**(on.paths 제거 → changes job + 각 job `if: code` → 비코드 PR skip=required 통과) + phase7 4 job **branch protection 필수체크 등록**(contexts 6→10) | (CI 보정, dual-gate skip) |
+| WI-021-1-feat | #36 | ERD **39 entity zod schema** (`packages/schemas/src/entities/` 8파일, DB **snake_case 1:1**, database.ts Row 정합) + `openapi.yaml` **45 components** + `entities.test.ts` 23 + api/schemas.md SSOT 정합 노트 | PASS_BOTH (evaluator 8.75 / codex 4라운드 PASS) |
+
+### 핵심 결정/정합 (batch E)
+
+- **casing SSOT**: entity zod = **DB snake_case 1:1**(database.ts Row). API DTO camelCase는 Phase 4 초안 → `api/schemas.md`에 정합 노트. **실 SSOT = `packages/schemas/src/entities/*` + `dist/openapi.yaml`** (codex 협의, supabase 직결 + 변환 레이어 미사용)
+- **DB text 컬럼 주의**: `employees.role`/`users.role`/`user_consents.document_type`/`audit_logs.request_id` 는 DB text → `z.string()`(enum/uuid 강제 금지). `user_consents.ip_address` 는 nullable inet → `z.string().nullable()`. **`operator_users.role` 만 실 DB enum**(operatorRoleEnum). 6역할 `appRoleEnum`은 입력/권한 검증용(entity 미적용)
+- **날짜**: staging `information_schema` 실측 — `_date`/`joined_at`/`left_at`/`birth_date`/`contract_*`/`issued_at`(invoices)/`paid_at`/`period_*` 등은 `z.string().date()`, `_at`(timestamptz)은 `isoTimestampSchema`, time/inet은 `z.string()`. **`certificate_requests.issued_at` 는 timestamptz**(invoices.issued_at=date와 구분)
+- **phase7-code.yml**: changes-gate(모든 PR 트리거). 필수체크 10개 = commit-msg/encoding/html-syntax/ds-ssot/version/dual-gate + Lint/Type Check/Unit Test/Build
+- **OpenAPI 파이프라인**: zod→`dist/openapi.yaml`(gitignore 예외 추적, build job `git ls-files`+diff 게이트). endpoint req/res schema는 Sprint 2~6 점진
+
+### 신규 KI (batch E)
+
+| KI | 등급 | 내용 |
+|----|----|----|
+| KI-082 | P3 | 로그인 E2E CI 자동화 — 인프라 구축 완료, **repo secrets 5종 주입 시 자동 활성** |
+| KI-088 | P3 | CI typecheck/build 중복(turbo cache key sha 고정) |
+| KI-089 | P3 | e2e job staging 시드 setup/teardown 부재 |
+| KI-090 | P3 | entity 테스트 39중 11 직접 + work_policies time/user_consents inet refine 부재 |
+
+### 미해결/주의 (다음 세션 인지)
+
+- **KI-082 secrets (사용자 외부 설정)**: GitHub repo secrets에 `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY`/`E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` 주입 시 로그인 E2E 자동 회귀 활성(시드 `test-employee@flowhr.test`)
+- **Vercel preview fail**: 기존(WI-019부터) — `Output Directory "public"` 설정 누락(monorepo). **비필수체크**(branch protection 10개에 미포함). Vercel project root/output 설정은 별도 인프라 작업
+- **Node 20 deprecation**: CI actions(checkout@v4/setup-node@v4/cache@v4/pnpm-action-setup@v4) **2026-06-02부터 Node 24 강제** — actions 버전 점검 chore 필요
+- **prd-state.json**: 코드 WI PR에 상태 갱신 포함(main 직접 push 금지)
+
+### 다음 세션 첫 작업 후보 (codex 재협의 순서)
+
+1. **WI-020 약관/오류 (2순위)**: ST-078 약관·동의(CM-21 PIPA + ko/en 페어 + 강제동의 가드 + 운영사 게시, 8SP P0) + ST-072 오류·점검(CM-06 404/500/503 + Sentry). RLS/audit/legal_documents 의존 충족. **ST-078이 ST-003 활성화 약관 흐름 선행**(codex 근거). legal_documents/user_consents zod schema 이미 WI-021-1에 존재
+2. **WI-020 인증보조 (3순위)**: ST-002 비번찾기(CM-02 토큰60분+미등록 동일응답) + ST-003 활성화(CM-03 7일토큰+1회+약관+2FA) + ST-004 2FA(CM-04 **custom TOTP=speakeasy+challengeToken+복구코드8**, speakeasy 미설치→설치 필요). users 테이블에 totp_enabled/totp_secret_encrypted/recovery_codes_hash 이미 존재
+
+## -0d. 2026-05-29 batch D 세션 진척
 
 ### 완료 — WI-019 Day8~10 (RLS + audit + Realtime + composite FK)
 
