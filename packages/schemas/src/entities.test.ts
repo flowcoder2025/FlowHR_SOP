@@ -159,6 +159,8 @@ describe('entities: approval / compliance / settings', () => {
     expect(userConsentSchema.safeParse(c).success).toBe(true);
     expect(userConsentSchema.safeParse({ ...c, document_type: 'whatever' }).success).toBe(true);
     expect(userConsentSchema.safeParse({ ...c, source: 'bogus' }).success).toBe(false);
+    expect(userConsentSchema.safeParse({ ...c, ip_address: null }).success).toBe(true); // DB nullable inet
+    expect(userConsentSchema.safeParse({ ...c, tenant_id: null }).success).toBe(true); // operator 동의는 tenant 없음
   });
   it('api_key.expires_at 는 DB date', () => {
     const k = {

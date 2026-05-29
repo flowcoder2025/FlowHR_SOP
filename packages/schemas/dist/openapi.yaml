@@ -2485,7 +2485,9 @@ components:
             - forced
             - footer
         ip_address:
-          type: string
+          type:
+            - string
+            - "null"
         user_agent:
           type:
             - string

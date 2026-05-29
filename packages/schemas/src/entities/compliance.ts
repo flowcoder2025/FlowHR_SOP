@@ -5,7 +5,7 @@ import { legalDocumentTypeEnum, consentSourceEnum } from './enums';
 /**
  * 컴플라이언스 도메인 entity (database.ts Row 1:1, snake_case, KI-030).
  * legal_documents 는 운영사 게시(tenant 없음) + language(ko|en) ko/en 페어(ST-078, ERD SSOT).
- * user_consents.ip_address 는 DB inet → z.string().
+ * user_consents.ip_address 는 DB nullable inet → z.string().nullable().
  */
 
 // legal_documents (no tenant_id — 운영사 게시, language ko/en)
@@ -34,7 +34,7 @@ export const userConsentSchema = z.object({
   document_type: z.string(),
   version: z.string(),
   source: consentSourceEnum,
-  ip_address: z.string(),
+  ip_address: z.string().nullable(),
   user_agent: z.string().nullable(),
   consented_at: isoTimestampSchema,
 });
