@@ -1,0 +1,15 @@
+PASS_BOTH
+
+WI-021-feat 듀얼검증 통합 판정 (2026-05-29)
+scope: zod-to-openapi 파이프라인 + CI(phase7-code.yml 4 job) + 로그인 E2E 자동화
+
+- evaluator: 1차 FAIL 7.75 → 재평가 PASS 8.40 (4축 ≥8.0)
+- codex: 1차 CONDITIONAL(P2×2 + P3×3) → 정정 후 5건 전부 RESOLVED 확인 + 잔여 P3 1건(PR template L43 불일치) 즉시 정정
+- 통합 verdict: PASS_BOTH (P0/P1 0건)
+
+정정 경과:
+- evaluator 1차 FAIL 사유(39 entity zod schema 0/39)는 사용자 결정으로 WI-021-1 분리 — mvp-plan §2-5 / sprint-001 WI매핑 / fix_plan 3 SSOT에 "둘 다 Sprint 1·연기 아님" 일관 명시
+- codex P2-1(OpenAPI 게이트 ls-files 추적확인) / P2-2(trace if:failure+retention5) / P3-3(e2e-gate secret 5종 묶음) / P3-1(supabase 비대상 주석) / P3-2(KI-088 등록) 전부 반영
+- 잔여 P3(PR template supabase phase7 적용범위 불일치) → PR template L43 조건 명시로 정정
+
+신규 KI (P3, scheduled): KI-088(CI typecheck/build 중복) + KI-089(e2e staging 시드 setup/teardown 부재)
