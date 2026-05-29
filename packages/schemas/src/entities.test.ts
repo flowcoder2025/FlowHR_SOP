@@ -9,6 +9,9 @@ import {
   approvalSchema,
   legalDocumentSchema,
   userConsentSchema,
+  consentInputSchema,
+  legalDocumentPublishSchema,
+  requiredConsentSchema,
   apiKeySchema,
   auditLogSchema,
   tenantStatusEnum,
@@ -178,5 +181,39 @@ describe('entities: approval / compliance / settings', () => {
       ip: null, user_agent: null, request_id: 'req-non-uuid-123', created_at: TS,
     };
     expect(auditLogSchema.safeParse(log).success).toBe(true);
+  });
+});
+
+describe('compliance: 입력/응답 DTO (ST-078, camelCase API 계약)', () => {
+  it('consentInput — documentId(uuid) + version(비어있지 않음)', () => {
+    expect(consentInputSchema.safeParse({ documentId: UUID, version: '1.0.0' }).success).toBe(true);
+    expect(consentInputSchema.safeParse({ documentId: 'nope', version: '1.0.0' }).success).toBe(false);
+    expect(consentInputSchema.safeParse({ documentId: UUID, version: '' }).success).toBe(false);
+  });
+
+  it('legalDocumentPublish — ko/en 페어 모두 필수 (한쪽 누락 거부)', () => {
+    const ko = { title: '이용약관', contentMd: '## 제1조', summaryMd: '요약' };
+    const en = { title: 'Terms', contentMd: '## Article 1', summaryMd: null };
+    const valid = { type: 'terms', version: '2.0.0', effectiveDate: DATE, ko, en };
+    expect(legalDocumentPublishSchema.safeParse(valid).success).toBe(true);
+    // en 누락 → ko/en 페어 게시 의무 위반
+    expect(legalDocumentPublishSchema.safeParse({ ...valid, en: undefined }).success).toBe(false);
+    // contentMd 빈 문자열 거부
+    expect(legalDocumentPublishSchema.safeParse({ ...valid, ko: { ...ko, contentMd: '' } }).success).toBe(false);
+    // 잘못된 type enum 거부
+    expect(legalDocumentPublishSchema.safeParse({ ...valid, type: 'eula' }).success).toBe(false);
+    // effectiveDate 는 date — datetime 거부 / 생략 허용
+    expect(legalDocumentPublishSchema.safeParse({ ...valid, effectiveDate: TS }).success).toBe(false);
+    expect(legalDocumentPublishSchema.safeParse({ type: 'privacy', version: '1.0.0', ko, en }).success).toBe(true);
+  });
+
+  it('requiredConsent — type enum + effectiveDate date(nullable)', () => {
+    const r = {
+      type: 'terms', documentId: UUID, version: '1.0.0', language: 'ko',
+      title: '이용약관', effectiveDate: DATE, summaryMd: null,
+    };
+    expect(requiredConsentSchema.safeParse(r).success).toBe(true);
+    expect(requiredConsentSchema.safeParse({ ...r, effectiveDate: null }).success).toBe(true);
+    expect(requiredConsentSchema.safeParse({ ...r, type: 'bogus' }).success).toBe(false);
   });
 });
