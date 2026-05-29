@@ -41,7 +41,9 @@
         "invalid_input": "Please check your input.",
         "invalid_credentials": "Incorrect email or password.",
         "remaining": "{count} attempt(s) left",
-        "locked": "Locked after 5 failed attempts. Try again in {minutes} minute(s)."
+        "locked": "Locked after 5 failed attempts. Try again in {minutes} minute(s).",
+        "locked_generic": "Your account is temporarily locked after repeated failures. Please try again shortly.",
+        "two_fa_expired": "Your verification timed out. Please sign in again."
       }
     },
     "password": {
@@ -97,6 +99,72 @@
         "mismatch": "The two passwords do not match.",
         "session_invalid": "Your session has expired. Please request a new reset link.",
         "update_failed": "Failed to reset your password. Please try again."
+      }
+    },
+    "two_fa": {
+      "title": "Two-factor authentication",
+      "subtitle": "Enter the 6-digit code from your authenticator app.",
+      "code_label": "6-digit code",
+      "code_refresh": "The code refreshes every 30 seconds.",
+      "recovery_label": "Recovery code",
+      "recovery_link": "Use a recovery code (no access to your app?)",
+      "recovery_one_time": "Recovery codes are single-use and disappear once used.",
+      "use_totp_link": "← Enter authenticator code instead",
+      "submit": "Verify",
+      "submitting": "Verifying…",
+      "error": {
+        "code_format": "Enter the 6-digit numeric code.",
+        "invalid": "The code does not match.",
+        "remaining": "{count} attempt(s) left",
+        "recovery_required": "Please enter a recovery code."
+      }
+    }
+  },
+  "me": {
+    "security": {
+      "title": "Security settings",
+      "subtitle": "Manage two-factor authentication (2FA) and account security.",
+      "two_fa_heading": "Two-factor authentication (2FA)",
+      "status_on": "On",
+      "status_off": "Off",
+      "enabled_desc": "Sign-in additionally requires a 6-digit code from your authenticator app.",
+      "disabled_desc": "Set up 2FA with an authenticator app (Google Authenticator, etc.) to better protect your account.",
+      "forced_banner": "Operator accounts must enable two-factor authentication. Please complete setup below.",
+      "operator_required_note": "Operator accounts cannot disable two-factor authentication per security policy.",
+      "enroll": {
+        "start": "Set up two-factor authentication",
+        "starting": "Preparing…",
+        "scan_title": "Scan the QR code with your authenticator app",
+        "scan_desc": "Scan with Google Authenticator, Authy, etc., or enter the key below manually.",
+        "secret_label": "Manual entry key",
+        "code_label": "6-digit code from your app",
+        "confirm": "Verify and enable",
+        "confirming": "Enabling…",
+        "codes_title": "8 recovery codes",
+        "codes_desc": "Single-use codes to sign in when you can't use your app. Store them somewhere safe.",
+        "codes_warning": "These codes are shown only now. You won't be able to see them again after leaving this page.",
+        "done": "Done"
+      },
+      "disable": {
+        "open": "Disable two-factor authentication",
+        "title": "Disable two-factor authentication",
+        "password_label": "Current password",
+        "code_label": "Authenticator code or recovery code",
+        "submit": "Disable",
+        "submitting": "Disabling…",
+        "done": "Two-factor authentication has been disabled."
+      },
+      "error": {
+        "session": "Your session has expired. Please sign in again.",
+        "already_enabled": "Two-factor authentication is already enabled.",
+        "generic": "Something went wrong. Please try again.",
+        "code_format": "Enter the 6-digit numeric code.",
+        "setup_expired": "Setup timed out. Please start over.",
+        "code_invalid": "The code does not match. Please check and try again.",
+        "operator_blocked": "Operator accounts cannot disable two-factor authentication.",
+        "disable_input": "Please enter both your password and a verification code.",
+        "not_enabled": "Two-factor authentication is not enabled.",
+        "password_wrong": "Incorrect password."
       }
     }
   },

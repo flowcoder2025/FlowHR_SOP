@@ -9,7 +9,12 @@ export interface AuthAuditInput {
     | 'auth.login_failed'
     | 'auth.locked'
     | 'auth.password_reset_requested'
-    | 'auth.password_reset';
+    | 'auth.password_reset'
+    | 'auth.2fa_enabled'
+    | 'auth.2fa_disabled'
+    | 'auth.2fa_verified'
+    | 'auth.2fa_failed'
+    | 'auth.recovery_code_used';
   result: AuditResult;
   actorId?: string | null;
   actorRole?: string | null;

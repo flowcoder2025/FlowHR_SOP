@@ -13,10 +13,10 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ return_url?: string; reset?: string }>;
+  searchParams: Promise<{ return_url?: string; reset?: string; error?: string }>;
 }) {
   const { locale } = await params;
-  const { return_url: returnUrl, reset } = await searchParams;
+  const { return_url: returnUrl, reset, error } = await searchParams;
   setRequestLocale(locale);
 
   // 이미 인증된 사용자는 역할별 대시보드로 이동 (09-routing.md §3).
@@ -34,6 +34,8 @@ export default async function LoginPage({
   }
 
   const t = await getTranslations('auth.login');
+  const errorKey =
+    error === 'locked' ? 'error.locked_generic' : error === '2fa_expired' ? 'error.two_fa_expired' : null;
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -41,6 +43,7 @@ export default async function LoginPage({
         <p className="mt-1 text-[13px] text-text-muted">{t('subtitle')}</p>
       </header>
       {reset === 'success' && <Alert variant="success">{t('reset_success')}</Alert>}
+      {errorKey && <Alert variant="warning">{t(errorKey)}</Alert>}
       <LoginForm returnUrl={returnUrl} />
     </div>
   );

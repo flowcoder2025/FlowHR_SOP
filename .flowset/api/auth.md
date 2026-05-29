@@ -319,6 +319,21 @@ Next.js App Router + @supabase/ssr 구현은 본 명세의 토큰-바디 API(`{ 
 - **이메일 템플릿 의존**: 위 흐름은 Recovery 메일이 `/auth/confirm` 으로 token_hash 를 전달하도록 **이메일 템플릿 커스터마이즈**가 전제. 로컬은 `supabase/config.toml [auth.email.template.recovery]` + `supabase/templates/recovery.html`. **원격(staging/prod)은 대시보드 수동 설정 필요(KI-098)** + Redirect URL allow-list 에 배포 도메인 등록.
 - **검증 경계**: 실메일 발송 + cross-device 클릭 자동 E2E 는 Free SMTP + 대시보드 의존으로 미검증(KI-097). 스키마/정책/동일응답/세션-없는-만료안내는 unit + E2E 로 검증.
 
+## 구현 노트 — 2FA TOTP (CM-04 / WI-020-5, 2026-05-29)
+
+Next.js App Router + @supabase/ssr 구현은 본 명세의 `requires2fa`/`challengeToken` API와 다음과 같이 정합한다(codex 설계 7항목 단일안). 커스텀 TOTP(speakeasy) — Supabase 네이티브 MFA 미사용.
+
+- **전용 env 키 2개**: `AUTH_TOTP_ENC_KEY`(TOTP 비밀 AES-256-GCM 암호화-at-rest) / `AUTH_CHALLENGE_SECRET`(challenge·setup 쿠키 봉인). 각 32바이트 base64. service_role 겸용 금지(유출/회전 파급 차단). 부재 시 fail-closed. 로컬 `.env.local` + 원격 Vercel env 수동 설정(KI-099).
+- **challenge 메커니즘(핵심)**: login 액션이 **격리 클라이언트**(no-op 쿠키 어댑터 `createIsolatedSupabaseClient`)로 비밀번호를 검증해 세션 토큰만 얻고 쿠키는 발급하지 않는다. `users.totp_enabled` 면 `{userId,email,accessToken,refreshToken,returnTo,jti,exp:+300s}` 를 `AUTH_CHALLENGE_SECRET` 로 AES-GCM 봉인 → `fh-2fa-challenge` HttpOnly/Secure/Lax 쿠키 → `/{locale}/two-factor` 리다이렉트(세션 미수립). 2FA 미사용이면 쿠키 클라이언트 `setSession()` 으로 정상 세션 수립.
+- **검증(`/two-factor` 서버 액션 = `POST /auth/2fa/verify`)**: challenge 봉인 해제(purpose/exp 검증) → OTP 잠금 확인 → TOTP(speakeasy window±1) 또는 복구 코드 검증 → 통과 시 `setSession(봉인 토큰)` 으로 실제 세션 수립 + challenge 쿠키 삭제(1회용) + 잠금 초기화 → `getRequiredConsents()` 약관 가드 재적용 → `returnTo` 이동. 실패는 `recordLoginFailure` 누적(5회 잠금 → `/login?error=locked`).
+- **OTP 잠금**: 로그인과 동일한 `(email, ip)` `login_attempts` 카운터 재사용. 비밀번호 성공 시 초기화 → OTP 실패부터 5회 재누적.
+- **enable/disable(`/{locale}/me/security` = OP-12/EM-09 보안 탭 최소 구현)**: enable 은 `speakeasy` 비밀 생성 → `qrcode` QR → pending 비밀을 `fh-2fa-setup` 단기 쿠키에 봉인(DB 컬럼 추가 없이) → 6자리 검증 → `totp_enabled=true` + `totp_secret_encrypted`(암호화) + 복구 코드 8개 1회 표시(scrypt 해시 저장). disable 은 현재 비밀번호 재확인 + TOTP/복구 코드 요구. **operator 계정 disable 차단**.
+- **복구 코드**: `XXXX-XXXX`(혼동 문자 제외) 8개. `scrypt`(코드별 랜덤 salt) 해시 저장 `users.recovery_codes_hash text[]`. 매칭 1개 → 제거(1회용), `timingSafeEqual`.
+- **운영사 강제 2FA(AC-3)**: `operator_*` + `totp_enabled=false` + `system_settings.require_operator_2fa`(기본 true) → 로그인 직후 + operator 레이아웃 가드 양쪽에서 `/me/security?forced=2fa&return_url=/{locale}/operator` 강제. 약관 미동의 시 legal guard 우선.
+- **점검 면제**: `/two-factor`·`/me/security` 를 `isMaintenanceExempt` exact Set 에 추가(점검 중 인증/강제 2FA 동선 보존).
+- **감사 로그**: `auth.2fa_verified`/`auth.2fa_failed`/`auth.2fa_enabled`/`auth.2fa_disabled`/`auth.recovery_code_used` (best-effort).
+- **검증 경계**: enable→재로그인 challenge→TOTP/복구코드 통과→disable 전체 흐름을 staging E2E 로 실증(speakeasy 로 코드 산출). 단, E2E_TEST_EMAIL + service-role 게이트 + 직렬 실행 + test-employee teardown 필요(KI-100).
+
 ## 변경 이력
 
 | 일자 | 변경 | 사유 |
@@ -327,3 +342,4 @@ Next.js App Router + @supabase/ssr 구현은 본 명세의 토큰-바디 API(`{ 
 | 2026-05-15 | 라우팅 진입점 매핑 + 세션 관리 + 운영사 강제 종료/2FA + 약관 가드 | KI-027/029 batch-003 |
 | 2026-05-16 | i18n: login response.user.locale + locale 결정 우선순위 + PATCH locale | 사용자 결정 batch-005 |
 | 2026-05-29 | 비밀번호 재설정 SSR 구현 노트 (token_hash+verifyOtp / /auth/confirm / signOut global) | WI-020-4 ST-002 |
+| 2026-05-29 | 2FA TOTP SSR 구현 노트 (격리클라이언트 challenge 봉인 / /two-factor·/me/security / speakeasy+scrypt / operator 강제) | WI-020-5 ST-004 |

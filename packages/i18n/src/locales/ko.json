@@ -41,7 +41,9 @@
         "invalid_input": "입력값을 확인해 주세요.",
         "invalid_credentials": "이메일 또는 비밀번호가 올바르지 않습니다.",
         "remaining": "남은 시도 {count}회",
-        "locked": "5회 실패로 계정이 잠겼습니다. {minutes}분 후 다시 시도하세요."
+        "locked": "5회 실패로 계정이 잠겼습니다. {minutes}분 후 다시 시도하세요.",
+        "locked_generic": "여러 번 실패하여 계정이 일시적으로 잠겼습니다. 잠시 후 다시 시도하세요.",
+        "two_fa_expired": "인증 시간이 만료되었습니다. 다시 로그인해 주세요."
       }
     },
     "password": {
@@ -97,6 +99,72 @@
         "mismatch": "두 비밀번호가 일치하지 않습니다.",
         "session_invalid": "세션이 만료되었습니다. 재설정 링크를 다시 요청해 주세요.",
         "update_failed": "비밀번호 재설정에 실패했습니다. 다시 시도해 주세요."
+      }
+    },
+    "two_fa": {
+      "title": "2단계 인증",
+      "subtitle": "인증 앱에 표시된 6자리 코드를 입력해 주세요.",
+      "code_label": "6자리 코드",
+      "code_refresh": "코드는 30초마다 갱신됩니다.",
+      "recovery_label": "복구 코드",
+      "recovery_link": "복구 코드로 로그인 (앱에 접근할 수 없나요?)",
+      "recovery_one_time": "복구 코드는 1회용입니다. 사용하면 목록에서 사라집니다.",
+      "use_totp_link": "← 인증 앱 코드로 입력",
+      "submit": "인증",
+      "submitting": "확인 중…",
+      "error": {
+        "code_format": "6자리 숫자 코드를 입력해 주세요.",
+        "invalid": "코드가 일치하지 않습니다.",
+        "remaining": "남은 시도 {count}회",
+        "recovery_required": "복구 코드를 입력해 주세요."
+      }
+    }
+  },
+  "me": {
+    "security": {
+      "title": "보안 설정",
+      "subtitle": "2단계 인증(2FA)과 계정 보안을 관리합니다.",
+      "two_fa_heading": "2단계 인증 (2FA)",
+      "status_on": "사용 중",
+      "status_off": "미설정",
+      "enabled_desc": "로그인 시 인증 앱의 6자리 코드를 추가로 요구합니다.",
+      "disabled_desc": "인증 앱(Google Authenticator 등)으로 2단계 인증을 설정하면 계정이 더 안전해집니다.",
+      "forced_banner": "운영사 계정은 2단계 인증 설정이 필수입니다. 아래에서 설정을 완료해 주세요.",
+      "operator_required_note": "운영사 계정은 보안 정책상 2단계 인증을 해제할 수 없습니다.",
+      "enroll": {
+        "start": "2단계 인증 설정 시작",
+        "starting": "준비 중…",
+        "scan_title": "인증 앱으로 QR 코드를 스캔하세요",
+        "scan_desc": "Google Authenticator, Authy 등에서 QR을 스캔하거나 아래 키를 직접 입력하세요.",
+        "secret_label": "직접 입력용 키",
+        "code_label": "인증 앱 6자리 코드",
+        "confirm": "확인하고 활성화",
+        "confirming": "활성화 중…",
+        "codes_title": "복구 코드 8개",
+        "codes_desc": "인증 앱을 사용할 수 없을 때 로그인하는 1회용 코드입니다. 안전한 곳에 보관하세요.",
+        "codes_warning": "이 코드는 지금만 표시됩니다. 화면을 벗어나면 다시 볼 수 없습니다.",
+        "done": "완료"
+      },
+      "disable": {
+        "open": "2단계 인증 해제",
+        "title": "2단계 인증 해제",
+        "password_label": "현재 비밀번호",
+        "code_label": "인증 앱 코드 또는 복구 코드",
+        "submit": "해제하기",
+        "submitting": "해제 중…",
+        "done": "2단계 인증이 해제되었습니다."
+      },
+      "error": {
+        "session": "세션이 만료되었습니다. 다시 로그인해 주세요.",
+        "already_enabled": "이미 2단계 인증이 설정되어 있습니다.",
+        "generic": "처리 중 오류가 발생했습니다. 다시 시도해 주세요.",
+        "code_format": "6자리 숫자 코드를 입력해 주세요.",
+        "setup_expired": "설정 시간이 만료되었습니다. 처음부터 다시 시도해 주세요.",
+        "code_invalid": "코드가 일치하지 않습니다. 다시 확인해 주세요.",
+        "operator_blocked": "운영사 계정은 2단계 인증을 해제할 수 없습니다.",
+        "disable_input": "비밀번호와 인증 코드를 모두 입력해 주세요.",
+        "not_enabled": "2단계 인증이 설정되어 있지 않습니다.",
+        "password_wrong": "비밀번호가 올바르지 않습니다."
       }
     }
   },

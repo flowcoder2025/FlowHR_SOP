@@ -74,6 +74,10 @@ const MAINTENANCE_ALLOW = new Set([
   '/maintenance',
   '/forgot-password',
   '/reset-password',
+  // 2FA(ST-004) — 점검 중에도 인증 동선 보존. /two-factor 는 1단계 통과 후 challenge 화면,
+  // /me/security 는 운영사 강제 2FA 설정 진입점(점검 중 operator_super 가 2FA 설정해 우회 가능해야 함).
+  '/two-factor',
+  '/me/security',
 ]);
 
 export function isMaintenanceExempt(restPath: string): boolean {
