@@ -1,10 +1,54 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-29 batch E (Phase 7 Sprint 1 — WI-021 CI 토대 + WI-021-2 required 게이트 + WI-021-1 39 entity zod schema 완료). 듀얼검증 PASS_BOTH 후 머지.
-> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch E)** 정독 → **WI-020 약관/오류(ST-078 PIPA + ST-072 오류, codex 2순위)** 또는 **WI-020 인증보조(ST-002~004)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-05-29 batch D (WI-019 Day8~10 RLS/audit/Realtime, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-05-29 batch F (Phase 7 Sprint 1 — WI-020-2 ST-078 약관/동의 PIPA 완료). 듀얼검증 PASS_BOTH 후 머지(PR #38, `84a1853`).
+> **신규 세션 첫 작업**: 본 문서 **§-0 (2026-05-29 batch F)** 정독 → **WI-020-3 ST-072 오류/점검(CM-06 404/500/503 + 점검모드 maintenance_windows + Sentry 추상화훅, codex 협의 A안)** 또는 **WI-020 인증보조(ST-002~004)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-05-29 batch E (WI-021 사이클 CI/OpenAPI/39 entity zod, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0. 2026-05-29 batch E 세션 진척 — **신규 세션 여기부터**
+## -0. 2026-05-29 batch F 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-020-2-feat ST-078 약관/동의 (CM-21, PIPA 컴플라이언스)
+
+codex 협의(Sentry 추상화훅 A / 분할 B = ST-078 먼저 / 게시 API+seed A) 채택. ST-072 오류·점검은 **WI-020-3 으로 분리**. PR #38 머지(`84a1853`). 듀얼검증 **PASS_BOTH**.
+
+| 영역 | 산출물 |
+|------|--------|
+| DB (mig 34) | `legal_documents_ensure_single_active` + `user_consents_block_modify` 트리거(rls.md §6-1 SSOT, search_path 고정 + RPC revoke) + 게시 RLS `is_operator()`→**`is_operator_super()`** 교체(R1, AC-4). staging 적용 + 트리거 2종 실증(단일active 전환 / 불변 차단) |
+| seed | `supabase/seed.sql` — terms/privacy × ko/en **active 1쌍**(placeholder 본문, 운영사 게시로 교체) + staging 주입 |
+| schemas | `consentInput`/`legalDocumentPublish`(**ko·en 페어 스키마 강제**)/`requiredConsent` zod DTO(camelCase API 계약) + openapi **48 components** + 단위테스트(31) |
+| server lib | `apps/web/lib/legal/{queries,actions,guard}` — 조회(요청언어 우선 ko fallback) / 필수동의 판정 / `recordConsent`(ip·ua·source 서버결정 + **agree 서버검증** + 멱등 upsert) / `publishLegalDocuments`(operator_super **세션 client** — RLS 실효 + ko/en 트랜잭션) |
+| CM-21 | `(legal)/legal/[type]` 페이지(react-markdown 5상태, en 참고번역 banner) + 강제동의 폼 + **가드(로그인 직후 redirect AC-2 + 보호 레이아웃 employee/operator/tenant 3종 R4, 미들웨어 미사용)** |
+| i18n / 정합 | `legal.*` ko/en + `safeInternalPath` 공용 추출(login actions 정합) + schemas.md DTO 노트 |
+
+### 듀얼검증 (codex 실결함 검출 — 게이트 모범 사례)
+
+| 라운드 | evaluator | codex | 정정 |
+|------|------|------|------|
+| 1차 | PASS 8.45 | **BLOCKED_FOR_HOTFIX** P1×1+P2×2 | — |
+| hotfix (`f1ac057`) | (유지) | **PASS_VERIFIED** | P1 agree 서버검증 / P2 게시 service_role→세션client(RLS 실효) / P2 IP `node:net isIP` / P3 dead i18n key·`drop policy if exists` |
+| → **PASS_BOTH** | | | `.flowset/eval-results/WI-020-2-feat.pass` |
+
+### 신규 KI (batch F)
+
+| KI | 등급 | 내용 |
+|----|----|----|
+| KI-091 | P3 | 강제동의 "동의-클릭→복귀" + operator 게시 트랜잭션 자동 E2E 미검증 — user_consents 불변 트리거로 멱등 cleanup 불가(시드 setup/teardown 필요). 비로그인 조회 E2E 5/5 + 가드/트리거/recordConsent staging DB 실증으로 핵심 커버. KI-089 동반 |
+| KI-092 | P2 | ST-078 **AC-5 운영사 감사 화면**(동의 통계/이력, `GET /operator/legal/consents`) 미구현 — RLS plumbing 존재. OP-09 audit(EP-05) 별도 sprint deferral |
+
+### staging 상태 (batch F)
+
+- `nwcttwuvdnelfbpjeqzr`: 마이그레이션 **34 적용**(legal 트리거 2 + 게시 super 게이트). seed 약관 **4행**(terms/privacy × ko/en v1.0.0 active). **test-employee 동의 시드 2행**(terms-ko/privacy-ko, source=activate — 기존 login E2E 회귀 보존용).
+- ⚠️ test-employee 미동의면 로그인 후 `/legal/terms?must_accept` redirect(강제동의 가드 정상 동작). E2E 회귀 위해 동의 시드 유지.
+
+### 검증 (batch F)
+
+- typecheck/lint/test/build **19/19** + 비로그인 약관 조회 E2E **5/5**(ko/en banner/privacy/404/언어전환) + 기존 login E2E **9 회귀 무손상** + 강제동의 트리거/recordConsent/required 판정 **staging DB 실증**.
+
+### 다음 세션 첫 작업 후보
+
+1. **WI-020-3-feat ST-072 오류/점검 (codex 협의 A안)**: CM-06 404/500/503 + 점검모드(`maintenance_windows` status=active 미들웨어 — 비-operator 503 / operator_super 우회) + **Sentry 추상화훅**(`captureServerError()` + DSN env 미설정 시 no-op, @sentry/nextjs 미설치 — 실제 연동/계정은 S6). `not-found.tsx`/`error.tsx` 신규. CM-05 forbidden(KI-080) 인접.
+2. **WI-020 인증보조 (ST-002~004)**: 비번찾기/활성화(약관 동의 흐름 — ST-078 `recordConsent(source='activate')` 재사용)/2FA(custom TOTP=speakeasy+challengeToken+복구코드8, speakeasy 미설치).
+
+## -0e. 2026-05-29 batch E 세션 진척
 
 ### 완료 — WI-021 사이클 (CI 토대 + OpenAPI 파이프라인 + 39 entity zod schema)
 
