@@ -1,0 +1,25 @@
+WI-020-4-feat ST-002 비밀번호 찾기/재설정 (CM-02, token_hash+verifyOtp cross-device)
+
+통합 verdict: PASS_BOTH
+- evaluator: PASS 8.15/10 (기능 8.5 / 품질 8.5 / 테스트 7.5 / 계약 8.0 — 4축 전부 ≥7.5)
+- codex: 라운드1 CONDITIONAL(P1×2) → hotfix1(f381291) → 라운드2 CONDITIONAL(P1×1+회귀P2) → hotfix2(57a0972) → 라운드3 PASS_VERIFIED (잔존 0)
+
+정정(hotfix):
+- P1-1 복구 흐름 게이트: getUser()만 검증 → recovery 세션 + HMAC 서명 마커(userId.exp.HMAC, 키=SUPABASE_SERVICE_ROLE_KEY, 15분, fail-closed) 양쪽 요구 → 세션 보유/탈취자의 마커 위조·재인증 없는 비번 변경 차단
+- P1-2 signOut({scope:global}) error 검사 + audit를 signOut 뒤로(result=failed 반영) — 비번변경+세션잔존 상태 감사 정확화
+- P2 i18n 키 이중 네임스페이스(원시 키 노출) → 상대 키 통일 + reset-form policy_title auth.password 네임스페이스
+- P3 config.toml minimum_password_length 6→10 + password_requirements 복합 / auth.md 감사 액션 등록
+
+핵심 설계(codex 협의):
+- 비밀번호 재설정 = token_hash + verifyOtp({type:'recovery'}) (cross-device 지원, PKCE code_verifier 부재 회피)
+- /auth/confirm Route Handler(req/res 쿠키 어댑터) → recovery 세션 + HMAC 마커 발급 → /reset-password
+- reset: updateUser → signOut({scope:'global'}) 전세션 무효화 → /login?reset=success
+- forgot: 미등록 동일 sent + obscureTiming (계정 열거 방지)
+
+KI 등록: KI-097(P3 실메일·cross-device E2E 미검증) / KI-098(P3 원격 대시보드 Recovery 템플릿+Redirect URL 수동설정)
+
+검증: turbo typecheck/lint/build 17/17 + vitest(schemas 41 / web 24: recovery-marker 8 + maintenance 14 + i18n 2 / api-client 13) + Playwright E2E 24/24 (신규 password-reset 6 + 회귀 18, 실로그인 시드 검증 포함)
+
+⚠️ 머지 전제(원격 staging/prod): 대시보드 Recovery 이메일 템플릿(token_hash→/auth/confirm) + Redirect URL allow-list + SUPABASE_SERVICE_ROLE_KEY env(마커 HMAC) — KI-098
+
+날짜: 2026-05-29

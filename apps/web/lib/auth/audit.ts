@@ -4,7 +4,12 @@ import { createServiceRoleClient } from '@flowhr/api-client/server';
 type AuditResult = 'success' | 'failed' | 'denied';
 
 export interface AuthAuditInput {
-  action: 'auth.login' | 'auth.login_failed' | 'auth.locked';
+  action:
+    | 'auth.login'
+    | 'auth.login_failed'
+    | 'auth.locked'
+    | 'auth.password_reset_requested'
+    | 'auth.password_reset';
   result: AuditResult;
   actorId?: string | null;
   actorRole?: string | null;

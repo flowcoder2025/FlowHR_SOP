@@ -63,11 +63,18 @@ export async function getUserRole(
 }
 
 // 점검 중에도 접근 허용하는 정확한 경로(locale 제거 기준):
-// 로그인(operator_super 가 인증해 우회) + 점검 페이지(rewrite 대상).
+// 로그인(operator_super 가 인증해 우회) + 점검 페이지(rewrite 대상)
+// + 비밀번호 찾기/재설정(CM-02 / ST-002 — 점검 중에도 계정 복구 동선 보존).
 // exact match — prefix 면제는 미정의 중첩 경로(/login/foo 등)를 503 대신 404 로 새게 하고,
 // 향후 중첩 인증 라우트가 의도치 않게 면제되어 점검을 무력화할 수 있다(codex 듀얼검증 P1).
-// 신규 인증 경로(비번찾기/활성화 등)는 별도 top-level 경로이며 추가 시 명시적으로 등록한다.
-const MAINTENANCE_ALLOW = new Set(['/login', '/maintenance']);
+// 신규 인증 경로(활성화 등)는 별도 top-level 경로이며 추가 시 명시적으로 등록한다.
+// (/auth/confirm 콜백은 middleware matcher 에서 /auth 제외로 미들웨어 자체를 거치지 않는다.)
+const MAINTENANCE_ALLOW = new Set([
+  '/login',
+  '/maintenance',
+  '/forgot-password',
+  '/reset-password',
+]);
 
 export function isMaintenanceExempt(restPath: string): boolean {
   return MAINTENANCE_ALLOW.has(restPath);

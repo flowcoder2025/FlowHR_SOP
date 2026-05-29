@@ -36,11 +36,67 @@
       "hide_password": "비밀번호 숨기기",
       "activate_prompt": "회사 초대를 받으셨나요?",
       "activate_invite": "계정 활성화",
+      "reset_success": "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인하세요.",
       "error": {
         "invalid_input": "입력값을 확인해 주세요.",
         "invalid_credentials": "이메일 또는 비밀번호가 올바르지 않습니다.",
         "remaining": "남은 시도 {count}회",
         "locked": "5회 실패로 계정이 잠겼습니다. {minutes}분 후 다시 시도하세요."
+      }
+    },
+    "password": {
+      "policy_title": "비밀번호 정책",
+      "rule": {
+        "length": "10자 이상",
+        "lower": "영문 소문자 포함",
+        "upper": "영문 대문자 포함",
+        "digit": "숫자 포함",
+        "special": "특수문자 포함"
+      },
+      "error": {
+        "length": "비밀번호는 10자 이상이어야 합니다.",
+        "lower": "영문 소문자를 포함해야 합니다.",
+        "upper": "영문 대문자를 포함해야 합니다.",
+        "digit": "숫자를 포함해야 합니다.",
+        "special": "특수문자를 포함해야 합니다."
+      }
+    },
+    "forgot": {
+      "title": "비밀번호 찾기",
+      "subtitle": "가입한 이메일로 재설정 링크를 보내드립니다.",
+      "email": "이메일",
+      "email_placeholder": "you@example.com",
+      "submit": "재설정 링크 받기",
+      "submitting": "발송 중…",
+      "sent_title": "재설정 링크를 보냈습니다",
+      "sent_desc": "입력하신 이메일이 등록되어 있으면 비밀번호 재설정 안내 메일을 받게 됩니다. 메일함을 확인해 주세요.",
+      "sent_hint": "메일이 오지 않으면 스팸함을 확인하거나 잠시 후 다시 시도하세요.",
+      "back_to_login": "← 로그인으로 돌아가기",
+      "error": {
+        "invalid": "이메일을 확인해 주세요.",
+        "email_required": "이메일을 입력해 주세요.",
+        "email_invalid": "올바른 이메일 형식이 아닙니다."
+      }
+    },
+    "reset": {
+      "title": "새 비밀번호 설정",
+      "subtitle": "새로 사용할 비밀번호를 입력하세요.",
+      "new_password": "새 비밀번호",
+      "confirm_password": "새 비밀번호 확인",
+      "submit": "비밀번호 재설정",
+      "submitting": "재설정 중…",
+      "show_password": "비밀번호 표시",
+      "hide_password": "비밀번호 숨기기",
+      "session_warning": "재설정하면 모든 기기의 활성 세션이 로그아웃됩니다.",
+      "invalid_title": "재설정 링크가 만료되었거나 유효하지 않습니다",
+      "invalid_desc": "재설정 링크는 60분간만 유효합니다. 비밀번호 찾기를 다시 시도해 주세요.",
+      "request_new": "비밀번호 찾기 다시 하기",
+      "error": {
+        "invalid": "입력값을 확인해 주세요.",
+        "weak_password": "비밀번호가 정책을 충족하지 않습니다. 아래 조건을 모두 만족시켜 주세요.",
+        "mismatch": "두 비밀번호가 일치하지 않습니다.",
+        "session_invalid": "세션이 만료되었습니다. 재설정 링크를 다시 요청해 주세요.",
+        "update_failed": "비밀번호 재설정에 실패했습니다. 다시 시도해 주세요."
       }
     }
   },

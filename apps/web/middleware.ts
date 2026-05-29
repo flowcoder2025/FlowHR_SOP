@@ -69,6 +69,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  // api / 정적 파일 / Next 내부 경로를 제외한 모든 경로에 적용.
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
+  // api / auth 콜백(/auth/confirm 등, locale prefix 없음) / 정적 파일 / Next 내부 경로 제외.
+  // /auth 를 제외해야 next-intl 이 /auth/confirm 을 /{locale}/auth/confirm 으로 리다이렉트하지 않는다.
+  matcher: ['/((?!api|auth|_next|_vercel|.*\\..*).*)'],
 };

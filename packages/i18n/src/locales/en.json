@@ -36,11 +36,67 @@
       "hide_password": "Hide password",
       "activate_prompt": "Received an invitation?",
       "activate_invite": "Activate your account",
+      "reset_success": "Your password has been reset. Sign in with your new password.",
       "error": {
         "invalid_input": "Please check your input.",
         "invalid_credentials": "Incorrect email or password.",
         "remaining": "{count} attempt(s) left",
         "locked": "Locked after 5 failed attempts. Try again in {minutes} minute(s)."
+      }
+    },
+    "password": {
+      "policy_title": "Password requirements",
+      "rule": {
+        "length": "At least 10 characters",
+        "lower": "Contains a lowercase letter",
+        "upper": "Contains an uppercase letter",
+        "digit": "Contains a number",
+        "special": "Contains a special character"
+      },
+      "error": {
+        "length": "Password must be at least 10 characters.",
+        "lower": "Must include a lowercase letter.",
+        "upper": "Must include an uppercase letter.",
+        "digit": "Must include a number.",
+        "special": "Must include a special character."
+      }
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "subtitle": "We'll email you a link to reset your password.",
+      "email": "Email",
+      "email_placeholder": "you@example.com",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "sent_title": "Reset link sent",
+      "sent_desc": "If your email is registered, you'll receive a password reset link. Please check your inbox.",
+      "sent_hint": "If you don't see it, check your spam folder or try again shortly.",
+      "back_to_login": "← Back to sign in",
+      "error": {
+        "invalid": "Please check your email.",
+        "email_required": "Please enter your email.",
+        "email_invalid": "That doesn't look like a valid email."
+      }
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Enter the password you'd like to use.",
+      "new_password": "New password",
+      "confirm_password": "Confirm new password",
+      "submit": "Reset password",
+      "submitting": "Resetting…",
+      "show_password": "Show password",
+      "hide_password": "Hide password",
+      "session_warning": "Resetting will sign you out of all active sessions on every device.",
+      "invalid_title": "This reset link has expired or is invalid",
+      "invalid_desc": "Reset links are valid for 60 minutes only. Please request a new one.",
+      "request_new": "Request a new link",
+      "error": {
+        "invalid": "Please check your input.",
+        "weak_password": "Your password doesn't meet the requirements. Please satisfy all the rules below.",
+        "mismatch": "The two passwords do not match.",
+        "session_invalid": "Your session has expired. Please request a new reset link.",
+        "update_failed": "Failed to reset your password. Please try again."
       }
     }
   },

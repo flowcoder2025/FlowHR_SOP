@@ -174,10 +174,12 @@ enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
 enable_manual_linking = false
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
-minimum_password_length = 6
+# 앱 정책(passwordSchema ≥10자 + 복합)과 정합 — 직접 API 호출 시 백엔드 floor 로 심층방어(WI-020-4 evaluator P3).
+# ⚠️ 원격(staging/prod)은 대시보드 Authentication > Password 설정에 동일 적용 필요(KI-098 동반).
+minimum_password_length = 10
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
 # are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
-password_requirements = ""
+password_requirements = "lower_upper_letters_digits_symbols"
 
 # Configure passkey sign-ins.
 # [auth.passkey]
@@ -237,6 +239,14 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# 비밀번호 재설정 메일 (CM-02 / ST-002). token_hash 기반 /auth/confirm 콜백으로 연결해
+# "다른 기기에서 링크 클릭"(PKCE code_verifier 부재) 시나리오를 지원한다.
+# ⚠️ 원격(staging/prod) 프로젝트는 대시보드 Authentication > Email Templates > "Reset Password"
+#    본문을 templates/recovery.html 과 동일한 링크 패턴으로 수동 설정해야 한다(MCP/CLI 범위 외).
+[auth.email.template.recovery]
+subject = "[FlowHR] 비밀번호 재설정 안내 / Password reset"
+content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
