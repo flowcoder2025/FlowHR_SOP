@@ -1,0 +1,23 @@
+# WI-020-2-feat ST-078 약관/동의 — 듀얼검증 통합 판정
+
+VERDICT: PASS_BOTH
+
+- **evaluator**: PASS 8.45/10 (기능 8.5 / 품질 9.0 / 테스트 7.5 / 계약 9.0 — 4축 전부 ≥ 7.5)
+- **codex**: 1차 BLOCKED_FOR_HOTFIX (P1×1 + P2×2) → hotfix 정정(f1ac057) → 재검증 **PASS_VERIFIED**
+
+통합: review-system.md §4 — evaluator PASS + codex(정정 후) PASS = PASS_BOTH.
+
+## codex 결함 정정 (커밋 f1ac057)
+- P1: `consent-action.ts` 강제동의 `agree` 체크박스 서버 검증 추가 (폼 우회 무동의 기록 차단)
+- P2: `publishLegalDocuments` service_role → 사용자 세션 client (RLS `is_operator_super` 가 실제 방어선, 앱 레이어 role 체크는 이중)
+- P2: `clientIp` 느슨한 정규식 → `node:net isIP()` 엄격 검증 (inet insert 실패 방지)
+- P3: dead i18n key 3종 제거(toc_title/new_version_strong/consent_logout) + mig34 `drop policy if exists`
+
+## KI 등록
+- KI-091 (P3): 강제동의 동의-클릭→복귀 + operator 게시 트랜잭션 자동 E2E 미검증 (멱등 시드 인프라 후속, KI-089 동반)
+- KI-092 (P2): ST-078 AC-5 운영사 감사 화면(동의 통계/이력) 미구현 — OP-09 audit(EP-05) 별도 sprint deferral
+
+## 검증
+- typecheck/lint/test/build 19/19 (FULL TURBO, evaluator 독립 재현)
+- 비로그인 약관 조회 E2E 5/5 + 기존 login E2E 9 회귀 무손상 (test-employee 동의 시드)
+- 강제동의 트리거(ensure_single_active/block_modify) + recordConsent + required 판정 staging DB 실증
