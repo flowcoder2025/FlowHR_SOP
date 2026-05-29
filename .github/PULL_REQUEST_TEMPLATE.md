@@ -29,11 +29,23 @@ PR 제목 형식: WI-NNN-[type] 한글 작업명
 
 ## CI 게이트 자가 점검
 
+### 공통
+
 - [ ] 커밋 메시지 `WI-NNN-[type] 한글 작업명` 형식 (모든 커밋)
 - [ ] UTF-8 + no BOM + LF 인코딩
+- [ ] `.flowset/VERSION` 형식 `wf-vX.Y.Z`
+
+### 와이어프레임 PR (`.flowset/wireframes/**`)
+
 - [ ] HTML syntax (htmlhint) 통과
 - [ ] 디자인 시스템 SSOT 정합 (`_design-system/` 참조 + 인라인 컴포넌트 정의 없음)
-- [ ] `.flowset/VERSION` 형식 `wf-vX.Y.Z`
+
+### 코드 PR (`apps/**` · `packages/**` · `supabase/**`)
+
+- [ ] `phase7-code.yml` 4 job 통과 (lint / typecheck / unit-test / build)
+- [ ] zod 스키마 변경 시 `pnpm --filter @flowhr/schemas build` 재실행 + `packages/schemas/dist/openapi.yaml` 함께 커밋 (OpenAPI diff 게이트)
+- [ ] API 변경 시 `.flowset/api/*.md` + zod 스키마 **동시 갱신** (한쪽만 변경 금지)
+- [ ] 듀얼검증(evaluator + codex) PASS_BOTH + `.flowset/eval-results/<WI>.pass` 마커 커밋 (`project.md §1-1`, `dual-verification-gate` 필수체크)
 
 ## Test plan
 

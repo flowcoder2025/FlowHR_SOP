@@ -1,4 +1,4 @@
 {
   "extends": "@flowhr/config/tsconfig-base",
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "scripts/**/*.ts"]
 }
