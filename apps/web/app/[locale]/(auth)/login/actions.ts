@@ -1,9 +1,11 @@
 'use server';
 
-import { canAccessPath, roleToRedirectPath } from '@flowhr/api-client';
+import { roleToRedirectPath } from '@flowhr/api-client';
 import { loginSchema } from '@flowhr/schemas';
 import { writeAuthAudit, type AuthAuditInput } from '@/lib/auth/audit';
 import { checkLoginLock, clearLoginAttempts, recordLoginFailure } from '@/lib/auth/login-lock';
+import { getRequiredConsents } from '@/lib/legal/queries';
+import { safeInternalPath } from '@/lib/navigation/safe-return-url';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -26,24 +28,6 @@ function clientIp(headerList: Headers): string {
   const forwarded = headerList.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0]!.trim();
   return headerList.get('x-real-ip')?.trim() ?? 'unknown';
-}
-
-/**
- * 세션 만료 복귀용 return_url 검증 (09-routing.md §5).
- * 오픈 리다이렉트 방지: 내부 절대경로 + 동일 locale + 역할 접근 가능한 경로만 허용.
- */
-function safeReturnUrl(
-  raw: FormDataEntryValue | null,
-  locale: string,
-  role: string | null,
-): string | null {
-  if (typeof raw !== 'string' || raw.length === 0) return null;
-  if (!raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\')) return null;
-  const prefix = `/${locale}`;
-  if (raw !== prefix && !raw.startsWith(`${prefix}/`)) return null;
-  const rest = raw.slice(prefix.length) || '/';
-  if (!canAccessPath(role, rest)) return null;
-  return raw;
 }
 
 export async function loginAction(
@@ -107,6 +91,17 @@ export async function loginAction(
     userAgent,
   });
 
-  const returnTo = safeReturnUrl(formData.get('returnUrl'), locale, profile?.role ?? null);
-  redirect(returnTo ?? `/${locale}${roleToRedirectPath(profile?.role)}`);
+  const rawReturn = formData.get('returnUrl');
+  const returnTo =
+    safeInternalPath(typeof rawReturn === 'string' ? rawReturn : null, locale, profile?.role ?? null) ??
+    `/${locale}${roleToRedirectPath(profile?.role)}`;
+
+  // 강제 동의 필요 약관 확인 (ST-078 AC-2) — 있으면 동의 화면을 먼저 경유시킨다.
+  const required = await getRequiredConsents(locale);
+  if (required.length > 0) {
+    redirect(
+      `/${locale}/legal/${required[0]!.type}?must_accept=true&return_url=${encodeURIComponent(returnTo)}`,
+    );
+  }
+  redirect(returnTo);
 }

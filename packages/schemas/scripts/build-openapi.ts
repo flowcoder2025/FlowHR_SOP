@@ -36,7 +36,10 @@ import { leaveTypeSchema, leaveSchema, leaveBalanceSchema } from '../src/entitie
 import {
   approvalLineSchema, approvalSchema, approvalStepSchema, documentSchema, certificateRequestSchema,
 } from '../src/entities/approval';
-import { legalDocumentSchema, userConsentSchema } from '../src/entities/compliance';
+import {
+  legalDocumentSchema, userConsentSchema,
+  consentInputSchema, legalDocumentPublishSchema, requiredConsentSchema,
+} from '../src/entities/compliance';
 
 // ── 공통/인증 utility 스키마 ───────────────────────────────────
 registry.register('Login', loginSchema);
@@ -95,9 +98,12 @@ registry.register('ApprovalStep', approvalStepSchema);
 registry.register('Document', documentSchema);
 registry.register('CertificateRequest', certificateRequestSchema);
 
-// ── 컴플라이언스 도메인 (2) ────────────────────────────────────
+// ── 컴플라이언스 도메인 (2 entity + 3 DTO) ─────────────────────
 registry.register('LegalDocument', legalDocumentSchema);
 registry.register('UserConsent', userConsentSchema);
+registry.register('ConsentInput', consentInputSchema);
+registry.register('LegalDocumentPublish', legalDocumentPublishSchema);
+registry.register('RequiredConsent', requiredConsentSchema);
 
 const generator = new OpenApiGeneratorV31(registry.definitions);
 const document = generator.generateDocument({

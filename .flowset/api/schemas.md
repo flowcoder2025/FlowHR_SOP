@@ -9,6 +9,12 @@
 > (`database.ts` Row, `created_at`/`tenant_id`)로 확정됐다 — supabase 직결 + 변환 레이어 미사용
 > (`apps/web` 서버액션이 snake_case 반환값을 직접 사용). 본 문서는 Envelope/페이지네이션/패턴 참고용이며
 > entity 필드 casing 은 `packages/schemas` 를 따른다. (endpoint req/res 스키마는 Sprint 2~6 점진 확장)
+>
+> **입력/응답 DTO casing (WI-020-2, ST-078)**: entity(DB Row, snake_case)와 달리 **요청/응답 DTO 는
+> API 계약이라 camelCase**(`ConsentInput.documentId`, `LegalDocumentPublish.{ko,en}`, `RequiredConsent.effectiveDate`).
+> 서버 lib(`apps/web/lib/legal/*`)에서 snake_case 컬럼으로 매핑한다. 약관 API(`GET /legal/documents`,
+> `POST /me/consents`, `GET /me/consents/required`, `POST /operator/legal/documents`)는 MVP 에서 Next.js
+> 서버 액션 + 서버 컴포넌트 직접 조회로 구현(REST endpoint 와 1:1 동작 — 모바일/외부용 route handler 는 후속).
 
 ## 1. Envelope
 
@@ -371,3 +377,4 @@ export const RealtimeEvent = <T extends z.ZodTypeAny>(payloadSchema: T) =>
 | 2026-05-15 | 초안 — Envelope + 페이지네이션 + 핵심 엔티티 8 + Approval polymorphic + ConditionRule (KI-019 해소) + Location jsonb (KI-018 해소) | Phase 4 진입 |
 | 2026-05-15 | LegalDocument / UserConsent zod + NotificationListResponse | KI-030 batch-003 |
 | 2026-05-29 | casing/SSOT 정합 노트 — 실제 entity 스키마 SSOT = `packages/schemas/src/entities/*`(DB snake_case 1:1, 45 components openapi.yaml). 본 문서 camelCase 예시는 Phase 4 초안 참고 | WI-021-1 (codex 협의) |
+| 2026-05-29 | 약관/동의 입력 DTO 3종 추가 — `ConsentInput`/`LegalDocumentPublish`(ko/en 페어 강제)/`RequiredConsent` (camelCase API 계약, 48 components). 약관 API 는 서버 액션/서버 컴포넌트 구현 | WI-020-2 (ST-078) |
