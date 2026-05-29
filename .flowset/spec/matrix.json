@@ -586,7 +586,7 @@
     "MaintenanceWindow": {
       "table": "maintenance_windows",
       "tenant_scoped": false,
-      "_comment": "운영사 점검 모드 (OP-11). 예약 점검 + 즉시 점검.",
+      "_comment": "운영사 점검 모드 (OP-11). 예약 점검 + 즉시 점검. WI-020-3(ST-072): public_view 읽기 구현 — 미들웨어가 status=active 조회 후 비-operator_super 503 rewrite + /maintenance 페이지 렌더(message_ko/scheduled_* 노출). operator 관리(toggle/schedule) UI 는 OP-11 미구현.",
       "permissions": {
         "operator_super":   {"C": true, "R": true, "U": true, "D": true},
         "operator_staff":   {"C": false, "R": true, "U": false, "D": false},
@@ -599,7 +599,7 @@
         "R": "GET /api/v1/operator/maintenance",
         "C": "POST /api/v1/operator/maintenance/toggle, POST /api/v1/operator/maintenance/schedule"
       },
-      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+      "status": {"C": "missing", "R": "pending", "U": "missing", "D": "missing"}
     },
     "BackupJob": {
       "table": "backup_jobs",

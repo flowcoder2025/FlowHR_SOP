@@ -69,5 +69,32 @@
       "admin": "Admin dashboard",
       "employee": "My dashboard"
     }
+  },
+  "system": {
+    "error": {
+      "notFound": {
+        "title": "Page not found",
+        "description": "The page you requested does not exist or has been moved.",
+        "back_home": "← Back to FlowHR"
+      },
+      "internal": {
+        "title": "Internal server error",
+        "description": "Please try again in a moment. If the problem persists, contact support.",
+        "sentry": "Reported to Sentry automatically.",
+        "request_id": "Error reference",
+        "retry": "Try again"
+      },
+      "maintenance": {
+        "title": "System maintenance in progress",
+        "default_message": "We are performing maintenance to improve the service. Please try again shortly.",
+        "operator_notice": "Operator notice",
+        "windowStart": "Started",
+        "windowEnd": "Expected end",
+        "remaining": "Remaining",
+        "not_active_title": "No maintenance in progress",
+        "not_active_desc": "The system is operating normally.",
+        "back_home": "← Back to FlowHR"
+      }
+    }
   }
 }
