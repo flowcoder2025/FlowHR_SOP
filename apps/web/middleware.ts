@@ -2,6 +2,12 @@ import { isLocale } from '@flowhr/i18n';
 import createMiddleware from 'next-intl/middleware';
 import { type NextRequest, NextResponse } from 'next/server';
 import { routing } from './i18n/routing';
+import {
+  computeRetryAfterSeconds,
+  getActiveMaintenance,
+  getUserRole,
+  isMaintenanceExempt,
+} from './lib/maintenance/queries';
 import { refreshSession, type CookieToSet } from './lib/supabase/middleware';
 
 const handleI18n = createMiddleware(routing);
@@ -24,9 +30,29 @@ function applyCookies(response: NextResponse, cookies: CookieToSet[]): NextRespo
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const { user, cookiesToSet } = await refreshSession(request);
+  const { user, cookiesToSet, supabase } = await refreshSession(request);
 
   const { locale, rest } = splitLocale(request.nextUrl.pathname);
+
+  // 점검 모드 (CM-06 / ST-072 AC-2·AC-3) — 활성 시 비-operator_super 요청을 점검 페이지로 503 rewrite.
+  // operator_super 는 우회(점검 중 정상 접근), 로그인/점검 페이지는 예외(operator 인증 동선 보존).
+  const maintenance = await getActiveMaintenance(supabase);
+  if (maintenance) {
+    const role = user ? await getUserRole(supabase, user.id) : null;
+    const bypass = role === 'operator_super';
+    if (!bypass && !isMaintenanceExempt(rest)) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${locale}/maintenance`;
+      url.search = '';
+      const retryAfter = computeRetryAfterSeconds(maintenance.scheduledEnd, Date.now());
+      const res = NextResponse.rewrite(url, {
+        status: 503,
+        headers: { 'Retry-After': String(retryAfter) },
+      });
+      return applyCookies(res, cookiesToSet);
+    }
+  }
+
   const isProtected = PROTECTED_PREFIXES.some(
     (p) => rest === p || rest.startsWith(`${p}/`),
   );

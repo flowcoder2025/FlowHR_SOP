@@ -494,7 +494,7 @@
 > So that 장애 시 신뢰 유지 + 운영사 우회
 
 - AC 인용: `.flowset/prd/domains/common.md#cm-06-오류점검-화면`
-- AC-1 (404/500/503 페이지), AC-2 (운영사 OP-11 점검 토글 → 비-operator 503), AC-3 (operator는 점검 중에도 정상 접근), AC-4 (Sentry 자동 보고 — 500)
+- AC-1 (404/500/503 페이지), AC-2 (운영사 OP-11 점검 토글 → 비-operator_super 503), AC-3 (operator_super는 점검 중에도 정상 접근/우회 — PRD §CM-06 SSOT), AC-4 (Sentry 자동 보고 — 500)
 - 엔티티: MaintenanceWindow:R (matrix.json — public_view), SystemSetting:R
 - 추정: 3 SP
 

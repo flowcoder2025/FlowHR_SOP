@@ -69,5 +69,32 @@
       "admin": "관리자 대시보드",
       "employee": "내 대시보드"
     }
+  },
+  "system": {
+    "error": {
+      "notFound": {
+        "title": "페이지를 찾을 수 없습니다",
+        "description": "요청하신 페이지가 존재하지 않거나 이동되었습니다.",
+        "back_home": "← FlowHR 홈으로"
+      },
+      "internal": {
+        "title": "일시적인 서버 오류가 발생했습니다",
+        "description": "잠시 후 다시 시도해 주세요. 문제가 계속되면 지원팀에 문의해 주세요.",
+        "sentry": "오류는 Sentry에 자동 보고되었습니다.",
+        "request_id": "오류 참조 번호",
+        "retry": "다시 시도"
+      },
+      "maintenance": {
+        "title": "시스템 점검 중입니다",
+        "default_message": "더 나은 서비스를 위해 시스템을 점검하고 있습니다. 잠시 후 다시 이용해 주세요.",
+        "operator_notice": "운영사 안내",
+        "windowStart": "점검 시작",
+        "windowEnd": "점검 종료 예정",
+        "remaining": "남은 시간",
+        "not_active_title": "현재 점검 중이 아닙니다",
+        "not_active_desc": "시스템이 정상 운영 중입니다.",
+        "back_home": "← FlowHR 홈으로"
+      }
+    }
   }
 }
