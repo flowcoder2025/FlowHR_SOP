@@ -54,11 +54,15 @@ describe('computeRetryAfterSeconds', () => {
 });
 
 describe('isMaintenanceExempt', () => {
-  it('로그인/점검 경로는 점검 중에도 허용', () => {
+  it('정확한 로그인/점검 경로만 점검 중 허용', () => {
     expect(isMaintenanceExempt('/login')).toBe(true);
-    expect(isMaintenanceExempt('/login/foo')).toBe(true);
     expect(isMaintenanceExempt('/maintenance')).toBe(true);
-    expect(isMaintenanceExempt('/maintenance/anything')).toBe(true);
+  });
+
+  it('미정의 중첩 경로는 비예외(503 대상) — prefix 면제 누수 차단', () => {
+    expect(isMaintenanceExempt('/login/foo')).toBe(false);
+    expect(isMaintenanceExempt('/maintenance/anything')).toBe(false);
+    expect(isMaintenanceExempt('/login-something')).toBe(false);
   });
 
   it('보호/일반 경로는 비예외', () => {
