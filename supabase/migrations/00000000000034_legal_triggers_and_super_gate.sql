@@ -57,9 +57,9 @@ revoke execute on function user_consents_block_modify() from public, anon, authe
 -- (3) legal_documents 게시 권한 operator_super 로 축소 (R1, AC-4)
 -- =====================================================================
 
-drop policy legal_docs_insert on legal_documents;
-drop policy legal_docs_update on legal_documents;
-drop policy legal_docs_delete on legal_documents;
+drop policy if exists legal_docs_insert on legal_documents;
+drop policy if exists legal_docs_update on legal_documents;
+drop policy if exists legal_docs_delete on legal_documents;
 
 create policy legal_docs_insert on legal_documents for insert
   with check (is_operator_super());

@@ -18,8 +18,11 @@ export async function submitConsentAction(
   returnUrl: string | null,
   locale: string,
   _prev: ConsentFormState,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<ConsentFormState> {
+  // 명시 동의 체크박스를 서버에서 재확인 (폼 우회 제출로 동의 없이 기록되는 것 차단).
+  if (formData.get('agree') !== 'on') return { status: 'error' };
+
   const result = await recordConsent(documentId, 'forced');
   if (!result.ok) {
     if (result.error === 'unauthenticated') redirect(`/${locale}/login`);

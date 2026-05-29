@@ -1,8 +1,8 @@
 'use server';
 
-import { createServiceRoleClient } from '@flowhr/api-client/server';
 import { legalDocumentPublishSchema, uuidSchema, type LegalDocumentPublishInput } from '@flowhr/schemas';
 import type { Database } from '@flowhr/types';
+import { isIP } from 'node:net';
 import { headers } from 'next/headers';
 import { getSessionProfile } from '@/lib/auth/session';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
@@ -24,10 +24,8 @@ export type PublishResult =
 function clientIp(headerList: Headers): string | null {
   const forwarded = headerList.get('x-forwarded-for');
   const raw = forwarded ? forwarded.split(',')[0]!.trim() : (headerList.get('x-real-ip')?.trim() ?? '');
-  if (!raw) return null;
-  const ipv4 = /^(\d{1,3}\.){3}\d{1,3}$/;
-  const ipv6 = /^[0-9a-fA-F:]+$/;
-  return ipv4.test(raw) || (raw.includes(':') && ipv6.test(raw)) ? raw : null;
+  // inet 컬럼 — node:net 으로 엄격 검증(유효 IPv4/IPv6 만). 그 외엔 null.
+  return raw && isIP(raw) !== 0 ? raw : null;
 }
 
 /**
@@ -77,7 +75,8 @@ export async function recordConsent(
 /**
  * 운영사(operator_super) 약관 신규 버전 게시 (POST /operator/legal/documents, ST-078 AC-4/AC-6).
  * ko/en 페어 동시 게시(스키마 강제). is_active=true 로 INSERT 하면 단일-active 트리거가
- * 기존 (type, language) active 를 자동 false 전환한다. service_role 로 실행하되 super 권한 이중 확인(R1).
+ * 기존 (type, language) active 를 자동 false 전환한다. 사용자(operator_super) 세션으로 실행 —
+ * RLS legal_docs_insert/update(is_operator_super) 가 실제 방어선이고 앱 레이어 role 체크는 이중 확인(R1).
  */
 export async function publishLegalDocuments(input: LegalDocumentPublishInput): Promise<PublishResult> {
   const parsed = legalDocumentPublishSchema.safeParse(input);
@@ -104,8 +103,11 @@ export async function publishLegalDocuments(input: LegalDocumentPublishInput): P
     };
   });
 
-  const admin = createServiceRoleClient();
-  const { error } = await admin.from('legal_documents').insert(rows);
+  // 사용자(operator_super) 세션 client 로 게시 → RLS legal_docs_insert(is_operator_super) 가 실제
+  // 방어선이 된다(앱 레이어 role 체크는 빠른 실패용 이중 확인). ensure_single_active 트리거의
+  // 내부 UPDATE 도 동일 세션 권한으로 RLS legal_docs_update 를 통과한다.
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from('legal_documents').insert(rows);
   if (error) {
     if (error.code === '23505') return { ok: false, error: 'duplicate_version' };
     console.error('publishLegalDocuments failed', error);
