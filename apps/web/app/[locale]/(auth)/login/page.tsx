@@ -1,4 +1,5 @@
 import { roleToRedirectPath } from '@flowhr/api-client';
+import { Alert } from '@flowhr/ui';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
@@ -12,10 +13,10 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ return_url?: string }>;
+  searchParams: Promise<{ return_url?: string; reset?: string }>;
 }) {
   const { locale } = await params;
-  const { return_url: returnUrl } = await searchParams;
+  const { return_url: returnUrl, reset } = await searchParams;
   setRequestLocale(locale);
 
   // 이미 인증된 사용자는 역할별 대시보드로 이동 (09-routing.md §3).
@@ -39,6 +40,7 @@ export default async function LoginPage({
         <h1 className="text-lg font-semibold text-text">{t('title')}</h1>
         <p className="mt-1 text-[13px] text-text-muted">{t('subtitle')}</p>
       </header>
+      {reset === 'success' && <Alert variant="success">{t('reset_success')}</Alert>}
       <LoginForm returnUrl={returnUrl} />
     </div>
   );

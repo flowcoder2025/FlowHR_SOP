@@ -12,3 +12,63 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+/**
+ * 비밀번호 정책 (api/auth.md §reset-password: ≥10자 + 영문 대/소문자 + 숫자 + 특수).
+ * 규칙을 데이터로 정의해 zod refine(서버 검증)과 폼 실시간 체크리스트(클라이언트)가 같은 SSOT를 쓴다.
+ * 비밀번호 설정이 필요한 모든 흐름(ST-002 재설정 / ST-003 활성화)에서 공유한다.
+ */
+export const PASSWORD_MIN_LENGTH = 10;
+
+export const passwordRules = [
+  { key: 'length', test: (v: string) => v.length >= PASSWORD_MIN_LENGTH },
+  { key: 'lower', test: (v: string) => /[a-z]/.test(v) },
+  { key: 'upper', test: (v: string) => /[A-Z]/.test(v) },
+  { key: 'digit', test: (v: string) => /[0-9]/.test(v) },
+  { key: 'special', test: (v: string) => /[^A-Za-z0-9]/.test(v) },
+] as const;
+
+export type PasswordRuleKey = (typeof passwordRules)[number]['key'];
+
+/** 충족하지 못한 정책 규칙 키 목록(정의 순서 유지). 빈 배열이면 정책 통과. */
+export function failingPasswordRules(value: string): PasswordRuleKey[] {
+  return passwordRules.filter((r) => !r.test(value)).map((r) => r.key);
+}
+
+/** 모든 정책 규칙 충족 여부. */
+export function isPasswordValid(value: string): boolean {
+  return failingPasswordRules(value).length === 0;
+}
+
+export const passwordSchema = z.string().superRefine((value, ctx) => {
+  for (const key of failingPasswordRules(value)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `auth.password.error.${key}` });
+  }
+});
+
+/** 비밀번호 찾기 — 이메일 입력 (CM-02 / POST /api/v1/auth/forgot-password). */
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, 'auth.forgot.error.email_required')
+    .email('auth.forgot.error.email_invalid'),
+});
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+/**
+ * 비밀번호 재설정 — 새 비밀번호 입력 (CM-02 / POST /api/v1/auth/reset-password).
+ * SSR 흐름에서 토큰은 /auth/confirm 가 recovery 세션으로 소비하므로 폼은 토큰을 싣지 않는다.
+ */
+export const resetPasswordSchema = z
+  .object({
+    newPassword: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    path: ['confirmPassword'],
+    message: 'auth.reset.error.mismatch',
+  });
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

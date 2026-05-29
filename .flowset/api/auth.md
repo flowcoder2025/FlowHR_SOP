@@ -306,6 +306,17 @@ PATCH /api/v1/me/profile { locale: 'ko' | 'en' }
 }
 ```
 
+## 구현 노트 — 비밀번호 재설정 (CM-02 / WI-020-4, 2026-05-29)
+
+Next.js App Router + @supabase/ssr 구현은 본 명세의 토큰-바디 API(`{ token, newPassword }`)와 다음과 같이 정합한다(codex 협의 2026-05-29):
+
+- **토큰 수신**: `token_hash + verifyOtp({ type:'recovery' })` 채택. @supabase/ssr 기본 flowType=pkce 는 code_verifier 가 **신청 기기**에만 있어 "다른 기기에서 재설정 링크 클릭" 시 실패한다. token_hash 는 stateless 서버 검증이라 기기 무관.
+- **콜백 라우트**: `GET /auth/confirm?token_hash=&type=recovery&redirect_to=` (locale prefix 없음, middleware `/auth` 제외). verifyOtp 로 recovery 세션 쿠키 수립 후 `redirect_to`(동일 origin 검증) 로 이동. 실패 시 `?error=invalid_token`.
+- **재설정 폼**: `/{locale}/reset-password` 는 토큰을 싣지 않는다(이미 /auth/confirm 가 세션으로 소비). recovery 세션 확인 → `updateUser({ password })` → `signOut({ scope:'global' })`(현재 recovery 세션 포함 전 세션 무효화, AC-3) → `/login?reset=success`.
+- **계정 열거 방지(AC-1)**: forgot-password 는 미등록/오류 모두 동일 `sent` 응답 + obscureTiming(응답 시간 균일화).
+- **이메일 템플릿 의존**: 위 흐름은 Recovery 메일이 `/auth/confirm` 으로 token_hash 를 전달하도록 **이메일 템플릿 커스터마이즈**가 전제. 로컬은 `supabase/config.toml [auth.email.template.recovery]` + `supabase/templates/recovery.html`. **원격(staging/prod)은 대시보드 수동 설정 필요(KI-098)** + Redirect URL allow-list 에 배포 도메인 등록.
+- **검증 경계**: 실메일 발송 + cross-device 클릭 자동 E2E 는 Free SMTP + 대시보드 의존으로 미검증(KI-097). 스키마/정책/동일응답/세션-없는-만료안내는 unit + E2E 로 검증.
+
 ## 변경 이력
 
 | 일자 | 변경 | 사유 |
@@ -313,3 +324,4 @@ PATCH /api/v1/me/profile { locale: 'ko' | 'en' }
 | 2026-05-15 | 초안 — 9 엔드포인트 (로그인 + 2FA + 비밀번호 + 활성화) | Phase 4 진입 |
 | 2026-05-15 | 라우팅 진입점 매핑 + 세션 관리 + 운영사 강제 종료/2FA + 약관 가드 | KI-027/029 batch-003 |
 | 2026-05-16 | i18n: login response.user.locale + locale 결정 우선순위 + PATCH locale | 사용자 결정 batch-005 |
+| 2026-05-29 | 비밀번호 재설정 SSR 구현 노트 (token_hash+verifyOtp / /auth/confirm / signOut global) | WI-020-4 ST-002 |
