@@ -1,10 +1,50 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-29 batch G (Phase 7 Sprint 1 — WI-020-3 ST-072 오류/점검 완료). 듀얼검증 PASS_BOTH 후 머지(PR #40).
-> **신규 세션 첫 작업**: 본 문서 **§-0g (2026-05-29 batch G)** 정독 → **WI-020 인증보조(ST-002 비번찾기 / ST-003 활성화 / ST-004 2FA)**. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`. ⚠️ **P2 KI 누적 5건 트리거 도달** — 사용자에 batch WI 권장 보고됨(KI-054/061/079/092/094).
-> **이전 핸드오프**: 2026-05-29 batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-05-29 batch H (Phase 7 Sprint 1 — WI-020-4 ST-002 비번찾기/재설정 완료 + WI-020-5 ST-004 2FA codex 설계 확정). 듀얼검증 PASS_BOTH 후 머지(PR #41).
+> **신규 세션 첫 작업**: 본 문서 **§-0h (2026-05-29 batch H)** 정독 → **WI-020-5 ST-004 2FA(CM-04) 구현** (codex 설계 §-0h 에 확정·캡처됨, 그대로 실행). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`. ⚠️ **선행: env 시크릿 2개(`AUTH_TOTP_ENC_KEY`/`AUTH_CHALLENGE_SECRET`) 로컬+staging 프로비저닝 필요**.
+> **이전 핸드오프**: 2026-05-29 batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0g. 2026-05-29 batch G 세션 진척 — **신규 세션 여기부터**
+## -0h. 2026-05-29 batch H 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-020-4-feat ST-002 비밀번호 찾기/재설정 (CM-02, PR #41 머지)
+
+P2 KI 5건 트리거 → **codex 협의 defer 확정**(전부 미래 WI 자연해소, 비응집 batch + KI-094 DB schema 회피). WI-020 인증보조 분할: **WI-020-4(ST-002) → WI-020-5(ST-004) → WI-020-6(ST-003)** (ST-003 선택2FA가 ST-004 의존).
+
+| 영역 | 산출물 |
+|------|--------|
+| 메커니즘(codex 협의) | **token_hash + verifyOtp({type:'recovery'})** — PKCE code_verifier 부재(cross-device 링크 클릭) 회피. PKCE 미채택 |
+| /auth/confirm | `app/auth/confirm/route.ts` Route Handler(req/res 쿠키 어댑터) — verifyOtp → recovery 세션 + **HMAC 서명 마커** 발급. middleware matcher `/auth` 제외(next-intl 리다이렉트 회피) |
+| forgot | `(auth)/forgot-password/*` — resetPasswordForEmail + 미등록 동일 sent + `obscureTiming`(계정 열거 방지, AC-1) |
+| reset | `(auth)/reset-password/*` — recovery 세션 **+ HMAC 마커(=본인)** 요구 → `updateUser` → `signOut({scope:'global'})` 전세션 무효화(AC-3) → `/login?reset=success` |
+| 복구 게이트(codex P1-1) | `lib/auth/recovery.ts`(server-only) + `recovery-marker.ts`(순수, HMAC-SHA256 `userId.exp.HMAC`, 키=SUPABASE_SERVICE_ROLE_KEY, 15분, fail-closed) — 세션 보유/탈취자 위조 차단 |
+| 정책/i18n | `passwordSchema`(≥10 대소문자/숫자/특수, 실시간 체크리스트 SSOT) + forgot/reset ko·en + config.toml recovery 템플릿+`templates/recovery.html` + minimum_password_length 10 |
+
+**듀얼검증 PASS_BOTH** (evaluator 8.15 / codex 3라운드 CONDITIONAL→PASS_VERIFIED — 듀얼검증이 실결함 3건 검출: P1-1 복구게이트 부재→HMAC 마커 / P1-2 signOut 에러무시·audit순서 / P2 i18n 키 이중 네임스페이스). 검증: typecheck/lint/build 17/17 + unit(schemas 41 / web 24 / api-client 13) + E2E 24/24.
+
+**신규 KI**: KI-097(P3 실메일·cross-device E2E 미검증 — Free SMTP) / KI-098(P3 원격 대시보드 Recovery 템플릿 + Redirect URL + SUPABASE_SERVICE_ROLE_KEY env 수동설정).
+
+### 다음 세션 첫 작업 — WI-020-5 ST-004 2FA (CM-04) — codex 설계 확정 (그대로 실행)
+
+**custom TOTP=speakeasy + qrcode(둘 다 미설치)**. DB schema 변경 없음(users.totp_enabled/totp_secret_encrypted/recovery_codes_hash 기존 사용). **단일 WI**(로그인 challenge + `/me/security` enable/manage + operator 강제).
+
+⚠️ **선행 env 프로비저닝(codex 단일안 — 전용 키 2개)**:
+- `AUTH_TOTP_ENC_KEY` (32바이트 base64) — TOTP secret AES-256-GCM 암호화-at-rest 키
+- `AUTH_CHALLENGE_SECRET` (32바이트 base64) — challengeToken 봉인 키
+- service_role 키 겸용 금지(유출/회전 파급 과대). 로컬 `.env.local` + staging/Vercel 프로비저닝(KI 등록 + .env.example 문서화). 부재 시 fail-closed.
+
+**설계(codex 7항목 단일안)**:
+1. **challenge 메커니즘(핵심)**: login actions 가 현재 쿠키기반 `createSupabaseServerClient()`로 signInWithPassword 즉시 세션발급 → 변경: **no-op 쿠키 어댑터 isolated 클라이언트**(`createServerClient(url,anon,{cookies:{getAll:()=>[],setAll:()=>{}}})`)로 비번검증·세션토큰 획득(쿠키 미발급). `totp_enabled` 면 `{access_token,refresh_token,userId,email,returnTo,jti,exp:+300s}` 를 `AUTH_CHALLENGE_SECRET` AES-GCM 봉인 → `fh-2fa-challenge` HttpOnly/Secure/Lax 쿠키. `/two-factor` 진입 즉시 쿠키삭제(단일사용) → exp/purpose/userId 검증 → OTP 검증 → 정상 쿠키 클라이언트 `setSession()` → `getRequiredConsents(locale)` 약관가드 재적용(현행 동일).
+2. **enable/verify/disable UI**: 신규 `/{locale}/me/security` 최소 페이지(OP-12/EM-09 미구현). enable: speakeasy secret 생성 → qrcode QR → 6자리 검증 → `totp_enabled=true`+`totp_secret_encrypted`+복구코드 8 1회표시·해시저장. pending secret 은 DB 컬럼 추가 없이 `fh-2fa-setup` HttpOnly 단기 쿠키 봉인. disable: 현재 비번 재확인 + TOTP/복구코드. **operator 비활성화 차단**.
+3. **복구코드 해싱**: Node `crypto.scrypt` + 코드별 랜덤 salt, 포맷 `scrypt$v=1$N=16384$r=8$p=1$<salt>$<hash>`(bcrypt 의존 회피, sha256은 저엔트로피 코드에 빠름). 매칭 1개→제거(users update), `timingSafeEqual`.
+4. **OTP 5회 잠금**: 기존 `login_attempts`+`record_login_failure(email,ip)` RPC 재사용. 비번 성공 시 카운트 초기화 → OTP 실패부터 재누적 5회 잠금. `/two-factor` 진입·검증 전 `checkLoginLock`, 2FA 성공 시 `clearLoginAttempts`.
+5. **operator 강제 2FA(AC-3)**: `operator_*`+`totp_enabled=false` → 세션발급 후 `/me/security?forced=2fa&return_url=/{locale}/operator` redirect. `system_settings.require_operator_2fa` default true 존재. operator layout/middleware 에서도 미설정 operator 의 `/operator/*` 접근 재차단. 약관 미동의 시 legal guard 우선.
+6. **점검 면제**: `MAINTENANCE_ALLOW` exact Set 에 `/two-factor`, `/me/security` 추가.
+7. **audit 타입**: `writeAuthAudit` 에 `auth.2fa_enabled`/`auth.2fa_verified`/`auth.2fa_failed`/`auth.recovery_code_used` 추가.
+
+API 명세: `.flowset/api/auth.md` POST /auth/login(requires2fa+challengeToken) + POST /auth/2fa/verify. CM-04 5상태(input/loading/error/recovery/done). 와이어프레임 `.flowset/wireframes/analysis/CM-04.md`.
+**이후**: WI-020-6 ST-003 활성화(⚠️ 커스텀 invitations 테이블 = DB schema 변경 → 착수 전 사용자 승인).
+
+## -0g. 2026-05-29 batch G 세션 진척
 
 ### 완료 — WI-020-3-feat ST-072 오류/점검 (CM-06, codex 협의 A안)
 
