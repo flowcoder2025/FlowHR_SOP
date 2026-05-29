@@ -1,0 +1,9 @@
+WI-020-5-feat ST-004 2FA TOTP (CM-04) — 듀얼검증 통합 판정: PASS_BOTH
+
+- evaluator: PASS 8.93/10 (기능 9.0 / 품질 9.0 / 테스트 8.5 / 계약 9.0, 각 축 ≥7.5) — WI-020-5-feat.eval.md
+- codex: FAIL(P1×1+P2×3) → 정정 5f981dc → 재검증 PASS_VERIFIED (잔존 차단 결함 0) — WI-020-5-feat.codex.md
+- verdict: PASS_BOTH (review-system.md §4)
+
+검증: turbo typecheck/lint/test/build 20/20 + 단위(crypto 9+recovery-codes 10+totp 5+schemas 2FA 7 / web 48+schemas 47) + E2E 29/29 직렬(2FA 가드 3+staging 전체흐름 2+login 9 회귀) staging 실증.
+KI: KI-099(env 프로비저닝)/KI-100(2FA E2E 게이트)/KI-101(jti 단일사용 하드닝)/KI-102(2FA 관리 재확인 rate-limit) 등재.
+정정 커밋 5f981dc 가 마지막 코드 커밋 — 본 마커는 그 후손.
