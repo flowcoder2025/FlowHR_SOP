@@ -122,6 +122,8 @@ export async function confirmEnrollAction(
 export async function disableAction(_prev: DisableState, formData: FormData): Promise<DisableState> {
   const session = await getSessionProfile();
   if (!session) return { status: 'error', messageKey: 'error.session' };
+  // role 을 확인할 수 없으면(self-read 실패 → null) operator 일 가능성을 배제할 수 없으므로 차단(fail-closed, codex P2).
+  if (session.role === null) return { status: 'error', messageKey: 'error.session' };
   if (isOperatorRole(session.role)) return { status: 'error', messageKey: 'error.operator_blocked' };
 
   const parsed = totpDisableSchema.safeParse({

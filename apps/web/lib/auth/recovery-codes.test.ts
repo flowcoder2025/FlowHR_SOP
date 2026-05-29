@@ -45,23 +45,28 @@ describe('해싱 + 검증 + 소비', () => {
     expect(hashRecoveryCode('ABCD-EFGH')).not.toBe(hashRecoveryCode('ABCD-EFGH'));
   });
 
-  it('맞는 코드 1개 매칭 + 소비(remaining 에서 제거)', () => {
+  it('맞는 코드 1개 매칭 + 소비(remaining 에서 제거 + matchedHash 반환)', () => {
     const codes = generateRecoveryCodes();
     const hashes = hashRecoveryCodes(codes);
     const target = codes[3]!;
     const result = verifyAndConsumeRecoveryCode(hashes, target.toLowerCase());
     expect(result.matched).toBe(true);
     expect(result.remaining).toHaveLength(7);
+    // matchedHash 는 원자적 CAS 가드 키 — 실제 저장 해시 중 하나이고 remaining 에는 없다.
+    expect(hashes).toContain(result.matchedHash);
+    expect(result.remaining).not.toContain(result.matchedHash);
     // 같은 코드 재사용은 더 이상 매칭되지 않음(1회용).
     const again = verifyAndConsumeRecoveryCode(result.remaining, target);
     expect(again.matched).toBe(false);
+    expect(again.matchedHash).toBeNull();
     expect(again.remaining).toHaveLength(7);
   });
 
-  it('틀린 코드는 매칭 실패 + remaining 불변', () => {
+  it('틀린 코드는 매칭 실패 + remaining 불변 + matchedHash null', () => {
     const hashes = hashRecoveryCodes(['ABCD-EFGH', 'JKMN-PQRS']);
     const result = verifyAndConsumeRecoveryCode(hashes, 'ZZZZ-ZZZZ');
     expect(result.matched).toBe(false);
+    expect(result.matchedHash).toBeNull();
     expect(result.remaining).toBe(hashes);
   });
 

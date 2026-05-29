@@ -84,16 +84,22 @@ export async function loginAction(
     };
   }
 
-  // 3. 비밀번호 성공 — 잠금 카운트 초기화(이후 OTP 실패부터 재누적) + 프로필 조회(RLS self-read)
-  await clearLoginAttempts(email, ip);
+  // 3. 비밀번호 성공 — 프로필 조회(RLS self-read). totp_enabled 판정의 근거이므로 fail-closed.
   const userId = data.user.id;
-  const { data: profile } = await isolated
+  const { data: profile, error: profileError } = await isolated
     .from('users')
     .select('role, tenant_id, totp_enabled')
     .eq('id', userId)
     .maybeSingle();
-  const role = profile?.role ?? null;
-  const tenantId = profile?.tenant_id ?? null;
+  // 조회 실패/누락 시 totp_enabled 를 알 수 없다 → 세션을 수립하지 않는다(2FA 우회 방지, codex P1).
+  if (profileError || !profile) {
+    await safeAudit({ action: 'auth.login_failed', result: 'failed', actorId: userId, ip, userAgent });
+    return { status: 'error', messageKey: 'error.unexpected' };
+  }
+  // 잠금 카운트 초기화(이후 OTP 실패부터 재누적).
+  await clearLoginAttempts(email, ip);
+  const role = profile.role ?? null;
+  const tenantId = profile.tenant_id ?? null;
 
   const rawReturn = formData.get('returnUrl');
   const returnTo =

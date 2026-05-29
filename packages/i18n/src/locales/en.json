@@ -43,7 +43,8 @@
         "remaining": "{count} attempt(s) left",
         "locked": "Locked after 5 failed attempts. Try again in {minutes} minute(s).",
         "locked_generic": "Your account is temporarily locked after repeated failures. Please try again shortly.",
-        "two_fa_expired": "Your verification timed out. Please sign in again."
+        "two_fa_expired": "Your verification timed out. Please sign in again.",
+        "unexpected": "Something went wrong. Please try again in a moment."
       }
     },
     "password": {

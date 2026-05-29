@@ -15,14 +15,16 @@ export async function enforceOperator2faGuard(locale: string): Promise<void> {
   } = await supabase.auth.getUser();
   if (!user) return; // 미인증은 페이지 가드/미들웨어가 처리
 
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from('users')
     .select('role, totp_enabled')
     .eq('id', user.id)
     .maybeSingle();
-  const role = profile?.role ?? null;
+  // 역할/2FA 상태를 확인할 수 없으면(조회 오류) operator 강제 2FA 우회를 막기 위해 재인증을 유도한다(fail-closed, codex P2).
+  if (error || !profile) redirect(`/${locale}/login`);
+  const role = profile.role;
   if (role !== 'operator_super' && role !== 'operator_staff') return;
-  if (profile?.totp_enabled) return;
+  if (profile.totp_enabled) return;
 
   const { data: settings } = await supabase
     .from('system_settings')

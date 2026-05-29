@@ -55,15 +55,24 @@ export async function disableTotp(userId: string): Promise<void> {
   if (error) throw error;
 }
 
-/** 복구 코드 1개 소비 후 남은 해시 배열로 갱신. */
-export async function updateRecoveryHashes(
+/**
+ * 복구 코드 1개를 원자적으로 소비한다(동시 재사용 방지).
+ * `.contains(matchedHash)` 가드로 "해당 해시가 아직 배열에 있을 때만" remaining 으로 교체한다.
+ * Postgres 가 행 잠금 하에 `@>` 가드를 재평가하므로, 동일 코드 병렬 제출 시 단 한 번만 0→1행 갱신된다.
+ * 반환 true = 이번 호출이 소비에 성공 / false = 이미 소비됨(동시 요청) → 호출부는 검증 실패로 처리.
+ */
+export async function consumeRecoveryHash(
   userId: string,
+  matchedHash: string,
   remainingHashes: string[],
-): Promise<void> {
+): Promise<boolean> {
   const supabase = createServiceRoleClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('users')
     .update({ recovery_codes_hash: remainingHashes })
-    .eq('id', userId);
+    .eq('id', userId)
+    .contains('recovery_codes_hash', [matchedHash])
+    .select('id');
   if (error) throw error;
+  return (data?.length ?? 0) > 0;
 }

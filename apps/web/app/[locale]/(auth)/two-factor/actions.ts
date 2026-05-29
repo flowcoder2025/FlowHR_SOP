@@ -6,7 +6,7 @@ import { checkLoginLock, clearLoginAttempts, recordLoginFailure } from '@/lib/au
 import { verifyAndConsumeRecoveryCode } from '@/lib/auth/recovery-codes';
 import { verifyTotp } from '@/lib/auth/totp';
 import { CHALLENGE_COOKIE, decryptTotpSecret, openChallenge } from '@/lib/auth/two-factor';
-import { getTotpRecord, updateRecoveryHashes } from '@/lib/auth/two-factor-store';
+import { consumeRecoveryHash, getTotpRecord } from '@/lib/auth/two-factor-store';
 import { getRequiredConsents } from '@/lib/legal/queries';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { cookies, headers } from 'next/headers';
@@ -80,10 +80,17 @@ export async function verifyTwoFactorAction(
   let viaRecovery = false;
   if (parsed.data.mode === 'recovery') {
     const result = verifyAndConsumeRecoveryCode(record.recoveryHashes, parsed.data.code);
-    if (result.matched) {
-      verified = true;
-      viaRecovery = true;
-      await updateRecoveryHashes(challenge.userId, result.remaining);
+    if (result.matched && result.matchedHash) {
+      // 원자적 소비 — 동일 코드 동시 제출은 단 한 번만 성공한다(CAS).
+      const consumed = await consumeRecoveryHash(
+        challenge.userId,
+        result.matchedHash,
+        result.remaining,
+      );
+      if (consumed) {
+        verified = true;
+        viaRecovery = true;
+      }
     }
   } else {
     let secret: string;

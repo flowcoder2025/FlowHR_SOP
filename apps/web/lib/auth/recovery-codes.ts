@@ -80,29 +80,33 @@ function matchesStored(stored: string, code: string): boolean {
 
 export interface RecoveryConsumeResult {
   matched: boolean;
+  /** 매칭된 저장 해시 문자열 (matched=false 면 null). 원자적 소비(DB CAS)의 가드 키로 쓴다. */
+  matchedHash: string | null;
   /** 매칭된 코드를 제거한 나머지 해시 배열 (matched=false 면 입력과 동일). */
   remaining: string[];
 }
 
 /**
- * 입력 복구 코드를 저장된 해시 배열과 대조하여 1개 매칭 시 소비(제거).
+ * 입력 복구 코드를 저장된 해시 배열과 대조하여 1개 매칭 시 소비 결과를 계산한다.
  * 모든 후보를 끝까지 검사해 타이밍 사이드채널을 줄인다(첫 매칭 후 early-return 하지 않음).
+ * 실제 DB 반영은 호출부가 matchedHash 를 가드로 한 원자적 CAS 로 수행한다(동시 재사용 방지).
  */
 export function verifyAndConsumeRecoveryCode(
   storedHashes: string[],
   input: string,
 ): RecoveryConsumeResult {
   const code = normalizeRecoveryCode(input);
-  if (!code) return { matched: false, remaining: storedHashes };
+  if (!code) return { matched: false, matchedHash: null, remaining: storedHashes };
 
   let matchedIndex = -1;
   storedHashes.forEach((stored, i) => {
     if (matchesStored(stored, code) && matchedIndex === -1) matchedIndex = i;
   });
 
-  if (matchedIndex === -1) return { matched: false, remaining: storedHashes };
+  if (matchedIndex === -1) return { matched: false, matchedHash: null, remaining: storedHashes };
   return {
     matched: true,
+    matchedHash: storedHashes[matchedIndex]!,
     remaining: storedHashes.filter((_, i) => i !== matchedIndex),
   };
 }
