@@ -66,7 +66,9 @@
   - [x] ST-001 로그인 핵심 (Supabase Auth SSR + CM-01 + 5회 잠금 + 역할 리다이렉트 + audit + return_url) — login_attempts 마이그레이션 26 + record_login_failure RPC + 미들웨어 인증가드 + 랜딩 placeholder 3종. 듀얼검증 PASS_WITH_KI(evaluator 8.38 / codex CONDITIONAL→정정), E2E 9/9 staging 실증. KI-078~083 등록.
   - [ ] ST-002 비밀번호 찾기 (CM-02) / ST-003 활성화 (CM-03) / ST-004 2FA (CM-04)
   - [ ] ST-078 약관/동의 (CM-21) / ST-072 오류·점검 (CM-06)
-- [ ] WI-021-feat zod-to-openapi + CI(phase7-code.yml 4 job) + 디자인 시스템 베이스 (Day 13~14)
+- [~] WI-021-feat CI(phase7-code.yml 4 job) + zod-to-openapi 파이프라인 + 로그인 E2E 자동화 (Day 13~14)
+  - [x] phase7-code.yml 4 job(lint/typecheck/unit-test/build, apps·packages path-scope) + OpenAPI diff 게이트(ls-files+diff) + KI-082 로그인 E2E job(secrets 5종 묶음 조건부) + build-openapi.ts(zod→OpenAPI 3.1 파이프라인) + dist/openapi.yaml(gitignore 예외 추적) + turbo typecheck→build 선행 + PR template 코드 PR 게이트. 로컬 19 task/18 unit/E2E 9/9/openapi 결정성 PASS. 듀얼검증: evaluator 1차 FAIL(39 entity 분리 결정) → codex 1차 CONDITIONAL(P2 2건 정정) → 재평가.
+- [ ] WI-021-1-feat 39 entity zod schema 변환 (ERD/api·schemas.md → packages/schemas, openapi.yaml 39 components) — Sprint 1 잔여, WI-021에서 분할 (사용자 결정 2026-05-29: CI 토대 먼저 머지 + 39 entity 집중 작업). 연기 아님 — 둘 다 Sprint 1.
 
 ## Phase 8 — QA 시나리오
 

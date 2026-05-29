@@ -24,7 +24,7 @@
 
 > dependency-graph SSOT: ST-001 (없음) → ST-002~004 (← ST-001) + ST-005 (← ST-001, ST-068 동시) + ST-068/069 (← Supabase 인프라) 병렬. ST-072/078은 ST-005/068 의존.
 
-> **WI 번호 매핑 (KI-075, fix_plan.md Phase 7 SSOT)**: WI-018(모노레포 Day1~2) / WI-019(apps/web 스캐폴드 + supabase 인프라 + RLS + audit + Realtime, Day3~5·8~10) / WI-020(인증 ST-001~004 + 약관/오류, Day6~7·11~12) / WI-021(zod-openapi + CI, Day13~14). 이전 `WI-001-feat`/`WI-bootstrap` 표기는 WI-001이 docs 점유라 오용 — 본 매핑으로 정정. Day별 작업은 1 WI 내 여러 commit으로 분할 가능.
+> **WI 번호 매핑 (KI-075, fix_plan.md Phase 7 SSOT)**: WI-018(모노레포 Day1~2) / WI-019(apps/web 스캐폴드 + supabase 인프라 + RLS + audit + Realtime, Day3~5·8~10) / WI-020(인증 ST-001~004 + 약관/오류, Day6~7·11~12) / WI-021(zod-openapi 파이프라인 + CI + 로그인 E2E, Day13~14) + WI-021-1(39 entity zod schema 변환, Sprint 1 잔여 — 2026-05-29 사용자 결정 분할). 이전 `WI-001-feat`/`WI-bootstrap` 표기는 WI-001이 docs 점유라 오용 — 본 매핑으로 정정. Day별 작업은 1 WI 내 여러 commit으로 분할 가능.
 
 ### Day 1~2: 모노레포 셋업
 ```bash
