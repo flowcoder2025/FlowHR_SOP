@@ -2,8 +2,9 @@ openapi: 3.1.0
 info:
   title: FlowHR API
   version: 0.1.0
-  description: FlowHR 멀티테넌트 HR SaaS API 명세. zod 스키마(@flowhr/schemas)에서
-    zod-to-openapi 로 자동 생성한다. 엔드포인트/엔티티 스키마는 Sprint 2~6 에 점진 확장.
+  description: "FlowHR 멀티테넌트 HR SaaS API 명세. zod 스키마(@flowhr/schemas)에서
+    zod-to-openapi 로 자동 생성한다. WI-021-1: ERD 39 entity(snake_case, DB Row 1:1)
+    등록. 엔드포인트 req/res 는 Sprint 2~6 점진 확장."
 components:
   schemas:
     Login:
@@ -52,6 +53,2459 @@ components:
           minimum: 1
           maximum: 100
           default: 20
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - sales_stopped
+            - custom
+        base_price_krw:
+          type:
+            - number
+            - "null"
+        per_user_price_krw:
+          type:
+            - number
+            - "null"
+        included_users:
+          type:
+            - integer
+            - "null"
+        modules:
+          type: array
+          items:
+            type: string
+        is_public:
+          type: boolean
+        sort_order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - slug
+        - status
+        - base_price_krw
+        - per_user_price_krw
+        - included_users
+        - modules
+        - is_public
+        - sort_order
+        - created_at
+        - updated_at
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        business_number:
+          type:
+            - string
+            - "null"
+        representative_name:
+          type:
+            - string
+            - "null"
+        industry:
+          type:
+            - string
+            - "null"
+        address:
+          type:
+            - string
+            - "null"
+        phone:
+          type:
+            - string
+            - "null"
+        plan_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - overdue
+            - expiring_soon
+            - expired
+            - archived
+        contract_start_date:
+          type:
+            - string
+            - "null"
+          format: date
+        contract_end_date:
+          type:
+            - string
+            - "null"
+          format: date
+        user_limit:
+          type:
+            - integer
+            - "null"
+        active_user_count:
+          type: integer
+        admin_user_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        logo_url:
+          type:
+            - string
+            - "null"
+        metadata:
+          type: object
+          additionalProperties: {}
+        deleted_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - slug
+        - business_number
+        - representative_name
+        - industry
+        - address
+        - phone
+        - plan_id
+        - status
+        - contract_start_date
+        - contract_end_date
+        - user_limit
+        - active_user_count
+        - admin_user_id
+        - logo_url
+        - metadata
+        - deleted_at
+        - created_at
+        - updated_at
+    TenantDraft:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+        current_step:
+          type: integer
+        form_data:
+          type: object
+          additionalProperties: {}
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - created_by
+        - current_step
+        - form_data
+        - created_at
+        - updated_at
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        plan_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        billing_cycle:
+          type: string
+          enum:
+            - monthly
+            - annual
+        latched_base_price:
+          type:
+            - number
+            - "null"
+        latched_price_per_user:
+          type:
+            - number
+            - "null"
+        period_start:
+          type:
+            - string
+            - "null"
+          format: date
+        period_end:
+          type:
+            - string
+            - "null"
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - plan_id
+        - billing_cycle
+        - latched_base_price
+        - latched_price_per_user
+        - period_start
+        - period_end
+        - created_at
+        - updated_at
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        subscription_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        invoice_number:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - issued
+            - paid
+            - overdue
+            - failed
+            - refunded
+        period_month:
+          type:
+            - string
+            - "null"
+          format: date
+        active_users:
+          type:
+            - integer
+            - "null"
+        subtotal_krw:
+          type:
+            - number
+            - "null"
+        tax_krw:
+          type:
+            - number
+            - "null"
+        total_krw:
+          type:
+            - number
+            - "null"
+        payment_method:
+          type:
+            - string
+            - "null"
+        tax_invoice_id:
+          type:
+            - string
+            - "null"
+        issued_at:
+          type:
+            - string
+            - "null"
+          format: date
+        paid_at:
+          type:
+            - string
+            - "null"
+          format: date
+        due_date:
+          type:
+            - string
+            - "null"
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - subscription_id
+        - invoice_number
+        - status
+        - period_month
+        - active_users
+        - subtotal_krw
+        - tax_krw
+        - total_krw
+        - payment_method
+        - tax_invoice_id
+        - issued_at
+        - paid_at
+        - due_date
+        - created_at
+        - updated_at
+    FeatureFlag:
+      type: object
+      properties:
+        key:
+          type: string
+        label_ko:
+          type:
+            - string
+            - "null"
+        description:
+          type:
+            - string
+            - "null"
+        module:
+          type:
+            - string
+            - "null"
+        global_state:
+          type: string
+          enum:
+            - active
+            - inactive
+            - beta
+            - restricted
+        is_beta:
+          type: boolean
+        plan_ids:
+          type: array
+          items:
+            type: string
+        applied_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - key
+        - label_ko
+        - description
+        - module
+        - global_state
+        - is_beta
+        - plan_ids
+        - applied_at
+        - created_at
+        - updated_at
+    FeatureFlagOverride:
+      type: object
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        flag_key:
+          type: string
+        value:
+          type: boolean
+        reason:
+          type:
+            - string
+            - "null"
+        created_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - tenant_id
+        - flag_key
+        - value
+        - reason
+        - created_by
+        - created_at
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        ticket_number:
+          type: string
+        type:
+          type: string
+          enum:
+            - inquiry
+            - incident
+            - request
+            - other
+        priority:
+          type: string
+          enum:
+            - p0
+            - p1
+            - p2
+            - p3
+        status:
+          type: string
+          enum:
+            - open
+            - in_progress
+            - waiting_user
+            - resolved
+            - closed
+        title:
+          type: string
+        requester_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        assigned_to:
+          type:
+            - string
+            - "null"
+          format: uuid
+        sla_deadline:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - ticket_number
+        - type
+        - priority
+        - status
+        - title
+        - requester_id
+        - assigned_to
+        - sla_deadline
+        - created_at
+        - updated_at
+    TicketMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticket_id:
+          type: string
+          format: uuid
+        author_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        body:
+          type: string
+        is_internal:
+          type: boolean
+        attachment_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - ticket_id
+        - author_id
+        - body
+        - is_internal
+        - attachment_ids
+        - created_at
+    SystemSettings:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        brand_name:
+          type: string
+        brand_logo_url:
+          type:
+            - string
+            - "null"
+        brand_logo_url_dark:
+          type:
+            - string
+            - "null"
+        require_operator_2fa:
+          type: boolean
+        data_retention:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        mail_config:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        notification_channels:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        password_policy:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        session_policy:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - brand_name
+        - brand_logo_url
+        - brand_logo_url_dark
+        - require_operator_2fa
+        - data_retention
+        - mail_config
+        - notification_channels
+        - password_policy
+        - session_policy
+        - created_at
+        - updated_at
+    MaintenanceWindow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - inactive
+            - scheduled
+            - active
+        message_ko:
+          type:
+            - string
+            - "null"
+        scheduled_start:
+          type:
+            - string
+            - "null"
+          format: date-time
+        scheduled_end:
+          type:
+            - string
+            - "null"
+          format: date-time
+        activated_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        deactivated_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+      required:
+        - id
+        - status
+        - message_ko
+        - scheduled_start
+        - scheduled_end
+        - activated_at
+        - deactivated_at
+        - created_by
+    BackupJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+            - auto
+            - manual
+        status:
+          type: string
+          enum:
+            - pending
+            - running
+            - success
+            - failed
+        size_bytes:
+          type:
+            - integer
+            - "null"
+        storage_url:
+          type:
+            - string
+            - "null"
+        error_message:
+          type:
+            - string
+            - "null"
+        started_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        finished_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        triggered_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+      required:
+        - id
+        - kind
+        - status
+        - size_bytes
+        - storage_url
+        - error_message
+        - started_at
+        - finished_at
+        - triggered_by
+    OperatorUser:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum:
+            - operator_super
+            - operator_staff
+        is_active:
+          type: boolean
+        invited_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        activated_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+      required:
+        - user_id
+        - role
+        - is_active
+        - invited_at
+        - activated_at
+    Department:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type:
+            - string
+            - "null"
+        description:
+          type:
+            - string
+            - "null"
+        parent_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        head_employee_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        path_cache:
+          type:
+            - string
+            - "null"
+        sort_order:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - name
+        - code
+        - description
+        - parent_id
+        - head_employee_id
+        - path_cache
+        - sort_order
+        - is_active
+        - created_at
+        - updated_at
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        user_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        employee_number:
+          type:
+            - string
+            - "null"
+        name:
+          type: string
+        email:
+          type:
+            - string
+            - "null"
+          format: email
+        phone:
+          type:
+            - string
+            - "null"
+        department_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        position:
+          type:
+            - string
+            - "null"
+        job_title:
+          type:
+            - string
+            - "null"
+        employment_type:
+          type: string
+          enum:
+            - regular
+            - contract
+            - part_time
+            - freelancer
+        status:
+          type: string
+          enum:
+            - invited
+            - probation
+            - active
+            - on_leave
+            - resigned
+            - inactive
+        role:
+          type: string
+        birth_date:
+          type:
+            - string
+            - "null"
+          format: date
+        joined_at:
+          type:
+            - string
+            - "null"
+          format: date
+        left_at:
+          type:
+            - string
+            - "null"
+          format: date
+        probation_ends_at:
+          type:
+            - string
+            - "null"
+          format: date
+        address:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        emergency_contact:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        family_info:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        bank_account_encrypted:
+          type:
+            - string
+            - "null"
+        avatar_url:
+          type:
+            - string
+            - "null"
+        deleted_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - user_id
+        - employee_number
+        - name
+        - email
+        - phone
+        - department_id
+        - position
+        - job_title
+        - employment_type
+        - status
+        - role
+        - birth_date
+        - joined_at
+        - left_at
+        - probation_ends_at
+        - address
+        - emergency_contact
+        - family_info
+        - bank_account_encrypted
+        - avatar_url
+        - deleted_at
+        - created_at
+        - updated_at
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        employee_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        tenant_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        role:
+          type:
+            - string
+            - "null"
+        locale:
+          type: string
+        totp_enabled:
+          type: boolean
+        totp_secret_encrypted:
+          type:
+            - string
+            - "null"
+        recovery_codes_hash:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+        last_login_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        last_login_ip:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - employee_id
+        - tenant_id
+        - role
+        - locale
+        - totp_enabled
+        - totp_secret_encrypted
+        - recovery_codes_hash
+        - last_login_at
+        - last_login_ip
+        - created_at
+        - updated_at
+    Role:
+      type: object
+      properties:
+        key:
+          type: string
+        label_ko:
+          type:
+            - string
+            - "null"
+        is_system:
+          type: boolean
+        default_permissions:
+          type: object
+          additionalProperties: {}
+      required:
+        - key
+        - label_ko
+        - is_system
+        - default_permissions
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - approval
+            - document
+            - system
+            - announcement
+        title:
+          type:
+            - string
+            - "null"
+        message:
+          type:
+            - string
+            - "null"
+        link_url:
+          type:
+            - string
+            - "null"
+        metadata:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        read_status:
+          type: boolean
+        read_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - user_id
+        - type
+        - title
+        - message
+        - link_url
+        - metadata
+        - read_status
+        - read_at
+        - created_at
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        actor_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        actor_role:
+          type:
+            - string
+            - "null"
+        action:
+          type: string
+        target_type:
+          type:
+            - string
+            - "null"
+        target_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        before:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        after:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        result:
+          type: string
+          enum:
+            - success
+            - failed
+            - denied
+        ip:
+          type:
+            - string
+            - "null"
+        user_agent:
+          type:
+            - string
+            - "null"
+        request_id:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - actor_id
+        - actor_role
+        - action
+        - target_type
+        - target_id
+        - before
+        - after
+        - result
+        - ip
+        - user_agent
+        - request_id
+        - created_at
+    EmployeeChangeRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        approval_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        field_name:
+          type: string
+        old_value:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        new_value:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        reason:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - pending
+            - approved
+            - rejected
+            - cancelled
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - employee_id
+        - approval_id
+        - field_name
+        - old_value
+        - new_value
+        - reason
+        - status
+        - created_at
+        - updated_at
+    TenantSettings:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        company_info:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        notification_config:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        security_policy:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - company_info
+        - notification_config
+        - security_policy
+        - created_at
+        - updated_at
+    WorkPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        is_default:
+          type: boolean
+        standard_clock_in:
+          type:
+            - string
+            - "null"
+        standard_clock_out:
+          type:
+            - string
+            - "null"
+        late_threshold:
+          type:
+            - string
+            - "null"
+        break_minutes_default:
+          type: integer
+        weekly_max_hours:
+          type: integer
+        applicable_departments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        applied_from:
+          type:
+            - string
+            - "null"
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - name
+        - is_default
+        - standard_clock_in
+        - standard_clock_out
+        - late_threshold
+        - break_minutes_default
+        - weekly_max_hours
+        - applicable_departments
+        - applied_from
+        - created_at
+        - updated_at
+    DocumentTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        label_ko:
+          type:
+            - string
+            - "null"
+        template_body:
+          type:
+            - string
+            - "null"
+        template_format:
+          type:
+            - string
+            - "null"
+        variables:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - key
+        - label_ko
+        - template_body
+        - template_format
+        - variables
+        - created_at
+        - updated_at
+    Integration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        status:
+          type: string
+          enum:
+            - disconnected
+            - connected
+            - error
+            - expired
+        config:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        credentials_encrypted:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        failure_count_24h:
+          type: integer
+        last_synced_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - type
+        - status
+        - config
+        - credentials_encrypted
+        - failure_count_24h
+        - last_synced_at
+        - created_at
+        - updated_at
+    IntegrationLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        integration_id:
+          type: string
+          format: uuid
+        event_type:
+          type:
+            - string
+            - "null"
+        http_status:
+          type:
+            - integer
+            - "null"
+        request_payload:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        response_payload:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        error_message:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - integration_id
+        - event_type
+        - http_status
+        - request_payload
+        - response_payload
+        - error_message
+        - created_at
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        owner_type:
+          type: string
+        key_hash:
+          type: string
+        label:
+          type:
+            - string
+            - "null"
+        scopes:
+          type: array
+          items:
+            type: string
+        reason:
+          type:
+            - string
+            - "null"
+        usage_count:
+          type: integer
+        expires_at:
+          type:
+            - string
+            - "null"
+          format: date
+        last_used_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        revoked_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - owner_type
+        - key_hash
+        - label
+        - scopes
+        - reason
+        - usage_count
+        - expires_at
+        - last_used_at
+        - revoked_at
+        - created_by
+        - created_at
+    Signature:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+          format: uuid
+        signer_employee_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        signer_method:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - pending
+            - signed
+            - rejected
+            - expired
+        signature_image_url:
+          type:
+            - string
+            - "null"
+        external_provider:
+          type:
+            - string
+            - "null"
+        external_id:
+          type:
+            - string
+            - "null"
+        evidence_payload:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        signed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - document_id
+        - signer_employee_id
+        - signer_method
+        - status
+        - signature_image_url
+        - external_provider
+        - external_id
+        - evidence_payload
+        - signed_at
+        - created_at
+    Location:
+      type: object
+      properties:
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
+        accuracy:
+          type: number
+          minimum: 0
+      required:
+        - lat
+        - lng
+    Attendance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        work_date:
+          type: string
+          format: date
+        clock_in_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        clock_out_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        break_minutes:
+          type: integer
+        work_minutes:
+          type:
+            - integer
+            - "null"
+        work_type:
+          type: string
+          enum:
+            - office
+            - remote
+            - outside
+            - business_trip
+        status:
+          type: string
+          enum:
+            - normal
+            - late
+            - early_leave
+            - absent
+            - leave
+            - remote
+            - outside
+            - business_trip
+            - missing
+            - modification_pending
+            - modification_done
+        clock_in_location:
+          type:
+            - object
+            - "null"
+          properties:
+            lat:
+              type: number
+              minimum: -90
+              maximum: 90
+            lng:
+              type: number
+              minimum: -180
+              maximum: 180
+            accuracy:
+              type: number
+              minimum: 0
+          required:
+            - lat
+            - lng
+        clock_out_location:
+          type:
+            - object
+            - "null"
+          properties:
+            lat:
+              type: number
+              minimum: -90
+              maximum: 90
+            lng:
+              type: number
+              minimum: -180
+              maximum: 180
+            accuracy:
+              type: number
+              minimum: 0
+          required:
+            - lat
+            - lng
+        device_id:
+          type:
+            - string
+            - "null"
+        modified_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+        modification_reason:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - employee_id
+        - work_date
+        - clock_in_at
+        - clock_out_at
+        - break_minutes
+        - work_minutes
+        - work_type
+        - status
+        - clock_in_location
+        - clock_out_location
+        - device_id
+        - modified_by
+        - modification_reason
+        - created_at
+        - updated_at
+    AttendanceModification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        attendance_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        approval_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        request_type:
+          type: string
+          enum:
+            - clock_in
+            - clock_out
+            - break
+            - outside
+        status:
+          type: string
+          enum: &a2
+            - draft
+            - pending
+            - in_progress
+            - approved
+            - rejected
+            - cancelled
+        target_date:
+          type:
+            - string
+            - "null"
+          format: date
+        original_value:
+          type:
+            - string
+            - "null"
+          format: date-time
+        requested_value:
+          type:
+            - string
+            - "null"
+          format: date-time
+        reason:
+          type:
+            - string
+            - "null"
+        attachment_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - employee_id
+        - attendance_id
+        - approval_id
+        - request_type
+        - status
+        - target_date
+        - original_value
+        - requested_value
+        - reason
+        - attachment_ids
+        - created_at
+        - updated_at
+    LeaveType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        label_ko:
+          type:
+            - string
+            - "null"
+        default_days:
+          type: number
+        is_paid:
+          type: boolean
+        carryover_allowed:
+          type: boolean
+        evidence_required:
+          type: boolean
+        sort_order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - key
+        - label_ko
+        - default_days
+        - is_paid
+        - carryover_allowed
+        - evidence_required
+        - sort_order
+        - created_at
+        - updated_at
+    Leave:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        leave_type_id:
+          type: string
+          format: uuid
+        approval_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        substitute_employee_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        start_date:
+          type:
+            - string
+            - "null"
+          format: date
+        end_date:
+          type:
+            - string
+            - "null"
+          format: date
+        half_day:
+          type: string
+          enum:
+            - none
+            - start
+            - end
+        used_days:
+          type: number
+        reason:
+          type:
+            - string
+            - "null"
+        attachment_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        status:
+          type: string
+          enum:
+            - draft
+            - pending
+            - in_progress
+            - approved
+            - rejected
+            - cancelled
+            - completed
+        requested_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        completed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - employee_id
+        - leave_type_id
+        - approval_id
+        - substitute_employee_id
+        - start_date
+        - end_date
+        - half_day
+        - used_days
+        - reason
+        - attachment_ids
+        - status
+        - requested_at
+        - completed_at
+        - created_at
+        - updated_at
+    LeaveBalance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        leave_type_id:
+          type: string
+          format: uuid
+        year:
+          type: integer
+        granted:
+          type: number
+        used:
+          type: number
+        scheduled:
+          type: number
+        remaining:
+          type:
+            - number
+            - "null"
+        expires_at:
+          type:
+            - string
+            - "null"
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - employee_id
+        - leave_type_id
+        - year
+        - granted
+        - used
+        - scheduled
+        - remaining
+        - expires_at
+        - created_at
+        - updated_at
+    ApprovalLine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        request_type:
+          type: string
+          enum: &a1
+            - leave
+            - attendance_mod
+            - certificate
+            - change_request
+            - document
+        conditions:
+          type: array
+          items: {}
+        default_line:
+          type: array
+          items: {}
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - name
+        - request_type
+        - conditions
+        - default_line
+        - is_active
+        - created_at
+        - updated_at
+    Approval:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        requester_id:
+          type: string
+          format: uuid
+        request_type:
+          type: string
+          enum: *a1
+        request_object_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        title:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum: *a2
+        current_step:
+          type: integer
+        total_steps:
+          type: integer
+        sla_deadline:
+          type:
+            - string
+            - "null"
+          format: date-time
+        requested_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        completed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - requester_id
+        - request_type
+        - request_object_id
+        - title
+        - status
+        - current_step
+        - total_steps
+        - sla_deadline
+        - requested_at
+        - completed_at
+        - created_at
+        - updated_at
+    ApprovalStep:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        approval_id:
+          type: string
+          format: uuid
+        approver_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        step_order:
+          type: integer
+        status:
+          type: string
+          enum:
+            - pending
+            - approved
+            - rejected
+            - skipped
+            - delegated
+        comment:
+          type:
+            - string
+            - "null"
+        processed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - approval_id
+        - approver_id
+        - step_order
+        - status
+        - comment
+        - processed_at
+        - created_at
+        - updated_at
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        sub_type:
+          type: string
+          enum:
+            - payslip
+            - contract
+            - certificate
+            - personal
+            - company
+        status:
+          type: string
+          enum:
+            - draft
+            - created
+            - sent
+            - viewed
+            - acknowledged
+            - expired
+        visibility:
+          type: string
+          enum:
+            - owner_only
+            - owner_and_hr
+            - company_wide
+        title:
+          type:
+            - string
+            - "null"
+        owner_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        template_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        created_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+        file_url:
+          type:
+            - string
+            - "null"
+        file_size_bytes:
+          type:
+            - integer
+            - "null"
+        mime_type:
+          type:
+            - string
+            - "null"
+        metadata:
+          type:
+            - object
+            - "null"
+          additionalProperties: {}
+        expires_at:
+          type:
+            - string
+            - "null"
+          format: date
+        sent_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        viewed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        acknowledged_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        deleted_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - sub_type
+        - status
+        - visibility
+        - title
+        - owner_id
+        - template_id
+        - created_by
+        - file_url
+        - file_size_bytes
+        - mime_type
+        - metadata
+        - expires_at
+        - sent_at
+        - viewed_at
+        - acknowledged_at
+        - deleted_at
+        - created_at
+        - updated_at
+    CertificateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+          format: uuid
+        approval_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        certificate_type:
+          type:
+            - string
+            - "null"
+        purpose:
+          type:
+            - string
+            - "null"
+        copies:
+          type: integer
+        delivery_method:
+          type:
+            - string
+            - "null"
+        submission_target:
+          type:
+            - string
+            - "null"
+        request_memo:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - pending
+            - in_progress
+            - issued
+            - rejected
+            - cancelled
+        issued_document_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        issued_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - employee_id
+        - approval_id
+        - certificate_type
+        - purpose
+        - copies
+        - delivery_method
+        - submission_target
+        - request_memo
+        - status
+        - issued_document_id
+        - issued_at
+        - created_at
+        - updated_at
+    LegalDocument:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - terms
+            - privacy
+        version:
+          type: string
+        language:
+          type: string
+        effective_date:
+          type:
+            - string
+            - "null"
+          format: date
+        title:
+          type:
+            - string
+            - "null"
+        content_md:
+          type:
+            - string
+            - "null"
+        summary_md:
+          type:
+            - string
+            - "null"
+        is_active:
+          type: boolean
+        published_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+        published_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - version
+        - language
+        - effective_date
+        - title
+        - content_md
+        - summary_md
+        - is_active
+        - published_by
+        - published_at
+        - created_at
+        - updated_at
+    UserConsent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+        version:
+          type: string
+        source:
+          type: string
+          enum:
+            - activate
+            - forced
+            - footer
+        ip_address:
+          type:
+            - string
+            - "null"
+        user_agent:
+          type:
+            - string
+            - "null"
+        consented_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - user_id
+        - document_id
+        - document_type
+        - version
+        - source
+        - ip_address
+        - user_agent
+        - consented_at
   parameters: {}
 paths: {}
 webhooks: {}

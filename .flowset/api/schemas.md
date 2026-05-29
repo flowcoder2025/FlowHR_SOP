@@ -2,6 +2,13 @@
 
 > Phase 7 코드 생성 시 `packages/schemas/`에 그대로 변환. zod-to-openapi로 OpenAPI 스키마 자동 생성.
 > 37 엔티티 응답 스키마는 `database.ts`(Supabase 자동 생성) + 가공 변환 wrapper.
+>
+> **⚠️ casing/SSOT 정합 (WI-021-1, 2026-05-29 codex 협의)**: 39 entity 스키마의 **실제 구현 SSOT 는
+> `packages/schemas/src/entities/*` + `packages/schemas/dist/openapi.yaml`**. 본 문서 예시의 camelCase
+> 필드명(`createdAt`/`tenantId` 등)은 Phase 4 초안이며, 실제 entity 스키마는 **DB snake_case 1:1**
+> (`database.ts` Row, `created_at`/`tenant_id`)로 확정됐다 — supabase 직결 + 변환 레이어 미사용
+> (`apps/web` 서버액션이 snake_case 반환값을 직접 사용). 본 문서는 Envelope/페이지네이션/패턴 참고용이며
+> entity 필드 casing 은 `packages/schemas` 를 따른다. (endpoint req/res 스키마는 Sprint 2~6 점진 확장)
 
 ## 1. Envelope
 
@@ -363,3 +370,4 @@ export const RealtimeEvent = <T extends z.ZodTypeAny>(payloadSchema: T) =>
 |------|------|------|
 | 2026-05-15 | 초안 — Envelope + 페이지네이션 + 핵심 엔티티 8 + Approval polymorphic + ConditionRule (KI-019 해소) + Location jsonb (KI-018 해소) | Phase 4 진입 |
 | 2026-05-15 | LegalDocument / UserConsent zod + NotificationListResponse | KI-030 batch-003 |
+| 2026-05-29 | casing/SSOT 정합 노트 — 실제 entity 스키마 SSOT = `packages/schemas/src/entities/*`(DB snake_case 1:1, 45 components openapi.yaml). 본 문서 camelCase 예시는 Phase 4 초안 참고 | WI-021-1 (codex 협의) |
