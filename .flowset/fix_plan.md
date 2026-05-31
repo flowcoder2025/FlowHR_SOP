@@ -74,6 +74,23 @@
 - [x] WI-021-1-feat 39 entity zod schema 변환 — packages/schemas/src/entities/{enums,operator,hr,settings,attendance,leave,approval,compliance}.ts (DB snake_case 1:1, database.ts Row 정합) + openapi.yaml 45 components + entities.test.ts 23 + api/schemas.md SSOT 정합 노트. 듀얼검증 PASS_BOTH(evaluator 1차 FAIL 8.25→재평가 8.75 / codex 4라운드 PASS — role/document_type/request_id DB text + ip_address nullable inet 정정, false alarm 5건 입증). KI-090 등록. Sprint 1 잔여(WI-021 분할, 사용자 결정 2026-05-29).
 - [x] WI-VercelDeploy-fix Vercel 모노레포 배포 설정 수정 (batch K, 2026-06-01) — `rootDirectory=apps/web` + `framework=nextjs` (Vercel REST API `PATCH /v9/projects`). WI-019부터 누적된 production 배포 실패(`No Output Directory named "public"`) 해소: 프로젝트 설정 전부 null → 모노레포 루트를 일반 프로젝트로 인식 → Next.js 미감지 → 루트 `public/` 탐색. **빌드 자체는 항상 성공(26 페이지), output 위치만 문제**. workspace 패키지 전부 `exports ./src/index.ts` 소스 직접참조 + apps/web `transpilePackages`라 `next build` 단독 컴파일, 커스텀 buildCommand 불요. production redeploy 성공 + 사이트 `/`·`/ko`·`/ko/login` HTTP 200 + GitHub commit status failure→success (https://flowhr-sop.vercel.app). 프로젝트 설정이라 이후 자동배포 영속 적용. production env 미설정(service_role/2FA 키 — KI-099/098/086/103)은 사용자 조치 대기. 코드(apps/packages/supabase) 미변경 → 듀얼검증 게이트 비대상.
 
+### Sprint 2 — 테넌트 라이프사이클 + 회사 설정 P0 (codex 단일안 채택 2026-06-01, WI-030~038)
+
+> **진입 순서**(codex 협의): packages/ui 도메인 토대 → DB 보강 → TA-13(설정 API/UI) → OP-04(등록 API/마법사) → OP-02/03(목록/상세). 의존: ST-007~010←ST-006, ST-053/054←ST-005(완료).
+> **WI 번호**: Phase 8~10 예약(WI-022~029) 회피 → Sprint 2 dev는 **WI-030~038** (사용자 결정 2026-06-01).
+> **codex 정정(검증완료)**: sprint-002.md "마이그레이션 신규 생성"은 Phase 6 표현 — 9개 테이블 전부 mig 4/5/7/11에 이미 존재(Sprint 1 ERD 부트스트랩). Sprint 2 DB는 **delta/hardening/seed/scheduler 보강**. `tenant_settings` 겹침은 WI-031이 단독 소유로 해소.
+> **게이트**: 각 WI 독립 PR + 듀얼검증 PASS_BOTH + `.flowset/eval-results/<WI>.pass` 마커 의무(project.md §1-1).
+
+- [~] WI-030-feat packages/ui 도메인 primitive 5종 (Stepper/DataTable+RowLink/FilterBar+FilterChip+FilterPanel/DomainPrefixInput/SettingsPane+VerticalTabs) — Phase 5 `_design-system/components.css` SSOT React 변환, 비즈니스 로직 없는 reusable primitive. KI-061(Stepper 컴포넌트화 — G3 list SSOT 채택, G2 dead code 미사용) 자연 해소. 검증 인프라(vitest node + react-dom/server renderToStaticMarkup, jsdom 불요) 신규 + 단위 24. turbo lint/typecheck/test/build 21/21. 듀얼검증 대기.
+- [ ] WI-031-feat Sprint 2 DB foundation (마이그레이션 36~38: lifecycle/settings 보강 + draft partial unique + 검색 인덱스 + 예약 적용 큐 + plan/roles seed) — ⚠️ **DB schema 사용자 승인 필요**(§5/§7-2)
+- [ ] WI-032-feat TA-13 회사설정 API (GET/PATCH /tenant/settings/* 9탭 + 적용일 즉시/예약 cron) [ST-053]
+- [ ] WI-033-feat TA-13 회사설정 UI (SettingsPane 9탭 shell + 회사정보/근무/휴가/결재라인 4탭 폼 + E2E) [ST-053]
+- [ ] WI-034-feat 결재라인 조건 분기 (approval_lines.conditions jsonb 평가엔진 + 조건트리 UI + E2E) [ST-054]
+- [ ] WI-035-feat OP-04 등록 API (check-domain/business-number 검증 + drafts upsert + 최종 등록 트랜잭션 + 관리자 초대) [ST-006]
+- [ ] WI-036-feat OP-04 7단계 마법사 UI (Stepper + 실시간검증 + 임시저장 재진입 + 초기데이터) + 관리자 활성화 [ST-006/010]
+- [ ] WI-037-feat OP-02 테넌트 목록 (DataTable/FilterBar + 검색/필터/sort/페이지/Excel) + 상태변경 audit [ST-007/009]
+- [ ] WI-038-feat OP-03 테넌트 상세 8탭 (URL 동기화 + 비활성화 Realtime broadcast) [ST-008]
+
 ## Phase 8 — QA 시나리오
 
 - [ ] WI-022-test Gherkin 시나리오 (골든 패스)
