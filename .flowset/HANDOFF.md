@@ -1,8 +1,32 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-01 batch J (Phase 7 Sprint 1 — WI-020-6 ST-003 계정 활성화(CM-03) 완료 → **WI-020 인증 전체(ST-001~004 + ST-078/072) 종료**). 듀얼검증 PASS_BOTH(PR #44).
-> **신규 세션 첫 작업**: 본 문서 **§-0j (2026-06-01 batch J)** 정독 → **다음 Sprint 작업 선정**(WI-020 인증 도메인 완료. sprint-001 잔여/Sprint 2 진입은 mvp-plan.md + sprint-00N.md 확인). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-01 batch K (Vercel 모노레포 배포 설정 수정 — `rootDirectory=apps/web`+`framework=nextjs`. WI-019부터 누적된 production 배포 실패(`No Output Directory named "public"`) 해소. https://flowhr-sop.vercel.app 200 + GitHub status success).
+> **신규 세션 첫 작업**: 본 문서 **§-0k (2026-06-01 batch K)** 정독 → **Sprint 2 진입**(Sprint 1 전체 완료 ST-001~005+068/069/072/078. sprint-002.md 테넌트 라이프사이클+회사설정 P0 49 SP, 진입 순서/WI 분할은 codex 단일안 협의 후 착수). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-01 batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+
+## -0k. 2026-06-01 batch K 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — Vercel 모노레포 배포 설정 수정 (WI-019부터 누적된 배포 실패 해소)
+
+사용자 지시로 Sprint 2 진입 전 Vercel production 배포 실패를 먼저 해소. **빌드는 WI-019부터 항상 성공**(26 페이지 생성)했고, output 위치 인식만 실패했음.
+
+| 항목 | 내용 |
+|------|------|
+| 원인 | Vercel 프로젝트 설정이 **전부 null**(framework/rootDirectory/buildCommand/outputDirectory) → 모노레포 루트를 일반 프로젝트로 인식 → **Next.js 미감지** → 빌드 결과(`apps/web/.next`) 못 찾고 루트 `public/` 탐색 → `Error: No Output Directory named "public" found` 실패 |
+| 해법 | 프로젝트 설정 **`rootDirectory=apps/web` + `framework=nextjs`** (Vercel REST API `PATCH /v9/projects/{id}?teamId=`, CLI 토큰 `%APPDATA%\com.vercel.cli\Data\auth.json` 의 `.token`). **커스텀 buildCommand 불필요** — 모든 workspace 패키지가 `exports: ./src/index.ts` 소스 직접참조 + apps/web `transpilePackages`라 `next build` 단독으로 전부 컴파일(turbo/dist 빌드 불요) |
+| 검증 | production redeploy 성공(`Building→Completing→Aliased`) + 사이트 `/`·`/ko`·`/ko/login` **HTTP 200**(로그인 폼 렌더) + GitHub commit status **failure→success**. https://flowhr-sop.vercel.app |
+| 영속성 | 프로젝트 설정이라 **이후 모든 push/PR 자동배포에 적용**. preview는 기존 Supabase mock 전략 유지. `.vercel/project.json`은 gitignore라 git에 미반영(메모리 `infra-free-tier-policy`에 기록) |
+
+### ⚠️ production env 미설정 (배포는 정상, 일부 기능 fail-closed) — 사용자 조치 대기
+- **KI-099**(2FA env 2키 `AUTH_TOTP_ENC_KEY`/`AUTH_CHALLENGE_SECRET` — 미설정 시 2FA 사용자 production 로그인 차단) / **KI-098**(비번재설정 Recovery 템플릿+Redirect URL) / **KI-086**(leaked-password) / **KI-103**(Resend 이메일). 실사용자 없어 비차단. 베타 진입 전 일괄 프로비저닝 권장.
+
+### 다음 세션 첫 작업 — Sprint 2 진입 (테넌트 라이프사이클 + 회사 설정 P0)
+
+- **Sprint 1 전체 완료**(ST-001~005 + ST-068/069 + ST-072 + ST-078, 9 Story 42 SP, 전부 듀얼검증 PASS_BOTH). 다음은 **Sprint 2**(`sprint-002.md`): ST-006 OP-04 7단계 마법사(13) / ST-007 OP-02 목록(5) / ST-008 OP-03 상세 8탭(8) / ST-009 상태변경+audit(3) / ST-010 관리자 활성화(2) / ST-053 TA-13 회사설정 9탭(13) / ST-054 결재라인 분기(5) = **49 SP**.
+- ⚠️ **첫 진짜 도메인 UI 단계** — `packages/ui` 도메인 컴포넌트(Stepper/DataTable/FilterBar/DomainPrefixInput/SettingsPane) 신규 필요(현재 base 5종 Button/Input/Label/Card/Alert만). 이 컴포넌트화가 **P2 KI-054/061**(IconButton aria-label / Stepper 컴포넌트화) 자연해소 지점.
+- **진입 순서/WI 분할 미정(사용자 협의 대기)** — 후보 3안: (A) ST-006 마법사 핵심부터 / (B) packages/ui 토대 먼저 / (C) ST-007 목록 작게 시작. **codex 단일안 협의 후 착수.** (의존: ST-007~010 ← ST-006, ST-006/053 동시)
+- **P2 트리거 5건(KI-054/061/079/092/094, 임계 도달)**: prd-state 기록상 **defer 확정**(전부 미래 WI 자연해소 — KI-054/061 Sprint 2 packages/ui / KI-079 세션관리 / KI-092 OP-09 감사 / KI-094 글로벌 출시). 유지 여부 사용자 재확인 가능.
+- ⚠️ 마이그레이션은 supabase MCP(원격 staging `nwcttwuvdnelfbpjeqzr`) 경로 — Docker 미설치. 코드 WI 머지는 **듀얼검증 게이트 필수**(project.md §1-1).
 
 ## -0j. 2026-06-01 batch J 세션 진척 — **신규 세션 여기부터**
 
