@@ -2426,7 +2426,7 @@ export type Database = {
           tenant_id: string | null
           operator_flag: boolean
           expires_at: string
-          status: string
+          status: Database["public"]["Enums"]["invitation_status"]
           is_expired: boolean
           company_name: string | null
         }[]
