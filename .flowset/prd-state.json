@@ -93,9 +93,16 @@
       "project": "flowhr-sop",
       "scope": "yh-devs-projects (kryou2922 계정)",
       "migration_plan": "나중에 flowcoder25로 이전 예정",
+      "monorepo_settings": {
+        "fixed_at": "2026-06-01 (batch K)",
+        "rootDirectory": "apps/web",
+        "framework": "nextjs",
+        "note": "WI-019부터 누적된 production 배포 실패(No Output Directory named 'public') 해소. 프로젝트 설정이 전부 null이라 모노레포 루트를 일반 프로젝트로 인식→Next.js 미감지→루트 public/ 탐색 실패. rootDirectory/framework 지정(Vercel REST API PATCH /v9/projects). workspace 패키지 전부 exports ./src/index.ts 소스 직접참조 + apps/web transpilePackages라 next build 단독 컴파일, 커스텀 buildCommand 불요. production https://flowhr-sop.vercel.app 200 + GitHub commit status success. 프로젝트 설정이라 이후 모든 자동배포에 영속 적용"
+      },
       "env_set": {
         "production": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY (legacy JWT)"],
-        "pending": ["SUPABASE_SERVICE_ROLE_KEY (WI-020 서버 작업 시)"]
+        "pending": ["SUPABASE_SERVICE_ROLE_KEY (서버 액션/RLS 우회)", "AUTH_TOTP_ENC_KEY (KI-099 2FA)", "AUTH_CHALLENGE_SECRET (KI-099 2FA)", "Recovery 이메일 템플릿+Redirect URL (KI-098)", "leaked-password protection (KI-086)", "Resend 이메일 (KI-103)"],
+        "verified_at": "2026-06-01 (.vercel/.env.production.local 실측 — 사용자 env는 SUPABASE URL+anon 2개만, 나머지 VERCEL_*/TURBO_* 는 빌드시스템 자동주입)"
       },
       "preview_strategy": "옵션 V — Supabase 미연동 mock (production만 연동)",
       "warning": "기존 yh-devs/flowhr(별개 프로젝트, payroll)는 무관 — 건드리지 말 것"
