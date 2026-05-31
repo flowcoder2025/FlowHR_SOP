@@ -1,8 +1,37 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-05-29 batch I (Phase 7 Sprint 1 — WI-020-5 ST-004 2FA TOTP(CM-04) 완료). 듀얼검증 PASS_BOTH 후 머지(PR #43).
-> **신규 세션 첫 작업**: 본 문서 **§-0i (2026-05-29 batch I)** 정독 → **WI-020-6 ST-003 계정 활성화(CM-03) 구현**. ⚠️ **착수 전 사용자 승인 필요** — 커스텀 `invitations` 테이블 = DB schema 변경(`project.md §5/§7-2`). 약관 동의는 ST-078 `recordConsent(source='activate')` 재사용, 선택 2FA 는 ST-004 enable 재사용. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-05-29 batch H (WI-020-4 ST-002 비번찾기/재설정 + WI-020-5 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-01 batch J (Phase 7 Sprint 1 — WI-020-6 ST-003 계정 활성화(CM-03) 완료 → **WI-020 인증 전체(ST-001~004 + ST-078/072) 종료**). 듀얼검증 PASS_BOTH(PR #44).
+> **신규 세션 첫 작업**: 본 문서 **§-0j (2026-06-01 batch J)** 정독 → **다음 Sprint 작업 선정**(WI-020 인증 도메인 완료. sprint-001 잔여/Sprint 2 진입은 mvp-plan.md + sprint-00N.md 확인). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+
+## -0j. 2026-06-01 batch J 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-020-6-feat ST-003 계정 활성화 (CM-03, PR #44 머지)
+
+**create-at-activate** 설계(codex 수렴) — `auth.users` 를 **활성화 시점에 생성**(초대 시점엔 invitations 행만). 활성화 전 계정 부재로 **forgot-password 우회를 구조적으로 차단**(로그인/재설정 경로 무수정). 사용자 승인 후 DB schema(invitations 테이블) 추가.
+
+| 영역 | 산출물 |
+|------|--------|
+| 마이그레이션 35 | `invitations` 테이블(token_hash/email/target_role/tenant_id/employee_id/operator_flag/invited_by/expires_at/accepted_at/accepted_user_id/status) + `invitation_status` enum(pending/accepted/revoked) + RLS 6(operator full / tenant_admin operator_flag=false 차단) + SECURITY DEFINER 함수 2: `get_invitation_by_token_hash`(비인증 검증, 최소 projection, anon+service grant) / `accept_invitation`(원자 전환 — **SELECT FOR UPDATE → public.users INSERT → invitations claim UPDATE → operator/employee 분기**, service only). staging 적용 |
+| 토큰 | `invitation-token.ts` — 32바이트 CSPRNG 평문(URL) → **sha256 해시** 저장(고엔트로피라 새 env 키 불요). timingSafe |
+| invitations.ts | `createInvitation`(향후 OP-04/TA-02+seed 공통, 이메일 추상화) / `getInvitationInfo`(쿠키 anon rpc) / `activateAccount`(admin.createUser → `accept_invitation` rpc → 실패 시 auth.users 만 보상 삭제, public 측은 SQL 트랜잭션 자동 롤백) / `recordActivationConsents`(service_role+명시 userId, **세션 비의존** — setSession 직후 getUser=null 무음실패 회피) |
+| /activate | page(토큰검증/만료분기) + form(비번설정 passwordSchema 재사용 + 필수약관 체크) + actions(activateAccount → recordActivationConsents → setSession → operator 강제 2FA(/me/security)/역할 대시보드) |
+| 기타 | activateSchema(+테스트), audit `user.activated`, 점검 면제 `/activate`, i18n ko/en `auth.activate.*`, database.ts invitations+enum+함수 타입 |
+
+**듀얼검증 PASS_BOTH** (evaluator 8.28 / codex 1차 **FAIL** — 실결함 4건: P1 SQL FK순서(claim before users INSERT) + P1 TS orphan(claim 실패 시 public.users 미삭제) + P1 consent 무음실패(setSession 직후 세션 못읽음) + P2 enum 미정의 → 정정 cafff5d/61bed1b → **PASS_VERIFIED**. evaluator 추가검출 **P2 inet clientIp**('unknown'→user_consents.ip_address inet 22P02 거부로 consent 무음누락) + P3 audit 중복 → **머지 전 선제 정정 754898d**). 검증: turbo 20/20 + 단위(schemas 51/api-client 13/web 52) + **E2E 34/34**(활성화 5 신규 + 회귀 29) + staging `source='activate'` consent 실증.
+
+**신규 KI**: KI-103(P3 welcome_invite 실발송 미구현 — Resend+인비터 UI 후속) / KI-104(P3 활성화 보상 deleteUser 마저 실패 시 orphan auth.users — 운영 스캐너) / KI-105(P3 CM-03 in-flow 직원 선택 2FA 미구현 — /me/security 재사용 보완).
+
+### ⚠️ 교훈 (이번 세션 — 중대)
+- **도구 병렬 호출 남용 사고**: 한 메시지에 도구를 다수 묶으면 **첫 실패가 뒤 호출을 전부 "cancelled"** 시켜 진단 자체가 불가. + **E2E PowerShell 은 항상 종료코드 1**(WebServer stderr) → 다른 도구와 묶으면 무조건 줄취소. **규칙: E2E 실행/실패 가능 명령은 단독 호출. 결과 분석은 다음 메시지.** (사용자 다회 지적)
+- **PowerShell `> file` 은 UTF-16(BOM)** 저장 → node JSON.parse 깨짐. `| Out-File -Encoding utf8` 사용. 결과 판정은 ASCII 토큰(passed/failed)으로(한글 콘솔 깨짐).
+- **세션 중단 시 파일 쓰기 유실** 가능 — 신규 세션 진입 시 `git status` + 파일 존재 확인부터.
+- **codex 위임 효과적**: FK 순서 버그(invitations.accepted_user_id 가 users FK → users INSERT 가 claim 보다 먼저여야)를 codex 가 정확히 진단·수정. 듀얼검증이 evaluator(P2 inet)·codex(P1 4건) 상호 보완으로 7건 실결함 검출.
+
+### 다음 세션 첫 작업 — Sprint 진행
+- **WI-020 인증 도메인 전체 완료**(ST-001 로그인 / ST-002 비번재설정 / ST-003 활성화 / ST-004 2FA / ST-078 약관 / ST-072 오류·점검). sprint-001 Day 6~12 인증/약관/오류 블록 종료.
+- 다음은 `mvp-plan.md §4` + `sprint-001.md`(잔여) / `sprint-002.md` 확인해 선정. P2 트리거 5건(KI-054/061/079/092/094) 누적 — batch 처리 또는 React 변환 WI 시 자연해소 여부 사용자 협의.
+- ⚠️ **원격 배포 시 사용자 조치 대기 KI**: KI-099(2FA env 키 Vercel)/098(비번재설정 대시보드 템플릿)/086(leaked-password)/103(Resend 이메일).
 
 ## -0i. 2026-05-29 batch I 세션 진척 — **신규 세션 여기부터**
 

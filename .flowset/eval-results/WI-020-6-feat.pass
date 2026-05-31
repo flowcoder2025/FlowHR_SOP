@@ -1,0 +1,16 @@
+WI-020-6-feat ST-003 계정 활성화 (CM-03 + invitations 테이블) — 듀얼검증 통합 판정: PASS_BOTH
+
+- evaluator: PASS 8.28/10 (기능 8.5 / 품질 8.5 / 테스트 8.0 / 계약 8.0, 각 축 ≥7.5) — WI-020-6-feat.eval.md
+- codex: FAIL(P1×3+P2×1) → 정정(cafff5d/61bed1b) → 재검증 PASS_VERIFIED (잔존 차단 결함 0) — WI-020-6-feat.codex.md
+- evaluator 추가검출 P2(inet clientIp consent 무음누락)+P3(audit 중복) → 머지 전 선제 정정(754898d)
+- verdict: PASS_BOTH (review-system.md §4)
+
+정정 경과:
+- codex 1차 FAIL: SQL FK 순서 / TS orphan / consent 타이밍 / enum
+- 정정 cafff5d: FK순서(SELECT FOR UPDATE→users→claim) + 단일 rpc orphan제거 + recordActivationConsents 세션비의존 + enum 일부
+- 정정 61bed1b: get_invitation_by_token_hash Returns.status enum 마지막 1줄
+- 정정 754898d: evaluator P2 inet clientIp(isIP→null) + P3 audit 중복 통합
+
+검증: turbo typecheck/lint/test/build 20/20 + 단위(schemas 51/api-client 13/web 52) + E2E 34/34(활성화 5 신규 + 회귀 29). 마이그레이션 35 staging 적용 + source='activate' consent 실증.
+최종 코드 커밋 754898d — 본 마커는 그 후손.
+KI: KI-105(CM-03 in-flow 직원 선택 2FA 미구현 — /me/security 재사용으로 보완) 외 활성계정 user_consents 삭제불가/이메일 발송 미구현/orphan 스캐너.
