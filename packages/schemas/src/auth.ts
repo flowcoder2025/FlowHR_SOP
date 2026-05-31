@@ -113,3 +113,22 @@ export const totpDisableSchema = z.object({
 });
 
 export type TotpDisableInput = z.infer<typeof totpDisableSchema>;
+
+/**
+ * 계정 활성화 — 비밀번호 설정 + 필수 약관 동의 (CM-03 / ST-003 setup 단계).
+ * 토큰은 폼이 아니라 서버 액션 인자(URL 쿼리에서 추출)로 전달한다.
+ * 비밀번호 정책(passwordSchema)·확인 일치는 재설정과 동일 규칙을 재사용한다.
+ * agree 는 필수 약관(terms+privacy) 동의 — 서버가 getRequiredConsents 로 실제 문서를 결정해 기록한다.
+ */
+export const activateSchema = z
+  .object({
+    newPassword: passwordSchema,
+    confirmPassword: z.string(),
+    agree: z.literal(true, { errorMap: () => ({ message: 'auth.activate.error.agree_required' }) }),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    path: ['confirmPassword'],
+    message: 'auth.activate.error.mismatch',
+  });
+
+export type ActivateInput = z.infer<typeof activateSchema>;

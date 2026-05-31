@@ -1157,6 +1157,57 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_user_id: string | null
+          created_at: string
+          email: string
+          employee_id: string | null
+          expires_at: string
+          id: string
+          invited_by: string | null
+          operator_flag: boolean
+          status: string
+          target_role: string
+          tenant_id: string | null
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          email: string
+          employee_id?: string | null
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          operator_flag?: boolean
+          status?: string
+          target_role: string
+          tenant_id?: string | null
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          email?: string
+          employee_id?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          operator_flag?: boolean
+          status?: string
+          target_role?: string
+          tenant_id?: string | null
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           active_users: number | null
@@ -2365,6 +2416,27 @@ export type Database = {
         Returns: {
           out_attempt_count: number
           out_locked_until: string
+        }[]
+      }
+      get_invitation_by_token_hash: {
+        Args: { p_token_hash: string }
+        Returns: {
+          email: string
+          target_role: string
+          tenant_id: string | null
+          operator_flag: boolean
+          expires_at: string
+          status: string
+          is_expired: boolean
+          company_name: string | null
+        }[]
+      }
+      accept_invitation: {
+        Args: { p_token_hash: string; p_user_id: string }
+        Returns: {
+          target_role: string
+          tenant_id: string | null
+          operator_flag: boolean
         }[]
       }
     }

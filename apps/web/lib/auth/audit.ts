@@ -14,7 +14,8 @@ export interface AuthAuditInput {
     | 'auth.2fa_disabled'
     | 'auth.2fa_verified'
     | 'auth.2fa_failed'
-    | 'auth.recovery_code_used';
+    | 'auth.recovery_code_used'
+    | 'user.activated';
   result: AuditResult;
   actorId?: string | null;
   actorRole?: string | null;
