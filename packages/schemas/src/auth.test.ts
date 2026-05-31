@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  activateSchema,
   failingPasswordRules,
   forgotPasswordSchema,
   isPasswordValid,
@@ -135,5 +136,37 @@ describe('2FA 스키마 (ST-004)', () => {
     expect(totpDisableSchema.safeParse({ password: 'pw', code: '123456' }).success).toBe(true);
     expect(totpDisableSchema.safeParse({ password: '', code: '123456' }).success).toBe(false);
     expect(totpDisableSchema.safeParse({ password: 'pw', code: '' }).success).toBe(false);
+  });
+});
+
+describe('activateSchema (ST-003)', () => {
+  it('정책 통과 + 확인 일치 + agree=true 면 통과', () => {
+    expect(
+      activateSchema.safeParse({
+        newPassword: 'Abcdef123!',
+        confirmPassword: 'Abcdef123!',
+        agree: true,
+      }).success,
+    ).toBe(true);
+  });
+  it('필수 약관 미동의(agree 누락/false) 거부', () => {
+    expect(
+      activateSchema.safeParse({ newPassword: 'Abcdef123!', confirmPassword: 'Abcdef123!', agree: false })
+        .success,
+    ).toBe(false);
+  });
+  it('비밀번호 정책 미달 거부', () => {
+    expect(
+      activateSchema.safeParse({ newPassword: 'weak', confirmPassword: 'weak', agree: true }).success,
+    ).toBe(false);
+  });
+  it('확인 불일치 거부 (confirmPassword 경로)', () => {
+    const r = activateSchema.safeParse({
+      newPassword: 'Abcdef123!',
+      confirmPassword: 'Abcdef123?',
+      agree: true,
+    });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.issues.some((i) => i.path.includes('confirmPassword'))).toBe(true);
   });
 });

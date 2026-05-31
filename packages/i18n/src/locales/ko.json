@@ -119,6 +119,32 @@
         "remaining": "남은 시도 {count}회",
         "recovery_required": "복구 코드를 입력해 주세요."
       }
+    },
+    "activate": {
+      "title": "계정 활성화",
+      "setup_title": "비밀번호를 설정하고 약관에 동의해 주세요.",
+      "field_email": "이메일",
+      "field_company": "회사",
+      "field_password": "비밀번호",
+      "field_confirm": "비밀번호 확인",
+      "show_password": "비밀번호 표시",
+      "hide_password": "비밀번호 숨기기",
+      "agree_label": "(필수) 다음에 동의합니다:",
+      "agree_terms": "이용약관",
+      "agree_privacy": "개인정보처리방침",
+      "submit": "활성화하고 시작하기",
+      "submitting": "활성화 중…",
+      "expired_title": "활성화 링크가 만료되었거나 유효하지 않습니다",
+      "expired": "초대 링크는 7일간 유효하며 한 번만 사용할 수 있습니다.",
+      "expired_hint": "관리자에게 초대 메일 재발송을 요청해 주세요.",
+      "back_to_login": "← 로그인으로 돌아가기",
+      "error": {
+        "weak_password": "비밀번호가 정책을 충족하지 않습니다. 아래 조건을 모두 만족시켜 주세요.",
+        "mismatch": "두 비밀번호가 일치하지 않습니다.",
+        "agree_required": "필수 약관에 동의해 주세요.",
+        "email_taken": "이미 활성화되었거나 가입된 계정입니다. 로그인해 주세요.",
+        "invalid": "활성화에 실패했습니다. 링크가 만료되었거나 이미 사용되었을 수 있습니다."
+      }
     }
   },
   "me": {

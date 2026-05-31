@@ -119,6 +119,32 @@
         "remaining": "{count} attempt(s) left",
         "recovery_required": "Please enter a recovery code."
       }
+    },
+    "activate": {
+      "title": "Activate account",
+      "setup_title": "Set your password and accept the terms.",
+      "field_email": "Email",
+      "field_company": "Company",
+      "field_password": "Password",
+      "field_confirm": "Confirm password",
+      "show_password": "Show password",
+      "hide_password": "Hide password",
+      "agree_label": "(Required) I agree to the:",
+      "agree_terms": "Terms of Service",
+      "agree_privacy": "Privacy Policy",
+      "submit": "Activate and get started",
+      "submitting": "Activating…",
+      "expired_title": "This activation link has expired or is invalid",
+      "expired": "Invitation links are valid for 7 days and can be used only once.",
+      "expired_hint": "Please ask your administrator to resend the invitation email.",
+      "back_to_login": "← Back to sign in",
+      "error": {
+        "weak_password": "Your password doesn't meet the requirements. Please satisfy all the rules below.",
+        "mismatch": "The two passwords do not match.",
+        "agree_required": "Please agree to the required terms.",
+        "email_taken": "This account is already activated or registered. Please sign in.",
+        "invalid": "Activation failed. The link may have expired or already been used."
+      }
     }
   },
   "me": {

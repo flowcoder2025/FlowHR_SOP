@@ -78,6 +78,8 @@ const MAINTENANCE_ALLOW = new Set([
   // /me/security 는 운영사 강제 2FA 설정 진입점(점검 중 operator_super 가 2FA 설정해 우회 가능해야 함).
   '/two-factor',
   '/me/security',
+  // 계정 활성화(ST-003) — 초대 수락 온보딩(점검 중에도 신규 계정 활성화 동선 보존).
+  '/activate',
 ]);
 
 export function isMaintenanceExempt(restPath: string): boolean {
