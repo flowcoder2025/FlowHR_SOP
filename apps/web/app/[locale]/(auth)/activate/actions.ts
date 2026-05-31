@@ -5,6 +5,7 @@ import { activateSchema } from '@flowhr/schemas';
 import { writeAuthAudit, type AuthAuditInput } from '@/lib/auth/audit';
 import { activateAccount, recordActivationConsents } from '@/lib/auth/invitations';
 import { createIsolatedSupabaseClient, createSupabaseServerClient } from '@/lib/supabase/server';
+import { isIP } from 'node:net';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -18,10 +19,16 @@ async function safeAudit(input: AuthAuditInput): Promise<void> {
   }
 }
 
-function clientIp(headerList: Headers): string {
+/**
+ * 클라이언트 IP를 inet 컬럼(audit_logs.ip / user_consents.ip_address 모두 inet)에 넣을 수 있는
+ * 값으로 정규화한다. 유효 IPv4/IPv6 가 아니면 null — 'unknown' 같은 비-IP 문자열은 Postgres inet
+ * 캐스트에서 22P02 로 거부되어 감사/동의 기록을 무음 누락시키므로(evaluator P2),
+ * legal/actions.ts 와 동일한 node:net isIP 검증 패턴을 따른다.
+ */
+function clientIp(headerList: Headers): string | null {
   const forwarded = headerList.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0]!.trim();
-  return headerList.get('x-real-ip')?.trim() ?? 'unknown';
+  const raw = forwarded ? forwarded.split(',')[0]!.trim() : (headerList.get('x-real-ip')?.trim() ?? '');
+  return raw && isIP(raw) !== 0 ? raw : null;
 }
 
 function isOperatorRole(role: string): boolean {
