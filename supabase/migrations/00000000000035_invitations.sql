@@ -94,20 +94,28 @@ as $$
 declare
   v_inv invitations;
 begin
-  update invitations
-    set status = 'accepted', accepted_at = now(), accepted_user_id = p_user_id, updated_at = now()
+  -- 1) 초대 행을 FOR UPDATE 로 잠가 동시성 mutex 확보 후 검증.
+  --    (claim 컬럼 accepted_user_id 는 public.users FK 이므로 users INSERT 가 UPDATE 보다 먼저여야 한다.)
+  select * into v_inv
+    from invitations
     where token_hash = p_token_hash
-      and status = 'pending'
-      and accepted_at is null
-      and expires_at > now()
-    returning * into v_inv;
+    for update;
 
-  if not found then
+  if not found
+     or v_inv.status <> 'pending'
+     or v_inv.accepted_at is not null
+     or v_inv.expires_at <= now() then
     raise exception 'invitation not claimable' using errcode = 'P0001';
   end if;
 
+  -- 2) public.users 먼저 생성(FK 대상). 이후 claim UPDATE 가 accepted_user_id FK 를 만족.
   insert into public.users (id, role, tenant_id, employee_id, locale)
     values (p_user_id, v_inv.target_role, v_inv.tenant_id, v_inv.employee_id, 'ko');
+
+  -- 3) 초대 claim (단일 트랜잭션 — 실패 시 전체 롤백되어 public 측 부분상태 없음).
+  update invitations
+    set status = 'accepted', accepted_at = now(), accepted_user_id = p_user_id, updated_at = now()
+    where id = v_inv.id;
 
   if v_inv.operator_flag then
     insert into public.operator_users (user_id, role, invited_at, activated_at, is_active)

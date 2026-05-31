@@ -1168,7 +1168,7 @@ export type Database = {
           id: string
           invited_by: string | null
           operator_flag: boolean
-          status: string
+          status: Database["public"]["Enums"]["invitation_status"]
           target_role: string
           tenant_id: string | null
           token_hash: string
@@ -1184,7 +1184,7 @@ export type Database = {
           id?: string
           invited_by?: string | null
           operator_flag?: boolean
-          status?: string
+          status?: Database["public"]["Enums"]["invitation_status"]
           target_role: string
           tenant_id?: string | null
           token_hash: string
@@ -1200,7 +1200,7 @@ export type Database = {
           id?: string
           invited_by?: string | null
           operator_flag?: boolean
-          status?: string
+          status?: Database["public"]["Enums"]["invitation_status"]
           target_role?: string
           tenant_id?: string | null
           token_hash?: string
@@ -2509,6 +2509,7 @@ export type Database = {
       feature_flag_state: "active" | "inactive" | "beta" | "restricted"
       half_day: "none" | "start" | "end"
       integration_status: "disconnected" | "connected" | "error" | "expired"
+      invitation_status: "pending" | "accepted" | "revoked"
       invoice_status:
         | "draft"
         | "issued"
@@ -2750,6 +2751,7 @@ export const Constants = {
       feature_flag_state: ["active", "inactive", "beta", "restricted"],
       half_day: ["none", "start", "end"],
       integration_status: ["disconnected", "connected", "error", "expired"],
+      invitation_status: ["pending", "accepted", "revoked"],
       invoice_status: [
         "draft",
         "issued",

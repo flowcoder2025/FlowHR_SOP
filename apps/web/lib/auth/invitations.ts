@@ -1,6 +1,5 @@
 import 'server-only';
 import { createServiceRoleClient } from '@flowhr/api-client/server';
-import type { Database } from '@flowhr/types';
 import { generateInvitationToken, hashInvitationToken } from './invitation-token';
 
 // 계정 활성화 초대 (ST-003 / CM-03) — server-only, service_role.
@@ -127,37 +126,18 @@ export interface ActivatedAccount {
   userId: string;
   email: string;
   targetRole: string;
+  tenantId: string | null;
   operatorFlag: boolean;
 }
 
 export type ActivateError = 'invalid' | 'email_taken' | 'failed';
-type ServiceClient = ReturnType<typeof createServiceRoleClient>;
-type OperatorRole = Database['public']['Enums']['operator_role'];
-
-async function deleteAuthUser(supabase: ServiceClient, userId: string): Promise<void> {
-  await supabase.auth.admin.deleteUser(userId).catch((e) => {
-    // 보상 삭제 실패 = orphan auth.users (이중 실패, 매우 드묾) — 운영 정리 대상(KI-104).
-    console.error('compensating deleteUser failed (orphan auth user)', userId, e);
-  });
-}
-
-async function rollbackClaim(supabase: ServiceClient, invitationId: string, userId: string): Promise<void> {
-  await supabase
-    .from('invitations')
-    .update({
-      status: 'pending',
-      accepted_at: null,
-      accepted_user_id: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', invitationId)
-    .eq('accepted_user_id', userId);
-}
 
 /**
- * 계정 활성화 핵심 — auth.users 생성 → accept_invitation 원자 전환 → 실패 시 보상 삭제.
- * 동시성: auth.users email UNIQUE 가 동시 createUser 를 직렬화 + accept_invitation 조건부 UPDATE 가
- * pending 행을 단 한 호출만 차지(이중 방어). 토큰은 호출 전 getInvitationInfo 로 1차 검증 권장.
+ * 계정 활성화 핵심 — auth.users 생성 → accept_invitation(SECURITY DEFINER 원자 함수) 호출.
+ * public 측 전환(users insert + invitations claim + operator/employee 분기)은 SQL 함수가
+ * 단일 트랜잭션으로 수행하므로, 실패 시 public 측은 자동 롤백되고 호출부는 auth.users 만 보상 삭제한다.
+ * 동시성: accept_invitation 의 SELECT ... FOR UPDATE 가 pending 행을 단 한 호출만 차지(claim) +
+ * auth.users email UNIQUE 가 동시 createUser 를 직렬화(이중 방어). 토큰은 호출 전 getInvitationInfo 로 1차 검증.
  */
 export async function activateAccount(
   token: string,
@@ -178,72 +158,19 @@ export async function activateAccount(
     return { ok: false, error: /already|registered|exists/i.test(msg) ? 'email_taken' : 'failed' };
   }
   const userId = created.data.user.id;
-  const tokenHash = hashInvitationToken(token);
 
-  // 2) public.users를 먼저 생성한 뒤 초대를 claim 한다.
-  // invitations.accepted_user_id는 public.users FK라서 claim UPDATE가 먼저 실행되면 실패한다.
-  const { error: profileError } = await supabase.from('users').insert({
-    id: userId,
-    role: info!.targetRole,
-    tenant_id: info!.tenantId,
-    employee_id: null,
-    locale: 'ko',
+  // 2) public 측 원자 전환(SECURITY DEFINER 트랜잭션 함수). 실패 시 public 측은 자동 롤백되므로
+  //    호출부는 방금 생성한 auth.users 만 보상 삭제하면 된다(부분 상태 없음 — codex 듀얼검증 P1).
+  const { error: acceptError } = await supabase.rpc('accept_invitation', {
+    p_token_hash: hashInvitationToken(token),
+    p_user_id: userId,
   });
-  if (profileError) {
-    await deleteAuthUser(supabase, userId);
-    return { ok: false, error: 'invalid' };
-  }
-
-  // 2) public 측 원자 전환(SECURITY DEFINER). 실패 시 생성한 auth.users 보상 삭제.
-  const claimedAt = new Date().toISOString();
-  const { data: claimed, error: claimError } = await supabase
-    .from('invitations')
-    .update({
-      status: 'accepted',
-      accepted_at: claimedAt,
-      accepted_user_id: userId,
-      updated_at: claimedAt,
-    })
-    .eq('token_hash', tokenHash)
-    .eq('status', 'pending')
-    .is('accepted_at', null)
-    .gt('expires_at', claimedAt)
-    .select('id, target_role, tenant_id, employee_id, operator_flag, created_at')
-    .maybeSingle();
-  const accepted = { error: claimError || !claimed ? new Error('invitation not claimable') : null };
-  if (accepted.error) {
+  if (acceptError) {
     await supabase.auth.admin.deleteUser(userId).catch((e) => {
-      // 보상 삭제 실패 = orphan auth.users (삼중 실패, 매우 드묾) — 운영 정리 대상(KI-104).
+      // 보상 삭제 실패 = orphan auth.users (이중 실패, 매우 드묾) — 운영 정리 대상(KI-104).
       console.error('compensating deleteUser failed (orphan auth user)', userId, e);
     });
     return { ok: false, error: 'invalid' };
-  }
-
-  if (claimed!.operator_flag) {
-    const { error: operatorError } = await supabase.from('operator_users').insert({
-      user_id: userId,
-      role: claimed!.target_role as OperatorRole,
-      invited_at: claimed!.created_at,
-      activated_at: claimedAt,
-      is_active: true,
-    });
-    if (operatorError) {
-      await rollbackClaim(supabase, claimed!.id, userId);
-      await supabase.from('users').delete().eq('id', userId);
-      await deleteAuthUser(supabase, userId);
-      return { ok: false, error: 'invalid' };
-    }
-  } else if (claimed!.employee_id) {
-    const { error: employeeError } = await supabase
-      .from('employees')
-      .update({ status: 'active', user_id: userId, updated_at: claimedAt })
-      .eq('id', claimed!.employee_id);
-    if (employeeError) {
-      await rollbackClaim(supabase, claimed!.id, userId);
-      await supabase.from('users').delete().eq('id', userId);
-      await deleteAuthUser(supabase, userId);
-      return { ok: false, error: 'invalid' };
-    }
   }
 
   return {
@@ -252,7 +179,72 @@ export async function activateAccount(
       userId,
       email: info!.email,
       targetRole: info!.targetRole,
+      tenantId: info!.tenantId,
       operatorFlag: info!.operatorFlag,
     },
   };
+}
+
+/**
+ * 활성화 시 필수 약관(terms/privacy) 동의를 기록한다 (CM-03 AC — source='activate').
+ * 세션 기반 recordConsent 는 활성화 서버 액션의 setSession 직후 같은 요청에서 쿠키를 못 읽어
+ * getUser()=null → 무음 실패한다(codex 듀얼검증 P1). 따라서 service_role + 명시 userId 로
+ * 세션 비의존 기록한다. locale 우선 문서 1건씩, 멱등(onConflict user_id,document_id ignore).
+ * 동의 기록 실패가 활성화 자체를 막지 않도록 best-effort(boolean 반환).
+ */
+export async function recordActivationConsents(
+  userId: string,
+  tenantId: string | null,
+  locale: string,
+  ipAddress: string | null,
+  userAgent: string | null,
+): Promise<boolean> {
+  const supabase = createServiceRoleClient();
+  const { data: docs, error } = await supabase
+    .from('legal_documents')
+    .select('id, type, version, language')
+    .eq('is_active', true)
+    .in('type', ['terms', 'privacy']);
+  if (error || !docs || docs.length === 0) return false;
+
+  // type별 locale 우선(없으면 ko fallback) 문서 1건씩 선택.
+  const rows: {
+    user_id: string;
+    tenant_id: string | null;
+    document_id: string;
+    document_type: 'terms' | 'privacy';
+    version: string;
+    source: 'activate';
+    ip_address: string | null;
+    user_agent: string | null;
+  }[] = [];
+  for (const type of ['terms', 'privacy'] as const) {
+    const forType = docs.filter((d) => d.type === type);
+    const doc =
+      forType.find((d) => d.language === locale) ??
+      forType.find((d) => d.language === 'ko') ??
+      forType[0];
+    if (doc) {
+      rows.push({
+        user_id: userId,
+        tenant_id: tenantId,
+        document_id: doc.id,
+        document_type: type,
+        version: doc.version,
+        source: 'activate',
+        ip_address: ipAddress,
+        user_agent: userAgent,
+      });
+    }
+  }
+  if (rows.length === 0) return false;
+
+  const { error: insErr } = await supabase
+    .from('user_consents')
+    .upsert(rows, { onConflict: 'user_id,document_id', ignoreDuplicates: true });
+  if (insErr) {
+    console.error('recordActivationConsents failed', insErr);
+    return false;
+  }
+  return true;
 }

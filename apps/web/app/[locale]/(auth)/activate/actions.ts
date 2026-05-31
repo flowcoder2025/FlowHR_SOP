@@ -3,9 +3,7 @@
 import { roleToRedirectPath } from '@flowhr/api-client';
 import { activateSchema } from '@flowhr/schemas';
 import { writeAuthAudit, type AuthAuditInput } from '@/lib/auth/audit';
-import { activateAccount } from '@/lib/auth/invitations';
-import { recordConsent } from '@/lib/legal/actions';
-import { getRequiredConsents } from '@/lib/legal/queries';
+import { activateAccount, recordActivationConsents } from '@/lib/auth/invitations';
 import { createIsolatedSupabaseClient, createSupabaseServerClient } from '@/lib/supabase/server';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -66,12 +64,22 @@ export async function activateAction(
       messageKey: result.error === 'email_taken' ? 'error.email_taken' : 'error.invalid',
     };
   }
-  const { userId, email, targetRole, operatorFlag } = result.account;
+  const { userId, email, targetRole, tenantId, operatorFlag } = result.account;
+  const headerList = await headers();
 
-  // 2) 세션 수립 — 격리 클라이언트로 토큰 획득 후 쿠키 클라이언트 setSession(로그인 흐름과 동일).
+  // 2) 필수 약관 동의 기록 (CM-03 AC — source='activate'). service_role + 명시 userId 로
+  //    세션 비의존 기록(setSession 직후 같은 요청에서 getUser()=null 무음 실패 회피, codex P1).
+  await recordActivationConsents(
+    userId,
+    tenantId,
+    locale,
+    clientIp(headerList),
+    headerList.get('user-agent'),
+  );
+
+  // 3) 세션 수립 — 격리 클라이언트로 토큰 획득 후 쿠키 클라이언트 setSession(로그인 흐름과 동일).
   const isolated = createIsolatedSupabaseClient();
   const signIn = await isolated.auth.signInWithPassword({ email, password: parsed.data.newPassword });
-  const headerList = await headers();
   if (signIn.error || !signIn.data.session) {
     // 계정은 생성됐으나 세션 수립 실패(드묾) — 로그인 화면으로 안내.
     await safeAudit({
@@ -89,12 +97,6 @@ export async function activateAction(
     access_token: signIn.data.session.access_token,
     refresh_token: signIn.data.session.refresh_token,
   });
-
-  // 3) 필수 약관 동의 기록(setSession 이후 — recordConsent 는 세션 의존). source='activate'.
-  const required = await getRequiredConsents(locale);
-  for (const doc of required) {
-    await recordConsent(doc.documentId, 'activate');
-  }
 
   await safeAudit({
     action: 'user.activated',
