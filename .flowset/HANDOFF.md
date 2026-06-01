@@ -1,10 +1,45 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-01 batch P (WI-035-feat OP-04 신규 테넌트 등록 API 완료 — codex 2라운드 협의 + 사용자 승인(DB mig 42) + 듀얼검증 PASS_BOTH 머지 PR #54. **마이그레이션 42** `register_tenant` SECURITY DEFINER 원자 RPC(service_role only) — tenants+subscriptions+tenant_settings+초기데이터+관리자 invitation 단일 트랜잭션. **create-at-activate 정합**(DoD "admin user INSERT"→invitation 재해석, 등록 시 user 미생성). **enum 무변경**(표시상태 파생). ★ codex 가 evaluator PASS 통과분에서 P1×2[draft 무결성·sendInvite 직원초대 오염]+P2×2[modules subset·abandoned draft] 검출 → hotfix. KI-123~126 등재).
-> **신규 세션 첫 작업**: 본 문서 **§-0p (2026-06-01 batch P)** 정독 → **WI-036-feat OP-04 7단계 마법사 UI** 착수(Stepper WI-030 + 실시간검증[check-domain/business/admin-email 액션 소비] + 임시저장 재진입[getOpenDraft/saveDraft] + 초기데이터 폼 + registerTenant 호출 + 관리자 활성화 [ST-006/010]). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-06-01 batch O (WI-034 결재라인 조건 분기, §-0o) / batch N (WI-033 TA-13 설정 UI, §-0n) / batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-02 batch Q (WI-036-feat OP-04 7단계 테넌트 등록 마법사 UI 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #55. 라우트 `(operator)/operator/tenants/new` — 서버 page(세션/role 가드 + getOpenDraft/getRegistrationPlans 초기 fetch) → `'use client'` wizard(useReducer). WI-035 서버 계약 소비. ★ **듀얼검증 가치 재실증**: evaluator PASS 8.15 통과분에서 codex 가 P2×2[autosave 무한루프·plan_id 화이트리스트 우회] 검출 + evaluator 독립 P2[startNew 멱등키 미재생성] → hotfix. KI-127~130 등재).
+> **신규 세션 첫 작업**: 본 문서 **§-0q (2026-06-02 batch Q)** 정독 → **WI-037-feat OP-02 테넌트 목록** 착수(DataTable/FilterBar WI-030 + 검색/필터/sort/페이지/Excel + **KI-123 표시상태 파생**[scheduled=contract_start_date>today / pending_invite=admin_user_id IS NULL·invitation pending] + matrix.json OP-04 entity status 갱신 + 상태변경 audit [ST-007/009]). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-01 batch P (WI-035 OP-04 등록 API, §-0p) / batch O (WI-034 결재라인 조건 분기, §-0o) / batch N (WI-033 TA-13 설정 UI, §-0n) / batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0p. 2026-06-01 batch P 세션 진척 — **신규 세션 여기부터**
+## -0q. 2026-06-02 batch Q 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-036-feat OP-04 7단계 테넌트 등록 마법사 UI (ST-006/010, PR #55 머지)
+
+핸드오프 정독 → **codex 2라운드 협의**(아키텍처/실시간검증/draft·멱등/6단계 범위경계/activationUrl 보존) → 구현 → **듀얼검증 PASS_BOTH** → auto-merge. WI-035 서버 계약(원자 RPC + enum 무변경)을 소비하는 운영사 클라이언트 마법사.
+
+**codex 협의 확정 설계**:
+- **아키텍처**: 서버 page(`(operator)/operator/tenants/new`, force-dynamic, 세션/role 가드[canAccessPath+canRegisterTenant] + `getOpenDraft`/`getRegistrationPlans` 초기 fetch) → 단일 `'use client'` wizard(`useReducer`). `queries.ts` 는 server-only → route-local `actions.ts` 의 thin `'use server'` wrapper(checkDomain/checkBusinessNumber/checkAdminEmail) 경유. saveDraft/registerTenant/sendInvite 는 lib 재export.
+- **실시간 검증**: `useAvailabilityCheck` — 300ms debounce + per-field **sequence token**(stale 응답 무시) + normalize 일치 게이트. slug/사업자번호/관리자이메일. `confirmed()` = phase done + available + 현재 입력 정규화 일치.
+- **임시저장/재진입**: `form_data._wizard` 네임스페이스(RPC 의 `_submission` 과 분리) + `idempotency_key` wizard 1회 생성(startNew 시 재발급). **단일 save queue**(병렬 saveDraft 금지, rev/savedRev coalesce) + **제출 전 drain** + **frozenRef hard-stop**(등록 완료 후 stale autosave 가 신규 draft 를 insert 하는 것 차단 — saveDraft 는 열린 draft 없으면 insert). draft 복원은 `parseDraftFormData`(zod `.catch/.partial` 방어적 역직렬화).
+- **6단계 초기데이터 범위경계**(codex 확정): 부서(ui_id→parent_code 토폴로지 변환, parent 후보=상위+code 보유 행만)/근무정책/휴가종류/결재라인(`default_line` 만, `conditions=[]` 고정 — 조건 DSL 은 **WI-034/TA-13 소유**, specific_employee_id 는 등록 시점 직원 부재로 제외)/문서양식. 전부 선택.
+- **plan 보안**: client 가 fetched plans(active/custom+public) **화이트리스트**를 step(plan 이후)·submit 에 강제(위조/복원 plan_id 차단). plan 변경 시 enabled_modules subset 축소(P0111 사전 차단). RPC plan status 재검증 부재는 KI-127(P3).
+- **와이어프레임 정합**: OP-04.html 의 `invite_failed`/`pending_invite`/`scheduled` 상태는 **stale**(WI-035 원자 트랜잭션·enum 무변경으로 부분실패 불가) → 성공 화면 = 등록완료 + activation URL 복사(평문 token 미저장, 메모리만) + sendInvite 재발급. 새로고침/replay 시 `sessionStorage` recovery(token 없는 tenantId/draftId/admin) → 재발급 안내. **ST-010 활성화는 기존 `/activate` 흐름**(성공 화면 URL 연결, 신규 화면 없음).
+- 순수 헬퍼 `lib/operator/tenant-registration/wizard.ts`(단계검증 helper / buildRegistrationPayload / draft serde / calcBilling / modulesForPlan) — 단위 25. i18n `screens.op-04` ko/en 168 leaf 대칭. zod 를 apps/web 직접 의존성 추가(wizard.ts 방어적 역직렬화).
+
+**★ 듀얼검증 가치 재실증 (이번 세션 핵심)**: evaluator **PASS 8.15**(기능8.5/품질8.5/테스트7.5/계약8.0) 통과분에서 **codex 가 P2 2건 검출** + **evaluator 독립 P2 1건** → 1차 FAIL.
+- **codex P2-1**: `SAVED` 가 dirty 를 안 내려 autosave 1s 타이머가 **영구 재등록**(저장 무한루프).
+- **codex P2-2**: plan_id fetched 화이트리스트가 submit 경로 부재 — 복원 draft/devtools 변조 plan_id 우회 가능.
+- **evaluator P2**: `startNew`(RESET)가 idempotencyKey 미재생성 — 직전 등록 키 재사용("등록 1건당 1키" 불변식 위반).
+- **codex P3**: Stepper 재진입 시 review 가 async 중복검사 게이트 우회.
+- **정정**(hotfix 2bb4ee7): `dirty:boolean`/`lastSaved` → `rev/savedRev` 카운터(dirty=rev>savedRev, 저장한 rev 까지 clean, in-flight 편집 유실 없음) / `planAllowed`(needsPlan 경계) step·submit 강제 / `allAsyncOk` review·submit AND / startNew 멱등키 재발급 / deleteDraftAction dead export 제거.
+- 재검증: codex **PASS**(잔여 P2+ 없음) — rev/savedRev in-flight·needsPlan 경계·asyncAvailRef 최신값 확인 → **PASS_BOTH**. turbo 21/21(web 112[wizard 단위 25 신규] / schemas 132 / ui 27 / api-client 13) + E2E 비인증 가드 2 통과 + operator 시드 게이트 skip.
+
+### ⚠️ 신규 KI (batch Q, 전부 P3)
+- **KI-127 (P3)** — register_tenant RPC plan status/is_public 재검증 부재(client 화이트리스트 보완, operator 신뢰역할 저위험). 보안 하드닝 sweep(KI-109 동류).
+- KI-128 (P3) — OP-04 추가 관리자 이메일 실시간 중복검사 미적용(대표만 async, 추가분은 서버 P0110 권위). UX 신호 갭.
+- KI-129 (P3) — OP-04 로고 파일 업로드(Storage) 미구현(logo_url 대체) + 명시적 임시저장 discard 버튼 미구현(autosave 대체, PRD §3-3).
+- KI-130 (P3) — api/operator.md OP-04 camelCase 표기 doc drift(operator-onboarding.ts snake_case SSOT 미반영).
+
+### 다음 세션 첫 작업 — WI-037-feat OP-02 테넌트 목록 (ST-007/009)
+- 라우트 `(operator)/operator/tenants` — WI-030 `DataTable`(+RowLink/nextSortState)/`FilterBar`(+FilterChip/FilterPanel) 소비. 검색(회사명 trgm GIN, mig 36)/필터(status·plan)/sort/페이지네이션/Excel 내보내기.
+- **KI-123 표시상태 파생**(핵심): tenant.status=active 고정이므로 목록/배지에서 `scheduled`(contract_start_date>today)/`pending_invite`(admin_user_id IS NULL + invitation pending) **read-side 파생** + matrix.json OP-04 entity status 갱신(KI-122 entity status 일괄 갱신 동반 가능).
+- 상태변경(활성/비활성/만료) + audit(ST-009, operator_super 전용 일부). 이어서 WI-038(OP-03 상세 8탭 + 비활성화 Realtime broadcast).
+- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+
+## -0p. 2026-06-01 batch P 세션 진척
 
 ### 완료 — WI-035-feat OP-04 신규 테넌트 등록 API (ST-006, PR #54 머지)
 

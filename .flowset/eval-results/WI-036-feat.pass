@@ -1,0 +1,8 @@
+WI-036-feat OP-04 7단계 테넌트 등록 마법사 UI (ST-006/010)
+통합 verdict: PASS_BOTH
+- evaluator: PASS 8.15 (기능8.5/품질8.5/테스트7.5/계약8.0, 각 축 ≥7.5)
+- codex: 1차 FAIL(P2×2+P3) → hotfix 2bb4ee7 → 재검증 PASS
+정정: autosave 루프(rev/savedRev) / plan 화이트리스트 / review async 재게이트 / 멱등키 재발급 / dead export 제거
+KI 등재: KI-127~130 (P3, 비차단)
+turbo 21/21 · E2E 비인증 가드 2 · i18n 168 leaf 대칭
+2026-06-02
