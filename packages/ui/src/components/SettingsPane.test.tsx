@@ -9,21 +9,21 @@ const TABS: VerticalTab[] = [
 ];
 
 describe('VerticalTabs', () => {
-  it('tablist role + 모든 탭 렌더', () => {
+  it('nav(aria-label) + 모든 탭 렌더', () => {
     const html = renderToStaticMarkup(
       <VerticalTabs tabs={TABS} activeId="company" onChange={() => {}} />,
     );
-    expect(html).toContain('role="tablist"');
+    expect(html).toContain('aria-label="설정 탭"');
     expect(html).toContain('회사정보');
     expect(html).toContain('근무정책');
     expect(html).toContain('보안');
   });
 
-  it('활성 탭 → aria-selected true + accent 강조', () => {
+  it('활성 탭 → aria-current page + accent 강조', () => {
     const html = renderToStaticMarkup(
       <VerticalTabs tabs={TABS} activeId="work" onChange={() => {}} />,
     );
-    expect(html).toContain('aria-selected="true"');
+    expect(html).toContain('aria-current="page"');
     expect(html).toContain('border-l-accent');
     expect(html).toContain('bg-accent-bg');
     // 비활성 탭은 muted

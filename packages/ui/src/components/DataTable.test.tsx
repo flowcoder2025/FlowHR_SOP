@@ -1,6 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { DataTable, RowLink, rowHighlight, type DataTableColumn } from './DataTable';
+import {
+  DataTable,
+  RowLink,
+  rowHighlight,
+  nextSortState,
+  type DataTableColumn,
+} from './DataTable';
 
 interface Row {
   id: string;
@@ -40,12 +46,22 @@ describe('DataTable', () => {
     expect(html).toContain('text-right');
   });
 
-  it('정렬 미적용 sortable 컬럼은 ↕ 표시 + aria-sort none', () => {
+  it('정렬 미적용 sortable 컬럼은 ↕ + 키보드 접근 button, aria-sort 미부여(정렬 컬럼에만)', () => {
     const html = renderToStaticMarkup(
       <DataTable columns={COLUMNS} data={DATA} rowKey={(r) => r.id} onSortChange={() => {}} />,
     );
     expect(html).toContain('↕');
-    expect(html).toContain('aria-sort="none"');
+    // 정렬 헤더는 th onClick이 아닌 button(키보드 포커스/Enter 활성화)
+    expect(html).toContain('<button');
+    // 정렬 중인 컬럼이 없으므로 aria-sort 미부여
+    expect(html).not.toContain('aria-sort');
+  });
+
+  it('행 클릭 가능 시 키보드 접근(tabindex)', () => {
+    const html = renderToStaticMarkup(
+      <DataTable columns={COLUMNS} data={DATA} rowKey={(r) => r.id} onRowClick={() => {}} />,
+    );
+    expect(html).toContain('tabindex="0"');
   });
 
   it('정렬 적용 시 방향 지시자(↑) + aria-sort ascending', () => {
@@ -87,5 +103,26 @@ describe('DataTable', () => {
     );
     expect(html).toContain('결과 없음');
     expect(html).toContain('colSpan="2"');
+  });
+});
+
+describe('nextSortState', () => {
+  it('새 컬럼 클릭 → asc', () => {
+    expect(nextSortState(undefined, 'name')).toEqual({ key: 'name', direction: 'asc' });
+    expect(nextSortState({ key: 'amount', direction: 'desc' }, 'name')).toEqual({
+      key: 'name',
+      direction: 'asc',
+    });
+  });
+
+  it('같은 컬럼 재클릭 → asc↔desc 토글', () => {
+    expect(nextSortState({ key: 'name', direction: 'asc' }, 'name')).toEqual({
+      key: 'name',
+      direction: 'desc',
+    });
+    expect(nextSortState({ key: 'name', direction: 'desc' }, 'name')).toEqual({
+      key: 'name',
+      direction: 'asc',
+    });
   });
 });

@@ -15,15 +15,18 @@ export interface VerticalTabsProps {
   tabs: VerticalTab[];
   activeId: string;
   onChange: (id: string) => void;
+  /** 네비게이션 영역 aria-label (기본 '설정 탭') */
+  ariaLabel?: string;
   className?: string;
 }
 
+// 설정 탭은 패널 콘텐츠를 화면 WI가 소유하므로(primitive 범위에서 tabpanel 연결 불가),
+// 불완전한 ARIA tabs 패턴 대신 nav + aria-current로 정직하게 구현(codex WI-030 권고).
 /** 세로 탭 네비게이션 (`.vert-tabs` / `.vert-tab`). 모바일에서 가로 스크롤. */
-export function VerticalTabs({ tabs, activeId, onChange, className }: VerticalTabsProps) {
+export function VerticalTabs({ tabs, activeId, onChange, ariaLabel = '설정 탭', className }: VerticalTabsProps) {
   return (
-    <div
-      role="tablist"
-      aria-orientation="vertical"
+    <nav
+      aria-label={ariaLabel}
       className={cn('flex flex-col gap-0.5 max-md:flex-row max-md:overflow-x-auto', className)}
     >
       {tabs.map((tab) => {
@@ -32,8 +35,7 @@ export function VerticalTabs({ tabs, activeId, onChange, className }: VerticalTa
           <button
             key={tab.id}
             type="button"
-            role="tab"
-            aria-selected={active}
+            aria-current={active ? 'page' : undefined}
             onClick={() => onChange(tab.id)}
             className={cn(
               'flex w-full cursor-pointer items-center gap-2 rounded-md border-l-[3px] px-3.5 py-2.5 text-left text-[13px]',
@@ -48,7 +50,7 @@ export function VerticalTabs({ tabs, activeId, onChange, className }: VerticalTa
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }
 VerticalTabs.displayName = 'VerticalTabs';

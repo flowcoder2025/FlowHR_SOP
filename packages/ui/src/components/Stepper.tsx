@@ -11,24 +11,24 @@ export interface StepperStep {
 
 export interface StepperProps {
   steps: StepperStep[];
-  /** 0-based 현재 활성 단계 인덱스 */
-  current: number;
+  /** 0-based 현재 활성 단계 인덱스 (03-components.md SSOT 명칭) */
+  currentIndex: number;
   /** 단계 클릭 핸들러(선택). 미지정 시 모든 단계는 정적 표시(클릭 불가). */
   onStepClick?: (index: number) => void;
-  /** 단계별 클릭 허용 판정(선택). 기본: 완료된 단계(index < current)만 클릭 가능. */
+  /** 단계별 클릭 허용 판정(선택). 기본: 완료된 단계(index < currentIndex)만 클릭 가능. */
   isStepEnabled?: (index: number) => boolean;
   className?: string;
 }
 
 type StepStatus = 'completed' | 'active' | 'upcoming';
 
-function statusOf(index: number, current: number): StepStatus {
-  if (index < current) return 'completed';
-  if (index === current) return 'active';
+function statusOf(index: number, currentIndex: number): StepStatus {
+  if (index < currentIndex) return 'completed';
+  if (index === currentIndex) return 'active';
   return 'upcoming';
 }
 
-export function Stepper({ steps, current, onStepClick, isStepEnabled, className }: StepperProps) {
+export function Stepper({ steps, currentIndex, onStepClick, isStepEnabled, className }: StepperProps) {
   return (
     <nav
       aria-label="단계"
@@ -38,7 +38,7 @@ export function Stepper({ steps, current, onStepClick, isStepEnabled, className 
       )}
     >
       {steps.map((step, index) => {
-        const status = statusOf(index, current);
+        const status = statusOf(index, currentIndex);
         const enabled =
           onStepClick != null &&
           (isStepEnabled ? isStepEnabled(index) : status === 'completed');

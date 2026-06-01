@@ -1,7 +1,7 @@
-import { type AnchorHTMLAttributes, type ReactNode } from 'react';
+import { type AnchorHTMLAttributes, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 
-// 원천: .flowset/wireframes/_design-system/components.css `.table` / `.row-link` / `.row-highlight-*` / `.pagination`(별도) (L378-401, OP-02 목록 표준)
+// 원천: .flowset/wireframes/_design-system/components.css `.table` / `.row-link` / `.row-highlight-*` (L378-401, OP-02 목록 표준)
 // 제네릭 reusable primitive — 데이터 fetching/정렬 로직/필터는 호출측(화면 WI)이 소유. 본 컴포넌트는 표시 + 정렬 토글 신호만 담당.
 
 export type SortDirection = 'asc' | 'desc';
@@ -11,14 +11,21 @@ export interface SortState {
   direction: SortDirection;
 }
 
+/** 정렬 토글 순수 로직 — 같은 컬럼 재클릭 시 asc→desc, 그 외 asc. (호출측 재사용 + 단위 검증용 export) */
+export function nextSortState(current: SortState | undefined, key: string): SortState {
+  const direction: SortDirection =
+    current?.key === key && current.direction === 'asc' ? 'desc' : 'asc';
+  return { key, direction };
+}
+
 export interface DataTableColumn<T> {
   /** 컬럼 식별자 (정렬 key + render 미지정 시 row[key] 접근) */
   key: string;
   header: ReactNode;
-  /** 셀 렌더러 (미지정 시 row[key] 그대로 표시) */
+  /** 셀 렌더러 (미지정 시 row[key]를 primitive로 표시. 객체/배열 값은 render 필수) */
   render?: (row: T) => ReactNode;
   align?: 'left' | 'right' | 'center';
-  /** 헤더 클릭 정렬 토글 허용 (onSortChange 동반 필요) */
+  /** 헤더 클릭/Enter 정렬 토글 허용 (onSortChange 동반 필요) */
   sortable?: boolean;
   /** colgroup 너비 (예: '18%', '120px') */
   width?: string;
@@ -61,6 +68,13 @@ export function RowLink({ className, ...props }: AnchorHTMLAttributes<HTMLAnchor
   );
 }
 
+/** render 미지정 컬럼의 안전 출력 — primitive만 렌더, 객체/배열은 무시(render 필수). */
+function renderCell(value: unknown): ReactNode {
+  if (value == null) return null;
+  if (typeof value === 'object') return null;
+  return value as string | number | boolean;
+}
+
 export function DataTable<T>({
   columns,
   data,
@@ -74,11 +88,11 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const hasWidths = columns.some((c) => c.width != null);
 
-  function toggleSort(key: string) {
-    if (!onSortChange) return;
-    const direction: SortDirection =
-      sort?.key === key && sort.direction === 'asc' ? 'desc' : 'asc';
-    onSortChange({ key, direction });
+  function handleRowKeyDown(e: KeyboardEvent<HTMLTableRowElement>, row: T) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onRowClick?.(row);
+    }
   }
 
   return (
@@ -98,34 +112,43 @@ export function DataTable<T>({
       <thead>
         <tr>
           {columns.map((c) => {
-            const sortableNow = c.sortable === true && onSortChange != null;
             const isSorted = sort?.key === c.key;
-            const ariaSort = c.sortable
-              ? isSorted
-                ? sort?.direction === 'asc'
-                  ? 'ascending'
-                  : 'descending'
-                : 'none'
+            const sortableNow = c.sortable === true && onSortChange != null;
+            // aria-sort는 현재 정렬 중인 컬럼에만 부여(ARIA 권장).
+            const ariaSort = isSorted
+              ? sort?.direction === 'asc'
+                ? 'ascending'
+                : 'descending'
               : undefined;
+            const indicator = c.sortable === true && (
+              <span aria-hidden className="text-text-subtle">
+                {isSorted ? (sort?.direction === 'asc' ? '↑' : '↓') : '↕'}
+              </span>
+            );
             return (
               <th
                 key={c.key}
                 aria-sort={ariaSort}
-                onClick={sortableNow ? () => toggleSort(c.key) : undefined}
                 className={cn(
                   'whitespace-nowrap border-b border-border bg-surface px-3 py-2.5 text-xs font-semibold text-text-muted',
                   alignClass[c.align ?? 'left'],
-                  sortableNow && 'cursor-pointer select-none',
                 )}
               >
-                <span className="inline-flex items-center gap-1">
-                  {c.header}
-                  {c.sortable === true && (
-                    <span aria-hidden className="text-text-subtle">
-                      {isSorted ? (sort?.direction === 'asc' ? '↑' : '↓') : '↕'}
-                    </span>
-                  )}
-                </span>
+                {sortableNow ? (
+                  <button
+                    type="button"
+                    onClick={() => onSortChange(nextSortState(sort, c.key))}
+                    className="inline-flex cursor-pointer select-none items-center gap-1 font-semibold text-text-muted"
+                  >
+                    {c.header}
+                    {indicator}
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    {c.header}
+                    {indicator}
+                  </span>
+                )}
               </th>
             );
           })}
@@ -143,6 +166,8 @@ export function DataTable<T>({
             <tr
               key={rowKey(row)}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
+              onKeyDown={onRowClick ? (e) => handleRowKeyDown(e, row) : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
               className={cn(
                 'hover:bg-surface',
                 onRowClick && 'cursor-pointer',
@@ -157,7 +182,7 @@ export function DataTable<T>({
                     alignClass[c.align ?? 'left'],
                   )}
                 >
-                  {c.render ? c.render(row) : ((row as Record<string, unknown>)[c.key] as ReactNode)}
+                  {c.render ? c.render(row) : renderCell((row as Record<string, unknown>)[c.key])}
                 </td>
               ))}
             </tr>

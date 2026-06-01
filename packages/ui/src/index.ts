@@ -11,6 +11,7 @@ export {
   DataTable,
   RowLink,
   rowHighlight,
+  nextSortState,
   type DataTableProps,
   type DataTableColumn,
   type SortState,
