@@ -1,10 +1,67 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-01 batch K (Vercel 모노레포 배포 설정 수정 — `rootDirectory=apps/web`+`framework=nextjs`. WI-019부터 누적된 production 배포 실패(`No Output Directory named "public"`) 해소. https://flowhr-sop.vercel.app 200 + GitHub status success).
-> **신규 세션 첫 작업**: 본 문서 **§-0k (2026-06-01 batch K)** 정독 → **Sprint 2 진입**(Sprint 1 전체 완료 ST-001~005+068/069/072/078. sprint-002.md 테넌트 라이프사이클+회사설정 P0 49 SP, 진입 순서/WI 분할은 codex 단일안 협의 후 착수). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-06-01 batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-01 batch L (Sprint 2 진입 — codex 단일안 + 사용자 결정. WI-030 packages/ui 도메인 primitive 5종 + WI-031 DB foundation 마이그레이션 36~39 완료, 둘 다 듀얼검증 PASS_BOTH 머지. 요금 모델 PRD 유지 확정).
+> **신규 세션 첫 작업**: 본 문서 **§-0l (2026-06-01 batch L)** 정독 → **WI-032-feat TA-13 회사설정 API** 착수(사용자가 직전 세션에서 속행 선택). GET/PATCH `/tenant/settings/*` 9탭 + 적용일 즉시/예약(`scheduled_setting_changes` apply 로직 + ⚠️ **stale `applying` 복구 + 실패 재시도 정책 동반** + 시스템 actor audit 보강 KI-110). DB schema 승인 불요(WI-031에서 완료). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-01 batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0k. 2026-06-01 batch K 세션 진척 — **신규 세션 여기부터**
+## -0l. 2026-06-01 batch L 세션 진척 — **신규 세션 여기부터**
+
+### Sprint 2 진입 (codex 단일안 + 사용자 결정)
+
+- **진입 순서**(codex 협의): packages/ui 토대 선행 → DB → TA-13 → OP-04 → OP-02/03. 의존 ST-007~010←ST-006, ST-053/054←ST-005(완료).
+- **WI 번호 = WI-030~038** (Phase 8~10 예약 WI-022~029 회피, 사용자 결정). 매핑: 030 UI primitive / 031 DB foundation / 032 TA-13 설정 API / 033 TA-13 설정 UI / 034 결재라인 조건 / 035 OP-04 등록 API / 036 OP-04 마법사 UI+활성화 / 037 OP-02 목록+상태변경 / 038 OP-03 상세.
+- **codex 정정(검증완료)**: sprint-002.md "마이그레이션 신규 생성"은 Phase 6 표현 — 9개 테이블 전부 mig 4/5/7/11 기존(Sprint 1 ERD). Sprint 2 DB는 보강/seed/scheduler delta.
+- **요금 모델 결정(사용자)**: **PRD 유지(고정 티어 per-user)** + 입점사 맞춤 기능은 기존 `feature_flag_overrides`(mig 8, per-tenant ON/OFF)로 지원 — 추가 스키마 불요. 가격은 OP-04 와이어프레임 SSOT(기본 ₩9,900/명·프리미엄 ₩19,800/명·커스텀 협의), placeholder 아님. ⚠️ **요금/제품 모델 결정은 묻기 전에 PRD/와이어프레임 SSOT부터 확인**(이번 세션 사용자 2회 지적 — "prd 확인해봤니").
+
+### 완료 — WI-030-feat packages/ui 도메인 primitive 5종 (PR #47 머지 858cc22)
+
+Phase 5 `_design-system/components.css` SSOT → React, **비즈니스 로직 없는 reusable primitive**(화면별 fetch/validation은 화면 WI 소유):
+| 컴포넌트 | 원천/용도 |
+|----------|----------|
+| `Stepper` | `.stepper`/`.step` G3 list (OP-04 7단계 좌측 네비). KI-061 부분 해소(OP-04 list형; EM-03/EM-08 2단 변종은 Sprint 5/7 잔존) |
+| `DataTable`(+`RowLink`/`rowHighlight`/`nextSortState`) | `.table` (OP-02 목록) |
+| `FilterBar`/`FilterChip`/`FilterPanel` | OP-02 필터 |
+| `DomainPrefixInput` | `.domain-prefix`/`.domain-suffix` (OP-04 슬러그) |
+| `SettingsPane`/`VerticalTabs` | TA-13 9탭 셸 |
+
+검증 인프라 신규: **vitest(node) + react-dom/server `renderToStaticMarkup`**(jsdom 불요, React 19 호환 — react-dom devDep 추가). 단위 27. 듀얼검증 PASS_BOTH(evaluator 8.60 / codex WARNING P2×3 a11y[정렬·행 키보드, VerticalTabs ARIA] → hotfix[th 내부 button, tr tabIndex+keydown, nav+aria-current 패턴] → PASS). turbo 21/21. KI-107(Stepper summary)/108(콜백 jsdom interaction 미검증) 등재.
+
+### 완료 — WI-031-feat Sprint 2 DB foundation (PR #48 머지 3ed8b7d)
+
+마이그레이션 **36~39 staging 적용**(기존 테이블 delta):
+- **36** hardening: tenant_drafts status enum+`ux_tenant_drafts_one_open_per_operator`(R-마법사 충돌)+step 1~7 / tenants 회사명 trgm GIN+status·plan·updated_at 인덱스+slug 소문자 unique / work_policies 테넌트당 기본 1개 / document_templates (tenant,key) / approval_lines 인덱스.
+- **37** 예약 큐: `scheduled_setting_changes`(target 8탭/payload/apply_at/status enum/audit 필드) + RLS 3정책(operator/tenant_admin) + `claim_due_scheduled_setting_changes()`(pending→applying skip-locked 원자 claim, service_role) + audit 트리거.
+- **38** seed: plans 3종(기본 9900/프리미엄 19800/커스텀, OP-04 SSOT, 멱등 upsert).
+- **39** 보안 hotfix(아래).
+
+타입/스키마 동기화: database.ts 재생성(staging gen) + zod 엔티티(tenantDraft 갱신/scheduledSettingChange 신규) + enum 2종 + OpenAPI 등록(ScheduledSettingChange). schemas 단위 53.
+
+**★ 듀얼검증 가치 실증 (이번 세션 핵심)**: evaluator가 **codex(claim 함수 설계자)도 놓친 cross-tenant 보안 P1**을 검출 → 1차 FAIL.
+- 결함: `claim_due_scheduled_setting_changes`(security definer)의 EXECUTE 가 Supabase **pg_default_acl 로 anon/authenticated 에 잔존**(`revoke all from public`만으론 무력 — mig 31 record_login_failure 와 **동일 클래스 재발**). 임의 인증/익명 사용자가 RPC 호출 시 전 테넌트 pending 행 claim + `returning sc.*` 로 cross-tenant payload 유출(RLS 우회) + cron DoS.
+- 정정(mig 39): `revoke execute ... from public, anon, authenticated`(mig 31/39 패턴) + update 정책 축소(operator/tenant_admin 은 pending→pending/cancelled 만, applying/applied/failed 는 service_role 전용). **proacl 실측 {postgres,service_role}** + rls_matrix `T14/T15` staging PASS.
+- 재평가 PASS 8.80 / codex 재검증 PASS → PASS_BOTH.
+
+**⚠️ 신규 KI (batch L)**:
+- **KI-109 (P2) — 보안, 다음 우선순위 권장**: `accept_invitation`(mig 35, 이미 배포됨)도 **동일 클래스 grant 누수**(staging proacl 실측 anon/auth execute=true). token_hash 게이트로 실 노출 제한적이나 service-only security-definer 함수 grant 일괄 감사·정정(`revoke from anon/authenticated`) 필요. ※ `get_invitation_by_token_hash` anon=true 는 비인증 /activate 검증용 **의도된 설계**(건드리지 말 것).
+- KI-110 (P3): claim 함수 audit actor NULL(service_role 컨텍스트) — WI-032 cron apply 시 시스템 actor 보강.
+- KI-111 (P3): `workPolicySchema.applicable_departments` z.array(uuidSchema) vs DB text[] 불일치(WI-021-1 도입, KI-090 동반 정정).
+- (이미 등재) KI-107/108(WI-030).
+
+### ⚠️ 교훈 (이번 세션)
+- **듀얼검증은 단독 evaluator/codex 보다 강함** — 설계자(codex)가 놓친 결함을 독립 평가자(evaluator)가 검출. WI별 의무(project.md §1-1)의 가치 재실증. **evaluator는 자가보고 미신뢰 — staging proacl/RLS 직접 재현으로 검증**.
+- **security-definer 함수 grant**: Supabase 는 `pg_default_acl` 로 anon/authenticated 에 EXECUTE 자동 부여 → `revoke from public` 만으론 부족. 반드시 `revoke ... from public, anon, authenticated`(service_role 만 grant). 향후 모든 service-only RPC 작성 시 적용.
+- **제품/요금 결정은 PRD/와이어프레임 SSOT 먼저 확인** 후 사용자에게(추측·재질문 금지).
+
+### staging 상태 (batch L)
+- `nwcttwuvdnelfbpjeqzr`: 마이그레이션 **36~39 적용**(list_migrations 등록). `plans` **3행**(기본/프리미엄/커스텀). `scheduled_setting_changes` 테이블 + RLS 3 + claim 함수(proacl {postgres,service_role}). tenant_drafts status 등 4컬럼 추가. RLS 매트릭스 T1~T15 PASS.
+- ⚠️ cron 자체(claim 후 실제 target 테이블 apply)는 미구현 — **WI-032 소유**(stale applying 복구 + 실패 재시도 동반).
+
+### 다음 세션 첫 작업 — WI-032-feat TA-13 회사설정 API
+- GET/PATCH `/tenant/settings/*` 9탭(회사정보/근무/휴가/결재라인 우선 P0) + 적용일 즉시/예약(`scheduled_setting_changes` 사용) + 예약 적용 cron(claim_due 호출 → target 적용 → status 전이) + 변경 이력.
+- 의존: WI-031 완료(스키마/타입/큐 준비됨). 이어서 WI-033(설정 UI, SettingsPane 사용) → 034 → 035 → 036 → 037 → 038.
+- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+
+## -0k. 2026-06-01 batch K 세션 진척
 
 ### 완료 — Vercel 모노레포 배포 설정 수정 (WI-019부터 누적된 배포 실패 해소)
 
