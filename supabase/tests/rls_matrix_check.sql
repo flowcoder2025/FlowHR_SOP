@@ -49,6 +49,9 @@ insert into legal_documents (id, type, version, language, is_active) values
   ('e0000000-0000-4000-8000-000000000001','terms','1.0','ko',true);
 insert into user_consents (id, user_id, document_id, document_type, version, source) values
   ('f0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000003','e0000000-0000-4000-8000-000000000001','terms','1.0','activate');
+insert into scheduled_setting_changes (id, tenant_id, target, payload, apply_at, status, created_by) values
+  ('a1000000-0000-4000-8000-000000000001','11111111-1111-1111-1111-111111111111','work_policy','{}'::jsonb, now()+interval '1 day','pending','a0000000-0000-4000-8000-000000000002'),
+  ('a2000000-0000-4000-8000-000000000002','22222222-2222-2222-2222-222222222222','work_policy','{}'::jsonb, now()+interval '1 day','pending','a0000000-0000-4000-8000-000000000004');
 
 -- ===== T1: employee A (self-only) + 교차테넌트 insert RLS 차단 =====
 reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000003","role":"authenticated"}'; set local role authenticated;
@@ -179,6 +182,39 @@ do $$ declare survives boolean; sub uuid; begin
     into survives, sub from leaves where id='d0000000-0000-4000-8000-000000000001';
   if not survives then raise exception 'T13a leave row deleted (SET NULL composite FK broke parent delete)'; end if;
   if sub is not null then raise exception 'T13b substitute_employee_id not nulled'; end if;
+end $$;
+
+-- ===== T14: scheduled_setting_changes RLS (WI-031 mig 37/39) — operator 전체 / tenant_admin 자기테넌트 / employee 0 =====
+-- operator (a..01): 양 테넌트 큐 2행
+reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000001","role":"authenticated"}'; set local role authenticated;
+do $$ begin
+  if (select count(*) from scheduled_setting_changes) <> 2 then raise exception 'T14a operator queue=% (exp 2)', (select count(*) from scheduled_setting_changes); end if;
+end $$;
+-- employee A (a..03, tenant_admin 아님): 0행
+reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000003","role":"authenticated"}'; set local role authenticated;
+do $$ begin
+  if (select count(*) from scheduled_setting_changes) <> 0 then raise exception 'T14b employee queue=% (exp 0, not tenant_admin)', (select count(*) from scheduled_setting_changes); end if;
+end $$;
+-- tenant_super A (a..02, is_tenant_admin): 자기 테넌트 1행만 + 쓰기 제약
+reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000002","role":"authenticated"}'; set local role authenticated;
+do $$ declare ok boolean := false; begin
+  if (select count(*) from scheduled_setting_changes) <> 1 then raise exception 'T14c tenant_admin queue=% (exp 1 own)', (select count(*) from scheduled_setting_changes); end if;
+  if exists (select 1 from scheduled_setting_changes where tenant_id='22222222-2222-2222-2222-222222222222') then raise exception 'T14d tenant_admin sees other-tenant queue'; end if;
+  -- status='applied' 강제 전이 차단 (claim 함수 전용)
+  begin update scheduled_setting_changes set status='applied' where id='a1000000-0000-4000-8000-000000000001';
+  exception when others then ok := true; end;
+  if not ok then raise exception 'T14e tenant_admin forged status=applied (claim 전용 전이 위반)'; end if;
+  -- 양성: pending → cancelled 허용
+  update scheduled_setting_changes set status='cancelled' where id='a1000000-0000-4000-8000-000000000001';
+  if (select status from scheduled_setting_changes where id='a1000000-0000-4000-8000-000000000001') <> 'cancelled' then raise exception 'T14f tenant_admin cancel(pending→cancelled) should be allowed'; end if;
+end $$;
+
+-- ===== T15: claim_due_scheduled_setting_changes 는 service_role 전용 — authenticated 실행 차단 (mig 39 P1) =====
+reset role; set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000002","role":"authenticated"}'; set local role authenticated;
+do $$ declare ok boolean := false; begin
+  begin perform claim_due_scheduled_setting_changes(10);
+  exception when others then ok := true; end;
+  if not ok then raise exception 'T15 authenticated CAN execute claim fn (service_role 전용 위반)'; end if;
 end $$;
 
 reset role;

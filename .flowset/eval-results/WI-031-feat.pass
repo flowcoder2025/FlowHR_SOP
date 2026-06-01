@@ -1,0 +1,22 @@
+WI-031-feat Sprint 2 DB foundation (마이그레이션 36~38 + 보안 hotfix 39) — 듀얼검증 통합 판정: PASS_BOTH
+
+- evaluator: 1차 FAIL 7.75(in-scope P1) → 정정(mig 39) → 재평가 PASS 8.80/10 (기능 9 / 품질 9 / 테스트 8 / 계약 9, 각 축 ≥8.0) — WI-031-feat.eval.md
+- codex: WARNING(P2 update 정책) → 정정 → 재검증 PASS — WI-031-feat.codex.md
+- verdict: PASS_BOTH (review-system.md §4)
+
+★ 듀얼검증 가치 실증: evaluator가 codex(claim 함수 설계자)도 놓친 **P1 cross-tenant 보안 결함**을 검출.
+- 결함: claim_due_scheduled_setting_changes(security definer)의 EXECUTE 가 Supabase pg_default_acl 로
+  anon/authenticated 에 잔존(`revoke all from public`만으론 무력, mig 31 record_login_failure 동일 클래스).
+  → 임의 인증/익명 사용자가 RPC 호출 시 전 테넌트 pending 행 claim + returning sc.* 로 cross-tenant
+  payload 유출(RLS 우회) + cron starvation/DoS.
+- 정정(mig 39): revoke execute ... from public, anon, authenticated. proacl 실측 {postgres,service_role}.
+- codex P2: update 정책 축소(operator/tenant_admin pending→pending/cancelled, applying/applied/failed 는 service_role).
+
+검증 (3중 실증):
+- staging proacl: claim 함수 anon/auth execute=false, service_role=true.
+- rls_matrix_check.sql T14/T15 staging BEGIN..ROLLBACK 재현(operator 2/employee 0/tenant_admin 자기1+타테넌트 차단+위조 applied 차단+pending→cancelled 허용 / authenticated claim 실행 차단).
+- turbo lint/typecheck/test/build 21/21 + schemas 단위 53.
+
+마이그레이션 36/37/38/39 staging 적용 완료. plans seed 3종(OP-04 SSOT, ₩9,900/₩19,800/커스텀).
+최종 코드 커밋 5d36756(WI-031-1-fix) — 본 마커는 그 후손.
+KI: KI-109(P2 accept_invitation grant 동일 클래스, out-of-scope 하드닝 WI) / KI-110(P3 claim audit actor NULL) / KI-111(P3 applicable_departments zod text[] 불일치, WI-021-1 도입).

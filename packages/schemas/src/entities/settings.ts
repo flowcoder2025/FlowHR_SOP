@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { uuidSchema, isoTimestampSchema } from '../common';
-import { integrationStatusEnum, signatureStatusEnum } from './enums';
+import {
+  integrationStatusEnum,
+  signatureStatusEnum,
+  scheduledSettingChangeStatusEnum,
+} from './enums';
 
 /**
  * 설정/연동/문서양식/서명 도메인 entity (database.ts Row 1:1, snake_case).
@@ -44,6 +48,24 @@ export const documentTemplateSchema = z.object({
   template_body: z.string().nullable(),
   template_format: z.string().nullable(),
   variables: z.array(z.string()),
+  created_at: isoTimestampSchema,
+  updated_at: isoTimestampSchema,
+});
+
+// scheduled_setting_changes (Sprint 2 mig 37 — TA-13 적용일 예약 큐. target 은 DB text+check → z.string())
+export const scheduledSettingChangeSchema = z.object({
+  id: uuidSchema,
+  tenant_id: uuidSchema,
+  target: z.string(),
+  payload: z.record(z.unknown()),
+  apply_at: isoTimestampSchema,
+  status: scheduledSettingChangeStatusEnum,
+  created_by: uuidSchema.nullable(),
+  applied_at: isoTimestampSchema.nullable(),
+  cancelled_at: isoTimestampSchema.nullable(),
+  error_message: z.string().nullable(),
+  attempt_count: z.number().int(),
+  last_attempt_at: isoTimestampSchema.nullable(),
   created_at: isoTimestampSchema,
   updated_at: isoTimestampSchema,
 });

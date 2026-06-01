@@ -229,6 +229,28 @@ components:
         form_data:
           type: object
           additionalProperties: {}
+        status:
+          type: string
+          enum:
+            - draft
+            - submitting
+            - completed
+            - abandoned
+        submitted_tenant_id:
+          type:
+            - string
+            - "null"
+          format: uuid
+        completed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        abandoned_at:
+          type:
+            - string
+            - "null"
+          format: date-time
         created_at:
           type: string
           format: date-time
@@ -240,6 +262,10 @@ components:
         - created_by
         - current_step
         - form_data
+        - status
+        - submitted_tenant_id
+        - completed_at
+        - abandoned_at
         - created_at
         - updated_at
     Subscription:
@@ -1381,6 +1407,78 @@ components:
         - template_body
         - template_format
         - variables
+        - created_at
+        - updated_at
+    ScheduledSettingChange:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        target:
+          type: string
+        payload:
+          type: object
+          additionalProperties: {}
+        apply_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - pending
+            - applying
+            - applied
+            - failed
+            - cancelled
+        created_by:
+          type:
+            - string
+            - "null"
+          format: uuid
+        applied_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        cancelled_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        error_message:
+          type:
+            - string
+            - "null"
+        attempt_count:
+          type: integer
+        last_attempt_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - tenant_id
+        - target
+        - payload
+        - apply_at
+        - status
+        - created_by
+        - applied_at
+        - cancelled_at
+        - error_message
+        - attempt_count
+        - last_attempt_at
         - created_at
         - updated_at
     Integration:

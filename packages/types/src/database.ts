@@ -1206,7 +1206,36 @@ export type Database = {
           token_hash?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invitations_accepted_user_id_fkey"
+            columns: ["accepted_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
@@ -1778,6 +1807,72 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_setting_changes: {
+        Row: {
+          applied_at: string | null
+          apply_at: string
+          attempt_count: number
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          last_attempt_at: string | null
+          payload: Json
+          status: Database["public"]["Enums"]["scheduled_setting_change_status"]
+          target: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          apply_at: string
+          attempt_count?: number
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          payload?: Json
+          status?: Database["public"]["Enums"]["scheduled_setting_change_status"]
+          target: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          apply_at?: string
+          attempt_count?: number
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          payload?: Json
+          status?: Database["public"]["Enums"]["scheduled_setting_change_status"]
+          target?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_setting_changes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_setting_changes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       signatures: {
         Row: {
           created_at: string
@@ -1946,27 +2041,39 @@ export type Database = {
       }
       tenant_drafts: {
         Row: {
+          abandoned_at: string | null
+          completed_at: string | null
           created_at: string
           created_by: string | null
           current_step: number
           form_data: Json
           id: string
+          status: Database["public"]["Enums"]["tenant_draft_status"]
+          submitted_tenant_id: string | null
           updated_at: string
         }
         Insert: {
+          abandoned_at?: string | null
+          completed_at?: string | null
           created_at?: string
           created_by?: string | null
           current_step?: number
           form_data?: Json
           id?: string
+          status?: Database["public"]["Enums"]["tenant_draft_status"]
+          submitted_tenant_id?: string | null
           updated_at?: string
         }
         Update: {
+          abandoned_at?: string | null
+          completed_at?: string | null
           created_at?: string
           created_by?: string | null
           current_step?: number
           form_data?: Json
           id?: string
+          status?: Database["public"]["Enums"]["tenant_draft_status"]
+          submitted_tenant_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1975,6 +2082,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_drafts_submitted_tenant_id_fkey"
+            columns: ["submitted_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -2395,9 +2509,55 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: {
+        Args: { p_token_hash: string; p_user_id: string }
+        Returns: {
+          operator_flag: boolean
+          target_role: string
+          tenant_id: string
+        }[]
+      }
+      claim_due_scheduled_setting_changes: {
+        Args: { p_limit?: number }
+        Returns: {
+          applied_at: string | null
+          apply_at: string
+          attempt_count: number
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          last_attempt_at: string | null
+          payload: Json
+          status: Database["public"]["Enums"]["scheduled_setting_change_status"]
+          target: string
+          tenant_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "scheduled_setting_changes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       current_employee_id: { Args: never; Returns: string }
       current_role_key: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
+      get_invitation_by_token_hash: {
+        Args: { p_token_hash: string }
+        Returns: {
+          company_name: string
+          email: string
+          expires_at: string
+          is_expired: boolean
+          operator_flag: boolean
+          status: Database["public"]["Enums"]["invitation_status"]
+          target_role: string
+          tenant_id: string
+        }[]
+      }
       is_approval_requester: {
         Args: { p_approval_id: string }
         Returns: boolean
@@ -2416,27 +2576,6 @@ export type Database = {
         Returns: {
           out_attempt_count: number
           out_locked_until: string
-        }[]
-      }
-      get_invitation_by_token_hash: {
-        Args: { p_token_hash: string }
-        Returns: {
-          email: string
-          target_role: string
-          tenant_id: string | null
-          operator_flag: boolean
-          expires_at: string
-          status: Database["public"]["Enums"]["invitation_status"]
-          is_expired: boolean
-          company_name: string | null
-        }[]
-      }
-      accept_invitation: {
-        Args: { p_token_hash: string; p_user_id: string }
-        Returns: {
-          target_role: string
-          tenant_id: string | null
-          operator_flag: boolean
         }[]
       }
     }
@@ -2531,7 +2670,14 @@ export type Database = {
       notification_type: "approval" | "document" | "system" | "announcement"
       operator_role: "operator_super" | "operator_staff"
       plan_status: "active" | "inactive" | "sales_stopped" | "custom"
+      scheduled_setting_change_status:
+        | "pending"
+        | "applying"
+        | "applied"
+        | "failed"
+        | "cancelled"
       signature_status: "pending" | "signed" | "rejected" | "expired"
+      tenant_draft_status: "draft" | "submitting" | "completed" | "abandoned"
       tenant_status:
         | "active"
         | "inactive"
@@ -2775,7 +2921,15 @@ export const Constants = {
       notification_type: ["approval", "document", "system", "announcement"],
       operator_role: ["operator_super", "operator_staff"],
       plan_status: ["active", "inactive", "sales_stopped", "custom"],
+      scheduled_setting_change_status: [
+        "pending",
+        "applying",
+        "applied",
+        "failed",
+        "cancelled",
+      ],
       signature_status: ["pending", "signed", "rejected", "expired"],
+      tenant_draft_status: ["draft", "submitting", "completed", "abandoned"],
       tenant_status: [
         "active",
         "inactive",
