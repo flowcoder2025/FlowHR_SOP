@@ -173,6 +173,13 @@ function buildSteps(steps: ApprovalStepDraft[]): Record<string, unknown>[] {
  * 숫자 자동변환은 하지 않는 게 DSL 규칙이나, UI 입력(문자열/배열)을 의도된 타입으로 만들어
  * strict zod 검증을 통과시키거나 거부(NaN/빈값)되게 한다. 최종 권위 검증은 actions/patchTenantSetting.
  */
+/** 숫자 변환은 **유한 숫자 / 숫자형 문자열만** 허용 — boolean/객체 등은 NaN 으로 두어 strict zod 가 reject. */
+function strictNumber(x: unknown): number {
+  if (typeof x === 'number') return Number.isFinite(x) ? x : Number.NaN;
+  if (typeof x === 'string' && /^-?\d+(\.\d+)?$/.test(x.trim())) return Number(x.trim());
+  return Number.NaN;
+}
+
 function normalizeConditionValue(
   field: string,
   op: string,
@@ -182,10 +189,19 @@ function normalizeConditionValue(
   const numeric = field === 'leave_days';
   if (isArrayOp) {
     const arr = Array.isArray(raw) ? raw : trimmed(raw).split(',');
-    const items = arr
-      .map((x) => (typeof x === 'string' ? x.trim() : x))
-      .filter((x) => x !== '' && x != null);
-    return numeric ? items.map((x) => Number(x)) : items.map((x) => String(x));
+    if (numeric) {
+      // 숫자 배열 — 빈 토큰 제거 후 strict 변환. boolean/비숫자 토큰은 NaN 으로 남겨 strict zod 가 reject
+      // (Number(true)=1 같은 암묵적 coerce 차단, silent drop 도 하지 않음).
+      return arr
+        .map((x) => (typeof x === 'string' ? x.trim() : x))
+        .filter((x) => x !== '' && x != null)
+        .map((x) => strictNumber(x));
+    }
+    // 문자 배열 — 실제 문자열 토큰만 수용(boolean/객체 coerce 차단), 빈 토큰 제거.
+    return arr
+      .filter((x): x is string => typeof x === 'string')
+      .map((x) => x.trim())
+      .filter((s) => s !== '');
   }
   if (numeric) return numberOrNaN(raw);
   return trimmed(raw);

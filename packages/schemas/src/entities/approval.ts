@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { uuidSchema, isoTimestampSchema } from '../common';
-import { conditionRuleSchema, approvalStepTemplateSchema } from '../approval-line-dsl';
+import { conditionRuleSchema, approvalStepArraySchema } from '../approval-line-dsl';
 import {
   approvalRequestTypeEnum,
   approvalStatusEnum,
@@ -24,7 +24,7 @@ export const approvalLineSchema = z.object({
   name: z.string(),
   request_type: approvalRequestTypeEnum,
   conditions: z.array(conditionRuleSchema),
-  default_line: z.array(approvalStepTemplateSchema),
+  default_line: approvalStepArraySchema,
   is_active: z.boolean(),
   created_at: isoTimestampSchema,
   updated_at: isoTimestampSchema,

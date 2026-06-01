@@ -116,7 +116,7 @@ describe('conditionRuleSchema — field/op/value 매트릭스', () => {
     ).toBe(true);
   });
 
-  it('line(매칭 결재선)은 최소 1단계 + order 1..n 연속', () => {
+  it('line(매칭 결재선)은 최소 1단계 + order 배열위치(1..n) 일치', () => {
     expect(conditionRuleSchema.safeParse({ field: 'leave_days', op: '>=', value: 5, line: [] }).success).toBe(
       false,
     );
@@ -127,6 +127,18 @@ describe('conditionRuleSchema — field/op/value 매트릭스', () => {
         op: '>=',
         value: 5,
         line: [{ order: 2, approver_role: 'tenant_super', dept_scope: 'all' }],
+      }).success,
+    ).toBe(false);
+    // order 역순(배열위치 불일치) 거부 — 정렬 없이 반환하므로 위치 정합 강제
+    expect(
+      conditionRuleSchema.safeParse({
+        field: 'leave_days',
+        op: '>=',
+        value: 5,
+        line: [
+          { order: 2, approver_role: 'tenant_manager', dept_scope: 'own_team' },
+          { order: 1, approver_role: 'tenant_super', dept_scope: 'all' },
+        ],
       }).success,
     ).toBe(false);
   });
@@ -180,6 +192,24 @@ describe('evaluateCondition', () => {
       false,
     );
     expect(evaluateCondition(rule({ op: '>=', value: 5 }), { leave_days: null })).toBe(false);
+  });
+
+  it('유효하지 않은 actual(NaN/빈문자/잘못된 enum)은 모든 연산자에서 false', () => {
+    // leave_days=NaN 이 != / not_in 에서 과매칭되지 않아야(P2-1).
+    expect(evaluateCondition(rule({ op: '!=', value: 5 }), { leave_days: Number.NaN })).toBe(false);
+    expect(evaluateCondition(rule({ field: 'leave_days', op: 'not_in', value: [1, 2] }), { leave_days: Number.NaN })).toBe(
+      false,
+    );
+    // 빈/공백 문자 actual.
+    expect(evaluateCondition(rule({ field: 'position', op: '!=', value: '팀장' }), { position: '  ' })).toBe(
+      false,
+    );
+    // employment_type 은 enum 으로 actual 검증 — 잘못된 값은 false.
+    expect(
+      evaluateCondition(rule({ field: 'employment_type', op: '!=', value: 'contract' }), {
+        employment_type: 'intern',
+      }),
+    ).toBe(false);
   });
 });
 

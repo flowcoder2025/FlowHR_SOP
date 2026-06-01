@@ -2,7 +2,7 @@
 
 import { Button, Card, CardTitle, Input, Label } from '@flowhr/ui';
 import { useTranslations } from 'next-intl';
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import type { PendingChangeSummary } from '@/lib/tenant-settings/queries';
 import { SAVE_INIT, saveApprovalLinesAction } from '../actions';
 import { PendingChangeList } from '../_components/pending-change-list';
@@ -134,6 +134,16 @@ export function ApprovalLinesForm({
     (Array.isArray(pane.lines) ? pane.lines : []).map(toLineState),
   );
 
+  // 마운트 시점 기존 라인 스냅샷 — 화면에서 제거된 기존(id) 라인을 제출 시 is_active=false 로 비활성화한다.
+  // (mig 40 apply 엔진은 제출 lines[] 만 순회·upsert 하므로, 단순 배열 제거는 DB 에 반영되지 않는다.
+  //  하드 삭제 경로는 스키마에 없어 "삭제 = 비활성화"가 계약 — tenant-settings.ts 주석.)
+  const initialRef = useRef<{ id: string; name: string; request_type: string }[] | null>(null);
+  if (initialRef.current === null) {
+    initialRef.current = (Array.isArray(pane.lines) ? pane.lines : [])
+      .filter((l) => Boolean(l?.id))
+      .map((l) => ({ id: l.id, name: l.name, request_type: l.request_type }));
+  }
+
   const updateLine = (i: number, patch: Partial<LineState>) =>
     setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   const removeLine = (i: number) => setLines((ls) => ls.filter((_, idx) => idx !== i));
@@ -144,14 +154,29 @@ export function ApprovalLinesForm({
     ]);
 
   // 제출 payload (value 는 문자열 그대로 — 서버 form-data 가 정규화).
-  const submitLines = lines.map((l) => ({
-    id: l.id,
-    name: l.name,
-    request_type: l.request_type,
-    is_active: l.is_active,
-    conditions: l.conditions,
-    default_line: l.default_line,
-  }));
+  const currentIds = new Set(lines.map((l) => l.id).filter(Boolean));
+  // 화면에서 제거된 기존 라인 → 비활성화 항목으로 제출(실제 DB 반영). conditions/default_line 은 비움.
+  const removedDeactivations = (initialRef.current ?? [])
+    .filter((l) => !currentIds.has(l.id))
+    .map((l) => ({
+      id: l.id,
+      name: l.name,
+      request_type: l.request_type,
+      is_active: false,
+      conditions: [] as ConditionState[],
+      default_line: [] as StepState[],
+    }));
+  const submitLines = [
+    ...lines.map((l) => ({
+      id: l.id,
+      name: l.name,
+      request_type: l.request_type,
+      is_active: l.is_active,
+      conditions: l.conditions,
+      default_line: l.default_line,
+    })),
+    ...removedDeactivations,
+  ];
 
   return (
     <Card className="flex flex-col">

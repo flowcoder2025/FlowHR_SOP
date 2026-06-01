@@ -61,15 +61,19 @@ export const approvalStepTemplateSchema = z
   });
 export type ApprovalStepTemplate = z.infer<typeof approvalStepTemplateSchema>;
 
-/** order 가 1..n 연속(중복/누락 없음)인지 검증해 RefinementCtx 에 이슈를 추가한다. */
+/**
+ * order 가 **배열 위치와 일치**(steps[i].order === i+1)하는지 검증한다.
+ * 단순 집합(1..n) 검사가 아니라 위치 정합까지 강제 — `[{order:2},{order:1}]` 같은 역순 저장을 차단해
+ * resolveApprovalLine 이 정렬 없이 배열 순서 그대로 반환해도 항상 order 오름차순이 보장된다.
+ */
 function refineStepOrder(steps: { order: number }[], ctx: z.RefinementCtx, path: (string | number)[] = []): void {
-  const orders = steps.map((s) => s.order).sort((a, b) => a - b);
-  for (let i = 0; i < orders.length; i++) {
-    if (orders[i] !== i + 1) {
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    if (!step || step.order !== i + 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path,
-        message: 'order 는 1..n 연속이어야 합니다(중복/누락 금지)',
+        message: 'order 는 배열 순서대로 1..n 이어야 합니다(중복/누락/역순 금지)',
       });
       return;
     }
@@ -203,11 +207,22 @@ export interface ApprovalResolution {
   matchedConditionIndex: number | null;
 }
 
-/** 단일 조건 평가. 컨텍스트에 해당 필드가 없으면(undefined/null) 모든 연산자에서 false. */
+/**
+ * 컨텍스트의 실제 필드 값이 평가 가능한 유효값인지 검사한다.
+ * 미존재(undefined/null) + 타입/유한성 위반(예 leave_days=NaN, 빈 문자열)은 false → 모든 연산자에서
+ * 과매칭(특히 !=/not_in 이 invalid actual 에서 true 가 되는 것)을 차단한다.
+ */
+function isValidActual(field: ConditionField, actual: unknown): boolean {
+  if (actual === undefined || actual === null) return false;
+  if (field === 'leave_days') return typeof actual === 'number' && Number.isFinite(actual);
+  if (field === 'employment_type') return employmentTypeEnum.safeParse(actual).success;
+  return typeof actual === 'string' && actual.trim().length > 0;
+}
+
+/** 단일 조건 평가. 컨텍스트 필드가 없거나 유효하지 않으면(NaN/빈값 등) 모든 연산자에서 false. */
 export function evaluateCondition(rule: ConditionRule, ctx: ApprovalContext): boolean {
   const actual = ctx[rule.field];
-  // 미존재 필드는 항상 false — 특히 !=/not_in 이 undefined 에서 true 가 되어 과매칭되는 것을 차단.
-  if (actual === undefined || actual === null) return false;
+  if (!isValidActual(rule.field, actual)) return false;
 
   const { op, value } = rule;
   switch (op) {

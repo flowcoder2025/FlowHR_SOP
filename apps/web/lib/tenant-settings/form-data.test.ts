@@ -237,6 +237,21 @@ describe('buildApprovalLinesPayload (WI-034 조건 분기 DSL)', () => {
     expect(approvalLinesPayloadSchema.safeParse(payload).success).toBe(true);
   });
 
+  it('숫자 배열에 비숫자 토큰이 섞이면 NaN 으로 남아 zod 가 거부(암묵 coerce 금지)', () => {
+    const edited: ApprovalLineDraft[] = [
+      {
+        name: 'L1',
+        request_type: 'leave',
+        is_active: true,
+        conditions: [{ field: 'leave_days', op: 'in', value: 'abc, 5', line: [managerStep] }],
+        default_line: [managerStep],
+      },
+    ];
+    const payload = buildApprovalLinesPayload(edited);
+    expect(Number.isNaN((payload.lines[0].conditions[0].value as number[])[0])).toBe(true);
+    expect(approvalLinesPayloadSchema.safeParse(payload).success).toBe(false);
+  });
+
   it("dept_scope!=='specific' 단계는 specific_employee_id 를 생략", () => {
     const edited: ApprovalLineDraft[] = [
       {
