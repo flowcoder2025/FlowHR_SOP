@@ -183,6 +183,8 @@
 | POST | `/document-templates` | super/hr_admin | body: `{key, labelKo, templateBody, variables[], format}` |
 | GET | `/audit-logs?from&to&event&userId&result&page` | super (전체), hr_admin (일부) |
 
+> **구현 노트 (WI-032, 2026-06-01)**: 위 REST 경로는 도메인 계약. 실제 구현은 기존 패턴대로 **Next.js Server Action + `apps/web/lib/tenant-settings/{queries,actions}`** (REST route handler 미신설, `app/api/` 부재). `getTenantSettings()`가 9탭 envelope(탭별 permission/implemented/data/pending) 반환, `patchTenantSetting()`가 P0 4탭(company/work_policy/leave_policy/approval_lines)만 변경 — `scheduled_setting_changes` 큐에 적재 후 즉시(apply_at≤now: `apply_one_scheduled_setting_change` service_role RPC) 또는 예약(pg_cron `run_due_scheduled_setting_changes` 매분, mig 40). roles/notifications/document_templates/security PATCH 와 audit_logs 페이지네이션은 후속 WI. `leave_policy.grant_basis`는 tenant_settings 전용 컬럼 부재로 본 WI 제외(leave_types 만 처리, KI 등재).
+
 ## TA-14 외부 연동
 
 | 메서드 | 경로 | 권한 |
@@ -202,3 +204,4 @@
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 14 화면 × 약 130 엔드포인트 | Phase 4 진입 |
+| 2026-06-01 | TA-13 구현 노트 추가 (WI-032 — Server Action + scheduled_setting_changes 큐 + pg_cron apply 엔진) | Sprint 2 회사설정 API 착수 |
