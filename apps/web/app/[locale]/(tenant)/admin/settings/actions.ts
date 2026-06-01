@@ -110,11 +110,13 @@ export async function saveLeavePolicyAction(_prev: SaveState, formData: FormData
   if (!profile?.tenantId) return { status: 'error', messageKey: 'action.save_failed' };
 
   // 원본 key 는 클라이언트(위조 가능) 대신 DB(RLS tenant 격리)에서 권위 조회 → delete_keys 변조 차단.
+  // 조회 실패 시 원본 미상 → 잘못된 delete_keys 산출 위험 → fail-closed(저장 중단).
   const supabase = await createSupabaseServerClient();
-  const { data: existing } = await supabase
+  const { data: existing, error: fetchError } = await supabase
     .from('leave_types')
     .select('id, key')
     .eq('tenant_id', profile.tenantId);
+  if (fetchError) return { status: 'error', messageKey: 'action.save_failed' };
   const rows = existing ?? [];
 
   const payload = buildLeavePolicyPayload(
@@ -134,6 +136,8 @@ export async function saveLeavePolicyAction(_prev: SaveState, formData: FormData
           .select('id', { count: 'exact', head: true })
           .in('leave_type_id', deleteIds),
       ]);
+      // 참조 검사 실패 시 안전 차단(미검증 삭제 enqueue 방지).
+      if (leaves.error || balances.error) return { status: 'error', messageKey: 'action.save_failed' };
       if ((leaves.count ?? 0) + (balances.count ?? 0) > 0) {
         return { status: 'error', messageKey: 'action.leave_in_use' };
       }
@@ -154,11 +158,13 @@ export async function saveApprovalLinesAction(_prev: SaveState, formData: FormDa
   if (!profile?.tenantId) return { status: 'error', messageKey: 'action.save_failed' };
 
   // 조건/단계 원본은 클라이언트(위조 가능) 대신 DB(RLS)에서 권위 조회 → 같은 테넌트 내 조건 변조/삭제 차단.
+  // 조회 실패 시 원본 미상 → conditions/default_line 이 빈 배열로 저장돼 기존 조건이 소실(fail-open)되므로 중단.
   const supabase = await createSupabaseServerClient();
-  const { data: existing } = await supabase
+  const { data: existing, error: fetchError } = await supabase
     .from('approval_lines')
     .select('id, conditions, default_line')
     .eq('tenant_id', profile.tenantId);
+  if (fetchError) return { status: 'error', messageKey: 'action.save_failed' };
 
   const payload = buildApprovalLinesPayload(
     edited as ApprovalLineDraft[],
