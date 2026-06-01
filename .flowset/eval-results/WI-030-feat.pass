@@ -1,0 +1,16 @@
+WI-030-feat packages/ui Sprint 2 도메인 primitive 5종 — 듀얼검증 통합 판정: PASS_BOTH
+
+- evaluator: PASS 8.60/10 (기능 8.5 / 품질 9.0 / 테스트 8.0 / 계약 9.0, 각 축 ≥7.5) — WI-030-feat.eval.md
+- codex: WARNING(P2×3 a11y + P3×2) → hotfix(7a48256) → 재검증 PASS_VERIFIED (잔존 차단 결함 0) — WI-030-feat.codex.md
+- verdict: PASS_BOTH (review-system.md §4: PASS + WARNING → CONDITIONAL, a11y 토대 결함이라 능동 hotfix → PASS_BOTH)
+
+정정 경과 (hotfix 7a48256):
+- codex P2 VerticalTabs: 불완전 role=tab 패턴 제거 → nav + aria-current(패널 화면 WI 소유 → tabpanel 완결 불가)
+- codex P2 DataTable 정렬 키보드: th onClick → 내부 button + nextSortState. aria-sort 정렬 컬럼에만
+- codex P2 행 키보드: tr tabIndex=0 + onKeyDown(Enter/Space)
+- codex P3 fallback: renderCell() object/array 차단 가드
+- evaluator P3 prop명: Stepper current → currentIndex (03-components.md doc 정합)
+
+검증: turbo lint/typecheck/test/build 21/21 + packages/ui 단위 27/27 (vitest node + react-dom/server renderToStaticMarkup, jsdom 불요).
+최종 코드 커밋 7a48256 — 본 마커는 그 후손.
+KI: KI-061 부분 해소 재라벨(OP-04 list형 + EM-03/EM-08 2단 변종 Sprint 5/7 잔존) / KI-107(Stepper summary 필드 미반영, WI-036) / KI-108(primitive 클릭·키보드 콜백 jsdom interaction 미검증).
