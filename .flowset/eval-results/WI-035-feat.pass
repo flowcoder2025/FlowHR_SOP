@@ -1,0 +1,21 @@
+WI-035-feat OP-04 신규 테넌트 등록 API (ST-006) — 듀얼검증 통합 판정
+
+VERDICT: PASS_BOTH
+- evaluator: PASS 8.88/10 (기능 9.0 / 품질 9.0 / 테스트 8.5 / 계약 9.0 — 전 축 ≥ 7.5)
+- codex: PASS (1차 FAIL P1×2 + P2×3 + P3×2 → hotfix 94ceec4 → 재검증 PASS, P0/P1 없음)
+
+통합: review-system.md §4 매트릭스 PASS_BOTH → 머지 승인 (project.md §1-1).
+
+hotfix 정정(머지 전, codex 검출):
+- [codex P1] saveDraft/deleteDraft status 가드(draft/submitting) — completed draft 멱등근거 stale 훼손 차단
+- [codex P1] sendInvite 관리자 초대 한정(target_role+employee_id is null) — 직원 초대 employee_id 오염 차단
+- [codex P2] register_tenant enabled_modules ⊆ plan.modules 강제(P0111)
+- [codex P2] register_tenant 비-open(abandoned) draft 등록 거부(P0102)
+- [codex P3] getRegistrationPlans active/custom 한정 / token_hash collision 오매핑 제거
+
+핵심 설계: register_tenant SECURITY DEFINER 원자 RPC(service_role only, KI-109 grant 패턴 staging 실측 {postgres,service_role}) — tenants+subscriptions+tenant_settings+초기데이터+invitation 단일 트랜잭션. create-at-activate(등록 시 invitation 만, accept_invitation tenant_super 수락 시 admin_user_id backfill). enum 무변경(표시상태 파생). 멱등=draft+idempotency_key. audit actor GUC(app.audit_actor_*) 운영자 귀속.
+
+검증: turbo lint/typecheck/test/build 21/21 + 단위(operator-onboarding 22 / web permissions 3, schemas 132 / web 87) + openapi 6 신규 + staging mig 42 적용·전 시나리오 실증(정상/멱등 replay·conflict/에러 P0101~P0111/부서 parent/가격 latch 9900/audit actor/accept admin_user_id/modules subset/abandoned) 후 정리.
+
+NON_BLOCKING (KI 적재): KI-123(P2 표시상태 파생+matrix status, WI-037)/KI-124(P3 Json 이중캐스트)/KI-125(P3 register_tenant pgTAP)/KI-126(P3 checkAdminEmail auth.users 사전체크).
+日: 2026-06-01
