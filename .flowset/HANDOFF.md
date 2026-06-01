@@ -1,10 +1,45 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-01 batch O (WI-034-feat 결재라인 조건 분기 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #53. **DB/RLS 변경 없음**. approval_lines.conditions/default_line 조건 분기 DSL(snake_case) + 순수 평가엔진 `resolveApprovalLine` + 조건 트리 편집 UI. ★ codex 가 actual 무효값 과매칭(NaN/빈문자/잘못된 enum) + order 위치정합 + 숫자 coerce 우회를 P2/P3 로 검출 → hotfix. KI-120~122 등재).
-> **신규 세션 첫 작업**: 본 문서 **§-0o (2026-06-01 batch O)** 정독 → **WI-035-feat OP-04 등록 API** 착수(check-domain/check-business-number 검증 + tenant_drafts upsert + 최종 등록 트랜잭션[tenants/subscriptions/tenant_settings/admin user 동시 INSERT] + 관리자 초대). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-06-01 batch N (WI-033 TA-13 설정 UI, §-0n) / batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-01 batch P (WI-035-feat OP-04 신규 테넌트 등록 API 완료 — codex 2라운드 협의 + 사용자 승인(DB mig 42) + 듀얼검증 PASS_BOTH 머지 PR #54. **마이그레이션 42** `register_tenant` SECURITY DEFINER 원자 RPC(service_role only) — tenants+subscriptions+tenant_settings+초기데이터+관리자 invitation 단일 트랜잭션. **create-at-activate 정합**(DoD "admin user INSERT"→invitation 재해석, 등록 시 user 미생성). **enum 무변경**(표시상태 파생). ★ codex 가 evaluator PASS 통과분에서 P1×2[draft 무결성·sendInvite 직원초대 오염]+P2×2[modules subset·abandoned draft] 검출 → hotfix. KI-123~126 등재).
+> **신규 세션 첫 작업**: 본 문서 **§-0p (2026-06-01 batch P)** 정독 → **WI-036-feat OP-04 7단계 마법사 UI** 착수(Stepper WI-030 + 실시간검증[check-domain/business/admin-email 액션 소비] + 임시저장 재진입[getOpenDraft/saveDraft] + 초기데이터 폼 + registerTenant 호출 + 관리자 활성화 [ST-006/010]). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-01 batch O (WI-034 결재라인 조건 분기, §-0o) / batch N (WI-033 TA-13 설정 UI, §-0n) / batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0o. 2026-06-01 batch O 세션 진척 — **신규 세션 여기부터**
+## -0p. 2026-06-01 batch P 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-035-feat OP-04 신규 테넌트 등록 API (ST-006, PR #54 머지)
+
+핸드오프 정독 → **codex 2라운드 협의**(원자 트랜잭션/create-at-activate 정합/enum 무변경/멱등) → 사용자 승인(DB mig 42) → 구현 → staging 실증 → **듀얼검증 PASS_BOTH** → auto-merge.
+
+**codex 협의 확정 설계**:
+- **인터페이스**: WI-032/033 패턴 — app/api route handler 없이 Server Action + `apps/web/lib/operator/tenant-registration/{permissions,queries,actions}.ts` + schemas SSOT `packages/schemas/src/operator-onboarding.ts`. UI는 WI-036.
+- **원자 트랜잭션**: 신규 **마이그레이션 42** `register_tenant(p_operator_id, p_draft_id, p_idempotency_key, p_payload jsonb, p_admin_invitations jsonb)` SECURITY DEFINER RPC(service_role only) — tenants+subscriptions(가격 latch)+tenant_settings(company_info TA-13 shape)+departments(parent_code 단일패스 토폴로지)+work_policies+leave_types+approval_lines+document_templates+관리자 invitation 을 **단일 트랜잭션** 원자 INSERT.
+- **★ create-at-activate 정합**: DoD "admin user 동시 INSERT"를 **invitation 행 생성으로 재해석**(WI-020-6 최신 계약). 등록 시 auth.users/public.users 미생성, invitation(target_role tenant_super/추가 tenant_hr_admin)만. token 은 앱이 평문 생성→hash 만 RPC 전달(평문은 activation URL 로만, Resend 미설정 KI-103). `accept_invitation` 최소확장 — tenant_super 수락 시 `tenants.admin_user_id` backfill(IS NULL 가드) + 활성화 audit actor(`system:activation`).
+- **enum 무변경**: `tenant_status` 에 scheduled/pending_invite 추가 안 함(소비처 없는 투기값 회피). tenant.status=active 고정, 표시상태는 `admin_user_id IS NULL`(초대대기) / invitation pending / `contract_start_date>today`(예정) 로 **read-side 파생**(WI-037 OP-02 목록 소유, KI-123).
+- **멱등**: 추가 테이블 없이 draft — RPC가 draft `FOR UPDATE`, `form_data._submission.idempotency_key` 보관. completed+동일 key→기존 tenant 반환(신규 invitation 미발급), 다른 key→P0103 conflict. draftId 미지정 시 Server Action 이 열린 draft 재사용/생성.
+- **audit actor**: service_role 컨텍스트(auth.uid()=NULL)에서 RPC 가 `set_config('app.audit_actor_id/role', 운영자, true)` → mig 40 audit_row_change GUC fallback 으로 등록 audit 운영자 귀속.
+- **보안(KI-109)**: register_tenant+accept_invitation `revoke from public,anon,authenticated` + service_role only(staging proacl 실측 `{postgres,service_role}`). admin 이메일 hard-check(invitations pending/accepted + auth.users). enabled_modules ⊆ plan.modules 강제.
+
+**★ 듀얼검증 가치 재실증 (이번 세션 핵심)**: evaluator **PASS 8.88**(기능9.0/품질9.0/테스트8.5/계약9.0) 통과분에서 **codex 가 P1 2건 + P2 2건 검출** → 1차 FAIL.
+- **P1-1**: completed draft 가 stale autosave(`saveDraft`)/`deleteDraft` 에 status 가드 부재 → 등록 완료 직후 `form_data._submission`(멱등 근거) 덮어쓰기/삭제 가능 → 멱등 replay 가 conflict 로 변질.
+- **P1-2**: `sendInvite(email)` 이 `tenant_id+operator_flag=false+pending` 만 보고 초대 선택 → 같은 테넌트 pending **직원 초대**(employee_id 보유)를 잡아 `createInvitation` 이 employee_id 를 null 로 덮어 직원 초대 오염.
+- **P2**: enabled_modules 가 plan.modules subset 검증 누락(basic plan 으로 payroll metadata 저장) / abandoned draft 로 등록 가능.
+- **정정**(hotfix 94ceec4): saveDraft/deleteDraft `.in('status',['draft','submitting'])` 가드 / sendInvite `.in('target_role',[tenant_super,tenant_hr_admin]).is('employee_id',null)` / register_tenant enabled_modules subset(P0111)+abandoned 거부(P0102) / getRegistrationPlans active+custom / token_hash 오매핑 제거.
+- 재검증: codex **PASS**(P0/P1 없음) → **PASS_BOTH**. turbo 21/21 + 단위(operator-onboarding 22 / web permissions 3, schemas 132 / web 87) + openapi 6 신규.
+
+**staging 실증(검증된 사실)**: mig 42 적용 + 합성 운영자/draft 로 — 정상 등록(전 테이블 정합/부서 HQ→KITCHEN parent 링크/가격 latch 9900/audit actor=운영자/invitation 2건 pending) / 멱등 replay(already_completed=true 동일 tenant)·conflict(P0103) / 에러 P0101(operator)·P0102(draft/abandoned)·P0106(slug)·P0107(business)·P0109(role)·P0110(email)·P0111(modules subset) / accept_invitation tenant_super 수락→admin_user_id backfill+audit `system:activation`. 검증 후 합성 데이터 cascade 삭제 — staging pristine.
+
+### ⚠️ 신규 KI (batch P)
+- **KI-123 (P2)** — OP-04 표시상태(scheduled/pending_invite) 파생 read-path 미구현(enum 무변경 결정) + matrix.json OP-04 entity status drift. **WI-037 OP-02 목록 진입 시** 목록/배지 파생 + matrix 갱신.
+- KI-124 (P3) — registerTenant `as unknown as Json` 이중 캐스트 2건(직렬화 안전, 타입 우회).
+- KI-125 (P3) — register_tenant pgTAP 회귀 부재(staging 수동 실증 의존, KI-115 동류).
+- KI-126 (P3) — checkAdminEmail 사전체크 auth.users 미조회(RPC hard-check 가 최종 강제, UX 사전신호 갭, codex P2→P3 이연).
+
+### 다음 세션 첫 작업 — WI-036-feat OP-04 7단계 마법사 UI (ST-006/010)
+- `app/[locale]/(operator)/.../tenants/new` 7단계 Stepper(WI-030 `Stepper`) — 1 회사정보/2 도메인(check-domain 실시간)/3 요금제(getRegistrationPlans)/4 관리자/5 모듈/6 초기데이터/7 검토. WI-035 액션 소비: `saveDraft`/`getOpenDraft`(임시저장 재진입) + `checkDomain`/`checkBusinessNumber`/`checkAdminEmail`(실시간 ≤300ms) + `registerTenant`(최종, idempotency_key 클라 생성) + `sendInvite`(재발송). 등록 성공 시 activation URL 표시(Resend 미설정 KI-103). 관리자 활성화(ST-010)는 기존 /activate 흐름.
+- 이어서 WI-037(OP-02 목록 — DataTable/FilterBar + **KI-123 표시상태 파생**) → 038(OP-03 상세).
+- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+
+## -0o. 2026-06-01 batch O 세션 진척
 
 ### 완료 — WI-034-feat 결재라인 조건 분기 (ST-054, PR #53 머지)
 

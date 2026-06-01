@@ -44,6 +44,10 @@ import {
   companySettingsPayloadSchema, workPolicyPayloadSchema, leavePolicyPayloadSchema,
   approvalLinesPayloadSchema, settingsPatchInputSchema,
 } from '../src/tenant-settings';
+import {
+  tenantRegistrationSchema, tenantRegistrationInputSchema, tenantDraftInputSchema,
+  checkDomainInputSchema, checkBusinessNumberInputSchema, checkAdminEmailInputSchema,
+} from '../src/operator-onboarding';
 
 // ── 공통/인증 utility 스키마 ───────────────────────────────────
 registry.register('Login', loginSchema);
@@ -116,6 +120,14 @@ registry.register('WorkPolicyPayload', workPolicyPayloadSchema);
 registry.register('LeavePolicyPayload', leavePolicyPayloadSchema);
 registry.register('ApprovalLinesPayload', approvalLinesPayloadSchema);
 registry.register('SettingsPatchInput', settingsPatchInputSchema);
+
+// ── OP-04 신규 테넌트 등록 DTO (WI-035) ────────────────────────
+registry.register('CheckDomainInput', checkDomainInputSchema);
+registry.register('CheckBusinessNumberInput', checkBusinessNumberInputSchema);
+registry.register('CheckAdminEmailInput', checkAdminEmailInputSchema);
+registry.register('TenantDraftInput', tenantDraftInputSchema);
+registry.register('TenantRegistrationPayload', tenantRegistrationSchema);
+registry.register('TenantRegistrationInput', tenantRegistrationInputSchema);
 
 const generator = new OpenApiGeneratorV31(registry.definitions);
 const document = generator.generateDocument({
