@@ -445,6 +445,226 @@
         "result": "결과",
         "empty": "감사 로그가 없습니다."
       }
+    },
+    "op-04": {
+      "title": "신규 테넌트 등록",
+      "subtitle": "7단계 마법사로 고객사 생성과 초기 운영 세팅을 완료합니다.",
+      "no_plans": "선택 가능한 요금제가 없습니다. 요금제를 먼저 등록하세요.",
+      "steps": {
+        "company": "회사정보",
+        "domain": "도메인",
+        "plan": "요금제",
+        "admin": "관리자 계정",
+        "modules": "모듈 선택",
+        "initial_data": "초기 데이터",
+        "review": "완료 / 검토"
+      },
+      "nav": {
+        "prev": "← 이전",
+        "next": "다음 →",
+        "submit": "등록 완료",
+        "submitting": "등록 중…",
+        "autosaved": "임시저장됨"
+      },
+      "error": {
+        "unauthenticated": "세션이 만료되었습니다. 다시 로그인하세요.",
+        "forbidden": "등록 권한이 없습니다.",
+        "invalid": "입력값을 다시 확인하세요.",
+        "draft_not_found": "임시저장을 찾을 수 없습니다.",
+        "idempotency_conflict": "이미 다른 내용으로 등록이 처리되었습니다. 새로고침 후 다시 시도하세요.",
+        "slug_taken": "이미 사용 중인 도메인입니다.",
+        "business_number_taken": "이미 등록된 사업자등록번호입니다.",
+        "plan_not_found": "선택한 요금제를 찾을 수 없습니다.",
+        "admin_email_taken": "이미 사용 중인 관리자 이메일이 있습니다.",
+        "failed": "등록에 실패했습니다. 잠시 후 다시 시도하세요."
+      },
+      "check": {
+        "checking": "확인 중…",
+        "available": "사용 가능 ✓",
+        "unavailable": {
+          "invalid_format": "형식이 올바르지 않습니다.",
+          "reserved": "예약된 값입니다.",
+          "taken": "이미 사용 중입니다."
+        }
+      },
+      "company": {
+        "title": "1단계 — 회사정보",
+        "subtitle": "고객사 기본 정보를 입력하세요. 사업자번호는 실시간으로 중복 검증됩니다.",
+        "name": "회사명",
+        "name_placeholder": "예: 플로우상사 (주)",
+        "business_number": "사업자등록번호",
+        "representative_name": "대표자",
+        "industry": "업종",
+        "industry_placeholder": "예: 도소매, 제조업, IT",
+        "address": "주소",
+        "address_placeholder": "서울특별시 ...",
+        "phone": "대표 연락처",
+        "logo_url": "로고 URL (선택)"
+      },
+      "domain": {
+        "title": "2단계 — 도메인",
+        "subtitle": "고객사가 사용할 접속 주소를 정합니다.",
+        "slug": "도메인 슬러그",
+        "hint": "소문자/숫자/하이픈 3~30자. 예약어는 사용할 수 없습니다."
+      },
+      "plan": {
+        "title": "3단계 — 요금제 선택",
+        "subtitle": "요금제와 계약 조건을 설정하세요. 가격은 등록 시점 기준으로 고정됩니다.",
+        "per_user": "/명/월",
+        "negotiable": "협의",
+        "included_users": "최대 {n}명",
+        "modules_count": "모듈 {n}개",
+        "contract_start": "계약 시작일",
+        "contract_end": "계약 종료일",
+        "user_limit": "계약 인원",
+        "billing_cycle": "청구 주기",
+        "cycle": {
+          "monthly": "월간",
+          "annual": "연간"
+        },
+        "billing_label": "월 청구액",
+        "per_month": "/월",
+        "annual_label": "연 환산"
+      },
+      "admin": {
+        "title": "4단계 — 관리자 계정",
+        "subtitle": "대표 관리자와 추가 관리자를 초대합니다. 등록 후 활성화 링크로 계정이 생성됩니다.",
+        "email": "이메일",
+        "name": "이름",
+        "phone": "연락처",
+        "additional_title": "추가 관리자 (최대 3명)",
+        "add": "추가 관리자 +",
+        "additional_empty": "추가 관리자가 없습니다.",
+        "remove": "삭제"
+      },
+      "modules": {
+        "title": "5단계 — 모듈 선택",
+        "subtitle": "요금제가 지원하는 모듈을 활성화하세요. 등록 후 설정에서 변경할 수 있습니다.",
+        "none": "선택한 요금제가 지원하는 모듈이 없습니다.",
+        "on": "ON",
+        "off": "OFF",
+        "label": {
+          "attendance": "근태",
+          "leave": "휴가",
+          "approval": "결재",
+          "payroll": "급여",
+          "documents": "문서",
+          "integrations": "외부연동"
+        },
+        "desc": {
+          "attendance": "출퇴근 GPS / 휴게 / 야간 / 연장",
+          "leave": "연차 / 반차 / 경조사 / 보상휴가",
+          "approval": "휴가 / 비용 / 외근 / 인사변경",
+          "payroll": "명세서 발행 + 다운로드",
+          "documents": "증명서 자동 발급",
+          "integrations": "슬랙 / 카카오워크 / 회계"
+        }
+      },
+      "initial": {
+        "title": "6단계 — 초기 데이터",
+        "subtitle": "조직도와 운영 정책을 미리 설정합니다. 모두 선택이며 등록 후 설정에서 추가할 수 있습니다.",
+        "add_row": "행 추가 +",
+        "remove_row": "삭제",
+        "empty": "항목이 없습니다.",
+        "dept": {
+          "title": "부서",
+          "subtitle": "상위 부서를 먼저 추가하면 하위 부서에서 상위로 지정할 수 있습니다.",
+          "name": "부서명",
+          "code": "코드",
+          "parent": "상위 부서",
+          "no_parent": "(최상위)"
+        },
+        "work": {
+          "title": "근무정책",
+          "subtitle": "기본 근무제를 설정합니다.",
+          "enable": "근무정책 설정",
+          "name": "정책명",
+          "clock_in": "출근 시각",
+          "clock_out": "퇴근 시각",
+          "late_threshold": "지각 기준",
+          "break_minutes": "기본 휴게(분)",
+          "weekly_max": "주 최대 근무(시간)"
+        },
+        "leave": {
+          "title": "휴가 종류",
+          "subtitle": "휴가 유형과 기본 일수를 정합니다.",
+          "key": "키",
+          "label": "이름",
+          "default_days": "기본 일수",
+          "is_paid": "유급",
+          "carryover": "이월 허용",
+          "evidence": "증빙 필요"
+        },
+        "approval": {
+          "title": "결재라인",
+          "subtitle": "기본 결재선을 설정합니다. 조건 분기는 등록 후 설정에서 추가합니다.",
+          "name": "결재라인명",
+          "request_type_label": "요청 유형",
+          "steps": "결재 단계",
+          "add_step": "단계 추가 +",
+          "no_step": "활성 결재라인은 1단계 이상이 필요합니다.",
+          "is_active": "활성",
+          "role": {
+            "tenant_super": "대표 관리자",
+            "tenant_hr_admin": "인사 관리자",
+            "tenant_manager": "부서장",
+            "employee": "직원"
+          },
+          "scope": {
+            "own_team": "본인 부서",
+            "parent": "상위 부서",
+            "all": "전체"
+          },
+          "request_type": {
+            "leave": "휴가",
+            "attendance_mod": "근태 정정",
+            "certificate": "증명서",
+            "change_request": "인사 변경",
+            "document": "문서"
+          }
+        },
+        "doc": {
+          "title": "문서 양식",
+          "subtitle": "증명서/문서 양식 키를 미리 등록합니다.",
+          "key": "키",
+          "label": "이름"
+        }
+      },
+      "review": {
+        "title": "7단계 — 검토 및 등록 완료",
+        "subtitle": "입력한 정보를 검토하고 등록을 완료하세요.",
+        "company": "회사명",
+        "domain": "도메인",
+        "plan": "요금제",
+        "contract": "계약",
+        "persons": "명",
+        "billing": "월 청구액",
+        "admin": "대표 관리자",
+        "plus_admins": "외 {n}명",
+        "modules": "모듈",
+        "initial_data": "초기 데이터",
+        "initial_summary": "부서 {dept}개 · 휴가 {leave}종 · 결재라인 {approval}개 · 문서양식 {doc}개",
+        "after_register": "등록 시 테넌트·구독·초기 설정이 한 번에 생성되고, 관리자 활성화 링크가 발급됩니다."
+      },
+      "success": {
+        "created": "테넌트가 생성되었습니다.",
+        "already_done": "이미 등록이 완료된 테넌트입니다.",
+        "invites_title": "관리자 활성화 링크",
+        "invites_hint": "메일 발송이 설정되지 않아 아래 링크를 관리자에게 직접 전달해야 합니다. 링크는 지금만 표시됩니다.",
+        "urls_unavailable": "보안상 활성화 링크는 다시 표시할 수 없습니다. 재발급으로 새 링크를 생성하세요.",
+        "copy": "복사",
+        "copied": "복사됨 ✓",
+        "resend": "재발급",
+        "resending": "재발급 중…",
+        "resend_hint": "재발급을 누르면 새 활성화 링크가 생성됩니다(기존 링크는 무효화됩니다).",
+        "action_failed": "처리에 실패했습니다.",
+        "start_new": "새 테넌트 등록",
+        "to_dashboard": "운영 대시보드로"
+      },
+      "role": {
+        "super": "대표 관리자",
+        "hr_admin": "인사 관리자"
+      }
     }
   }
 }

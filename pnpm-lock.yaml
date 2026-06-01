@@ -83,6 +83,9 @@ importers:
       speakeasy:
         specifier: ^2.0.0
         version: 2.0.0
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
       zustand:
         specifier: ^5.0.2
         version: 5.0.14(@types/react@19.2.15)(react@19.1.0)

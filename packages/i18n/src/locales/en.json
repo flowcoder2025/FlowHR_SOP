@@ -445,6 +445,226 @@
         "result": "Result",
         "empty": "No audit logs."
       }
+    },
+    "op-04": {
+      "title": "Register new tenant",
+      "subtitle": "Create a customer and complete initial operating setup with a 7-step wizard.",
+      "no_plans": "No selectable plans. Register a plan first.",
+      "steps": {
+        "company": "Company",
+        "domain": "Domain",
+        "plan": "Plan",
+        "admin": "Admin account",
+        "modules": "Modules",
+        "initial_data": "Initial data",
+        "review": "Review / Finish"
+      },
+      "nav": {
+        "prev": "← Back",
+        "next": "Next →",
+        "submit": "Complete registration",
+        "submitting": "Registering…",
+        "autosaved": "Draft saved"
+      },
+      "error": {
+        "unauthenticated": "Your session expired. Please sign in again.",
+        "forbidden": "You do not have permission to register.",
+        "invalid": "Please review your inputs.",
+        "draft_not_found": "Draft not found.",
+        "idempotency_conflict": "Registration was already processed with different data. Refresh and try again.",
+        "slug_taken": "This domain is already in use.",
+        "business_number_taken": "This business number is already registered.",
+        "plan_not_found": "The selected plan was not found.",
+        "admin_email_taken": "An admin email is already in use.",
+        "failed": "Registration failed. Please try again shortly."
+      },
+      "check": {
+        "checking": "Checking…",
+        "available": "Available ✓",
+        "unavailable": {
+          "invalid_format": "Invalid format.",
+          "reserved": "This value is reserved.",
+          "taken": "Already in use."
+        }
+      },
+      "company": {
+        "title": "Step 1 — Company",
+        "subtitle": "Enter the customer's basic information. The business number is validated in real time.",
+        "name": "Company name",
+        "name_placeholder": "e.g. Flow Trading Inc.",
+        "business_number": "Business number",
+        "representative_name": "Representative",
+        "industry": "Industry",
+        "industry_placeholder": "e.g. Retail, Manufacturing, IT",
+        "address": "Address",
+        "address_placeholder": "Seoul, ...",
+        "phone": "Main phone",
+        "logo_url": "Logo URL (optional)"
+      },
+      "domain": {
+        "title": "Step 2 — Domain",
+        "subtitle": "Choose the access address for the customer.",
+        "slug": "Domain slug",
+        "hint": "Lowercase/digits/hyphen, 3–30 chars. Reserved words are not allowed."
+      },
+      "plan": {
+        "title": "Step 3 — Choose a plan",
+        "subtitle": "Set the plan and contract terms. The price is latched at registration time.",
+        "per_user": "/user/mo",
+        "negotiable": "Contact us",
+        "included_users": "Up to {n} users",
+        "modules_count": "{n} modules",
+        "contract_start": "Contract start",
+        "contract_end": "Contract end",
+        "user_limit": "Licensed users",
+        "billing_cycle": "Billing cycle",
+        "cycle": {
+          "monthly": "Monthly",
+          "annual": "Annual"
+        },
+        "billing_label": "Monthly charge",
+        "per_month": "/mo",
+        "annual_label": "Annualized"
+      },
+      "admin": {
+        "title": "Step 4 — Admin account",
+        "subtitle": "Invite a primary admin and additional admins. Accounts are created via the activation link after registration.",
+        "email": "Email",
+        "name": "Name",
+        "phone": "Phone",
+        "additional_title": "Additional admins (up to 3)",
+        "add": "Add admin +",
+        "additional_empty": "No additional admins.",
+        "remove": "Remove"
+      },
+      "modules": {
+        "title": "Step 5 — Modules",
+        "subtitle": "Enable the modules supported by the plan. You can change these in settings later.",
+        "none": "The selected plan supports no modules.",
+        "on": "ON",
+        "off": "OFF",
+        "label": {
+          "attendance": "Attendance",
+          "leave": "Leave",
+          "approval": "Approval",
+          "payroll": "Payroll",
+          "documents": "Documents",
+          "integrations": "Integrations"
+        },
+        "desc": {
+          "attendance": "Clock-in GPS / break / night / overtime",
+          "leave": "Annual / half-day / family event / comp-time",
+          "approval": "Leave / expense / field work / HR change",
+          "payroll": "Payslip issuance + download",
+          "documents": "Automatic certificate issuance",
+          "integrations": "Slack / KakaoWork / accounting"
+        }
+      },
+      "initial": {
+        "title": "Step 6 — Initial data",
+        "subtitle": "Pre-configure the org chart and operating policies. All optional; you can add more in settings later.",
+        "add_row": "Add row +",
+        "remove_row": "Remove",
+        "empty": "No items.",
+        "dept": {
+          "title": "Departments",
+          "subtitle": "Add parent departments first so child departments can reference them.",
+          "name": "Name",
+          "code": "Code",
+          "parent": "Parent",
+          "no_parent": "(top level)"
+        },
+        "work": {
+          "title": "Work policy",
+          "subtitle": "Set the default work policy.",
+          "enable": "Configure work policy",
+          "name": "Policy name",
+          "clock_in": "Clock-in",
+          "clock_out": "Clock-out",
+          "late_threshold": "Late threshold",
+          "break_minutes": "Default break (min)",
+          "weekly_max": "Weekly max (hours)"
+        },
+        "leave": {
+          "title": "Leave types",
+          "subtitle": "Define leave types and default days.",
+          "key": "Key",
+          "label": "Name",
+          "default_days": "Default days",
+          "is_paid": "Paid",
+          "carryover": "Carryover",
+          "evidence": "Evidence required"
+        },
+        "approval": {
+          "title": "Approval lines",
+          "subtitle": "Set the default approval line. Conditional branching is added in settings later.",
+          "name": "Line name",
+          "request_type_label": "Request type",
+          "steps": "Approval steps",
+          "add_step": "Add step +",
+          "no_step": "An active approval line needs at least one step.",
+          "is_active": "Active",
+          "role": {
+            "tenant_super": "Primary admin",
+            "tenant_hr_admin": "HR admin",
+            "tenant_manager": "Manager",
+            "employee": "Employee"
+          },
+          "scope": {
+            "own_team": "Own department",
+            "parent": "Parent department",
+            "all": "All"
+          },
+          "request_type": {
+            "leave": "Leave",
+            "attendance_mod": "Attendance fix",
+            "certificate": "Certificate",
+            "change_request": "HR change",
+            "document": "Document"
+          }
+        },
+        "doc": {
+          "title": "Document templates",
+          "subtitle": "Pre-register certificate/document template keys.",
+          "key": "Key",
+          "label": "Name"
+        }
+      },
+      "review": {
+        "title": "Step 7 — Review & finish",
+        "subtitle": "Review your inputs and complete registration.",
+        "company": "Company",
+        "domain": "Domain",
+        "plan": "Plan",
+        "contract": "Contract",
+        "persons": " users",
+        "billing": "Monthly charge",
+        "admin": "Primary admin",
+        "plus_admins": "and {n} more",
+        "modules": "Modules",
+        "initial_data": "Initial data",
+        "initial_summary": "{dept} departments · {leave} leave types · {approval} approval lines · {doc} document templates",
+        "after_register": "On registration, the tenant, subscription and initial settings are created together and an admin activation link is issued."
+      },
+      "success": {
+        "created": "Tenant created.",
+        "already_done": "This tenant is already registered.",
+        "invites_title": "Admin activation links",
+        "invites_hint": "Email delivery is not configured, so share the links below with the admins directly. They are shown only now.",
+        "urls_unavailable": "For security, activation links cannot be shown again. Use resend to generate new links.",
+        "copy": "Copy",
+        "copied": "Copied ✓",
+        "resend": "Resend",
+        "resending": "Resending…",
+        "resend_hint": "Resend generates a new activation link (the previous link is invalidated).",
+        "action_failed": "The action failed.",
+        "start_new": "Register another tenant",
+        "to_dashboard": "To operator dashboard"
+      },
+      "role": {
+        "super": "Primary admin",
+        "hr_admin": "HR admin"
+      }
     }
   }
 }
