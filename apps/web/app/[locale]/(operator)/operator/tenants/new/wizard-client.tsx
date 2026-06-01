@@ -111,8 +111,10 @@ interface WizardState {
   form: WizardForm;
   step: number; // 0-based (STEP_KEYS index)
   highestReached: number;
-  dirty: boolean;
-  lastSaved: boolean; // 마지막 변경 이후 autosave 완료 여부(인디케이터용)
+  /** 폼 변경 단조 카운터. rev > savedRev 이면 미저장 변경 존재(dirty). */
+  rev: number;
+  /** 마지막으로 autosave 가 성공한 rev. rev === savedRev 면 저장됨(인디케이터). */
+  savedRev: number;
   submitting: boolean;
   submitError: RegisterTenantError | null;
   result: RegisterResult | null;
@@ -121,7 +123,7 @@ interface WizardState {
 type WizardAction =
   | { type: 'PATCH'; updater: (f: WizardForm) => WizardForm }
   | { type: 'SET_STEP'; step: number }
-  | { type: 'SAVED' }
+  | { type: 'SAVED'; rev: number }
   | { type: 'BEGIN_SUBMIT' }
   | { type: 'SUBMIT_SUCCESS'; result: RegisterResult }
   | { type: 'SUBMIT_ERROR'; error: RegisterTenantError }
@@ -133,14 +135,14 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       return {
         ...state,
         form: action.updater(state.form),
-        dirty: true,
-        lastSaved: false,
+        rev: state.rev + 1,
         submitError: null,
       };
     case 'SET_STEP':
       return { ...state, step: action.step, highestReached: Math.max(state.highestReached, action.step) };
     case 'SAVED':
-      return { ...state, lastSaved: true };
+      // 저장한 rev 가 현재 rev 와 같을 때만 clean — 저장 in-flight 중 새 편집(rev 증가)은 dirty 유지.
+      return { ...state, savedRev: Math.max(state.savedRev, action.rev) };
     case 'BEGIN_SUBMIT':
       return { ...state, submitting: true, submitError: null };
     case 'SUBMIT_SUCCESS':
@@ -152,8 +154,8 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
         form: emptyWizardForm(),
         step: 0,
         highestReached: 0,
-        dirty: false,
-        lastSaved: false,
+        rev: 0,
+        savedRev: 0,
         submitting: false,
         submitError: null,
         result: null,
@@ -181,7 +183,8 @@ export function WizardClient({
     () => (initialDraft ? parseDraftFormData(initialDraft.formData) : null),
     [initialDraft],
   );
-  const [idempotencyKey] = useState<string>(
+  // 등록 1건당 멱등키 1개 — startNew(RESET) 시 재발급해 직전 등록 키 재사용을 차단(설계 불변식).
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(
     () => restored?.idempotencyKey ?? globalThis.crypto.randomUUID(),
   );
 
@@ -194,13 +197,16 @@ export function WizardClient({
       form,
       step: startStep,
       highestReached: startStep,
-      dirty: false,
-      lastSaved: false,
+      rev: 0,
+      savedRev: 0,
       submitting: false,
       submitError: null,
       result: null,
     };
   });
+
+  const dirty = state.rev > state.savedRev;
+  const showSaved = state.savedRev > 0 && state.rev === state.savedRev;
 
   const update = useCallback(
     (updater: (f: WizardForm) => WizardForm) => dispatch({ type: 'PATCH', updater }),
@@ -212,26 +218,29 @@ export function WizardClient({
   formRef.current = state.form;
   const stepRef = useRef(state.step);
   stepRef.current = state.step;
+  const revRef = useRef(state.rev);
+  revRef.current = state.rev;
   const draftIdRef = useRef<string | null>(initialDraft?.id ?? null);
   const frozenRef = useRef(false); // 제출 시작 후 신규 저장 hard-stop
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── 단일 저장 큐(병렬 saveDraft 금지, latest snapshot coalesce) ──
   type DraftInput = { current_step: number; form_data: Record<string, unknown> };
-  const queueRef = useRef<{ pending: DraftInput | null; draining: Promise<void> | null }>({
-    pending: null,
-    draining: null,
-  });
+  const queueRef = useRef<{
+    pending: { input: DraftInput; rev: number } | null;
+    draining: Promise<void> | null;
+  }>({ pending: null, draining: null });
 
   const drain = useCallback(async (): Promise<void> => {
     try {
       while (queueRef.current.pending) {
-        const input = queueRef.current.pending;
+        const { input, rev } = queueRef.current.pending;
         queueRef.current.pending = null;
         const res = await saveDraftAction(input);
         if (res.ok) {
           draftIdRef.current = res.draftId;
-          dispatch({ type: 'SAVED' });
+          // 저장한 rev 까지 clean 처리(저장 중 새 편집은 rev 증가로 dirty 유지 → 추가 저장 트리거).
+          dispatch({ type: 'SAVED', rev });
         }
       }
     } finally {
@@ -240,11 +249,14 @@ export function WizardClient({
   }, []);
 
   const scheduleSave = useCallback(
-    (form: WizardForm, step: number) => {
+    (form: WizardForm, step: number, rev: number) => {
       if (frozenRef.current) return; // 제출 후 신규 저장 차단(stale autosave → 신규 draft insert 방지)
       queueRef.current.pending = {
-        current_step: Math.min(Math.max(step + 1, 1), 7),
-        form_data: serializeDraftFormData(form, idempotencyKey),
+        input: {
+          current_step: Math.min(Math.max(step + 1, 1), 7),
+          form_data: serializeDraftFormData(form, idempotencyKey),
+        },
+        rev,
       };
       if (!queueRef.current.draining) queueRef.current.draining = drain();
     },
@@ -266,12 +278,16 @@ export function WizardClient({
     }
   }, []);
 
-  // 입력 변경 후 1s debounce autosave (dirty + 비제출 + 비완료 + 비freeze 일 때만).
+  // 입력 변경 후 1s debounce autosave (미저장 변경 + 비제출 + 비완료 + 비freeze 일 때만).
+  // dirty=rev>savedRev — 저장 성공(SAVED) 후 rev===savedRev 가 되어 루프가 멈춘다(codex P2).
   useEffect(() => {
-    if (!state.dirty || state.submitting || state.result || frozenRef.current) return;
-    autosaveTimerRef.current = setTimeout(() => scheduleSave(formRef.current, stepRef.current), 1000);
+    if (!dirty || state.submitting || state.result || frozenRef.current) return;
+    autosaveTimerRef.current = setTimeout(
+      () => scheduleSave(formRef.current, stepRef.current, revRef.current),
+      1000,
+    );
     return () => clearAutosaveTimer();
-  }, [state.form, state.dirty, state.submitting, state.result, scheduleSave, clearAutosaveTimer]);
+  }, [dirty, state.rev, state.submitting, state.result, scheduleSave, clearAutosaveTimer]);
 
   // ── 실시간 중복검사 (3 필드) ──
   const normSlug = useCallback((v: string) => {
@@ -300,27 +316,42 @@ export function WizardClient({
     }),
     [domainCheck, businessCheck, adminEmailCheck, state.form, normSlug, normBiz, normEmail],
   );
+  const asyncAvailRef = useRef(asyncAvail);
+  asyncAvailRef.current = asyncAvail;
 
   const currentKey = STEP_KEYS[state.step];
-  const currentComplete = isStepComplete(currentKey, state.form, asyncAvail);
+  // plan_id 는 fetched 목록에 속한 것만 — 복원 draft/변조 plan_id 를 client 에서 차단(codex P2, RPC 재검증 부재 보완).
+  const planAllowed = plans.some((p) => p.id === state.form.plan.plan_id);
+  const allAsyncOk = asyncAvail.domain && asyncAvail.business && asyncAvail.adminEmail;
+  const needsPlan = state.step >= STEP_KEYS.indexOf('plan');
+  // review 단계는 전체 schema 외 async 중복검사도 다시 강제(Stepper 재진입으로 slug/email 변경 후 stale 통과 차단, codex P3).
+  const currentComplete =
+    isStepComplete(currentKey, state.form, asyncAvail) &&
+    (!needsPlan || planAllowed) &&
+    (currentKey !== 'review' || allAsyncOk);
 
   // ── 네비게이션 ──
   const navigate = useCallback(
     async (target: number) => {
-      if (state.dirty && !state.submitting && !state.result && !frozenRef.current) {
+      if (dirty && !state.submitting && !state.result && !frozenRef.current) {
         clearAutosaveTimer();
-        scheduleSave(formRef.current, stepRef.current);
+        scheduleSave(formRef.current, stepRef.current, revRef.current);
         await flushSaves();
       }
       dispatch({ type: 'SET_STEP', step: target });
       if (typeof window !== 'undefined') window.scrollTo({ top: 0 });
     },
-    [state.dirty, state.submitting, state.result, clearAutosaveTimer, scheduleSave, flushSaves],
+    [dirty, state.submitting, state.result, clearAutosaveTimer, scheduleSave, flushSaves],
   );
 
   const submit = useCallback(async () => {
     const v = validateFullPayload(formRef.current);
-    if (!v.ok) {
+    // 제출 게이트 재확인: schema + plan 화이트리스트 + async 중복검사 모두 통과해야 함(codex P2/P3).
+    if (
+      !v.ok ||
+      !plans.some((p) => p.id === formRef.current.plan.plan_id) ||
+      !(asyncAvailRef.current.domain && asyncAvailRef.current.business && asyncAvailRef.current.adminEmail)
+    ) {
       dispatch({ type: 'SET_STEP', step: STEP_KEYS.indexOf('review') });
       dispatch({ type: 'SUBMIT_ERROR', error: 'invalid' });
       return;
@@ -366,7 +397,7 @@ export function WizardClient({
       frozenRef.current = false; // 실패 → 재시도 위해 저장 재개
       dispatch({ type: 'SUBMIT_ERROR', error: res.error });
     }
-  }, [clearAutosaveTimer, flushSaves, idempotencyKey]);
+  }, [clearAutosaveTimer, flushSaves, idempotencyKey, plans]);
 
   // 새로고침 후 직전 완료 복구(열린 draft 없음 + sessionStorage recovery) → URL 없는 완료 상태.
   useEffect(() => {
@@ -407,6 +438,7 @@ export function WizardClient({
     }
     frozenRef.current = false;
     draftIdRef.current = null;
+    setIdempotencyKey(globalThis.crypto.randomUUID()); // 새 등록은 새 멱등키(evaluator P2 — 직전 키 재사용 차단).
     dispatch({ type: 'RESET' });
   }, []);
 
@@ -439,7 +471,7 @@ export function WizardClient({
 
       <section className="min-w-0">
         <div className="mb-2 flex min-h-4 justify-end">
-          {state.lastSaved && <span className="text-[12px] text-text-muted">{t('nav.autosaved')}</span>}
+          {showSaved && <span className="text-[12px] text-text-muted">{t('nav.autosaved')}</span>}
         </div>
         {renderStep(currentKey, {
           t,

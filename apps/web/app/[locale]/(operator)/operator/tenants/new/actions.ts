@@ -6,11 +6,9 @@ import {
   checkDomain,
 } from '@/lib/operator/tenant-registration/queries';
 import {
-  type DraftDeleteResult,
   type DraftSaveResult,
   type RegisterTenantResult,
   type SendInviteResult,
-  deleteDraft as deleteDraftBase,
   registerTenant as registerTenantBase,
   saveDraft as saveDraftBase,
   sendInvite as sendInviteBase,
@@ -40,10 +38,6 @@ export async function checkAdminEmailAction(email: string): Promise<CheckResult>
 
 export async function saveDraftAction(input: unknown): Promise<DraftSaveResult> {
   return saveDraftBase(input);
-}
-
-export async function deleteDraftAction(draftId: string): Promise<DraftDeleteResult> {
-  return deleteDraftBase(draftId);
 }
 
 export async function registerTenantAction(input: unknown): Promise<RegisterTenantResult> {
