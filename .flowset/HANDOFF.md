@@ -1,10 +1,59 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-01 batch L (Sprint 2 진입 — codex 단일안 + 사용자 결정. WI-030 packages/ui 도메인 primitive 5종 + WI-031 DB foundation 마이그레이션 36~39 완료, 둘 다 듀얼검증 PASS_BOTH 머지. 요금 모델 PRD 유지 확정).
-> **신규 세션 첫 작업**: 본 문서 **§-0l (2026-06-01 batch L)** 정독 → **WI-032-feat TA-13 회사설정 API** 착수(사용자가 직전 세션에서 속행 선택). GET/PATCH `/tenant/settings/*` 9탭 + 적용일 즉시/예약(`scheduled_setting_changes` apply 로직 + ⚠️ **stale `applying` 복구 + 실패 재시도 정책 동반** + 시스템 actor audit 보강 KI-110). DB schema 승인 불요(WI-031에서 완료). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-06-01 batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-01 batch M (WI-032-feat TA-13 회사설정 API 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #50. Server Action + lib + pg_cron 예약 적용 엔진. KI-110 resolved).
+> **신규 세션 첫 작업**: 본 문서 **§-0m (2026-06-01 batch M)** 정독 → **WI-033-feat TA-13 회사설정 UI** 착수(SettingsPane 9탭 shell + 회사정보/근무/휴가/결재라인 4탭 폼 + E2E). WI-032 lib(`apps/web/lib/tenant-settings/{queries,actions,permissions}`)를 소비. ⚠️ **착수 시 KI-113 사용자 재확인** — hr_admin 보안탭 read-only(와이어프레임 §2 state4) 복원 여부(현재 최소권한으로 security/roles super 전용). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-01 batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0l. 2026-06-01 batch L 세션 진척 — **신규 세션 여기부터**
+## -0m. 2026-06-01 batch M 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-032-feat TA-13 회사설정 API (PR #50 머지 43d7e55)
+
+핸드오프 정독 → **codex 2라운드 협의** → 구현 → 듀얼검증 PASS_BOTH → auto-merge.
+
+**codex 협의 확정 설계**:
+- 인터페이스: **Server Action + `apps/web/lib/tenant-settings/{queries,actions,permissions}`** (REST route handler 미신설, `app/api/` 부재 — WI-020 전체 패턴. REST 명세는 도메인 계약).
+- 범위: GET 9탭 envelope(P0 4탭 full + 나머지 readOnly/notImpl) + PATCH **P0 4탭**(company/work_policy/leave_policy/approval_lines). roles/notifications/document_templates/security PATCH + audit_logs 페이지네이션은 후속 WI.
+- cron: **pg_cron + plpgsql** DB-side (Vercel Hobby cron 일1회·±59분 부적합. claim 이미 DB-side. pg_cron 1.6.4 staging 가용 확인).
+
+**마이그레이션 40 — 예약 적용 엔진** (staging 적용 + 전 시나리오 실증):
+| 함수 | 역할 |
+|------|------|
+| `audit_row_change`(수정) | 시스템 actor fallback — `app.audit_actor_*` GUC(auth.uid() NULL 시만, 기존 사용자 경로 무영향). **KI-110 resolved** |
+| `claim_due_*`(교체) | backoff(1m/5m/15m/1h) + attempt cap(5) 추가 |
+| `apply_one_*`(신규, service_role) | 즉시 적용 — 원자 claim(pending+due→applying) + apply. cron 과 경합해도 중복 적용 없음 |
+| `_apply_claimed_*`(내부) | target별 payload(jsonb)→테이블: company→tenant_settings.company_info / work_policy→work_policies default 1행 upsert / leave_policy→leave_types upsert+delete_keys / approval_lines→id update·insert |
+| `recover_stale_*` | applying 15분 정체 → attempt<5 pending, ≥5 failed |
+| `run_due_*`(cron entrypoint) | recover_stale → claim_due → apply 루프 |
+
+- pg_cron **설치** + cron.schedule 2개: `flowhr-apply-scheduled-settings`(매분) + `flowhr-audit-retention`(주간, mig 29 미등록분 재등록). 신규 5함수 **anon/auth EXECUTE revoke**(KI-109/WI-031 클래스 재발 없음, proacl 실측 {postgres,service_role}).
+- **마이그레이션 41**(듀얼검증 hotfix): `scheduled_setting_changes` INSERT RLS 를 P0 4 target 제한(Data API 큐 오염 차단).
+
+**앱/스키마**: `tenant-settings.ts` P0 4탭 payload zod(snake_case, full desired-state, `.strict()`) + 단위 27 / OpenAPI 54 defs / database.ts 재생성(apply_one/run_due/recover_stale 타입). queries 9탭 envelope(탭별 permission/implemented/data/pending) / actions 즉시(apply_one RPC)·예약 / permissions 순수 권한 매트릭스+단위.
+
+**즉시/예약 흐름**: PATCH → 검증 → `scheduled_setting_changes` 큐 insert(사용자 세션, RLS+트리거가 예약행위 audit) → apply_at≤now 면 service_role `apply_one` RPC(applied/failed), 미래면 pending(pg_cron 매분 적용). 단일 이력 모델.
+
+**듀얼검증 PASS_BOTH**: evaluator **8.45**(전 축 ≥7.5, 차단 0) / codex 1차 **WARNING**(P1 hr_admin GET 권한 과다[security/audit 노출] + P2 큐 INSERT target 미제한) → hotfix `31c9271`(canRead 정밀화: security/roles **super 전용**, audit 은 hr_admin 유지 / mig 41) → 재검증 **PASS**. turbo 21/21. **★ codex 가 evaluator 통과분에서 권한 과다·큐 오염 2건 검출 → 듀얼검증 가치 재실증.**
+
+**staging 실증(검증된 사실)**: company 즉시 apply + audit `actor=예약자/system:scheduled-settings`(KI-110) / work_policy insert·update 중복없음 / leave_policy upsert+delete_keys / approval_lines insert+update / 미래예약 no-op / run_due due만(미래 제외) / 실패→pending(attempt1)·소진→failed(attempt5) / stale 복구(pending·failed·비stale제외). 검증 후 synthetic 테넌트 cascade 삭제 — staging pristine.
+
+### ⚠️ 신규 KI (batch M)
+- **KI-113 (P3)** — hr_admin 보안탭 read-only(와이어프레임 §2 state4) 미적용. 최소권한으로 security/roles super 전용 read. **WI-033 착수 시 사용자 재확인**(민감 필드 마스킹 후 hr_admin read 복원 여부).
+- KI-112 (P3) — `leave_policy.grant_basis` 저장 위치 부재(tenant_settings 전용 컬럼 없음) → leave_types 만 처리. 컬럼 추가는 schema 승인범주 후속.
+- KI-114 (P3) — actions apply_one RPC 에러 시 status='pending' 보고가 실제 행상태와 괴리 가능(데이터 무해).
+- KI-115 (P3) — mig 40 엔진 pgTAP + actions 통합 테스트 부재(권한 매트릭스 unit 은 커버).
+- KI-116 (P3) — mig 40 audit_row_change 전체 재정의(mig 29 복제) → 향후 드리프트 위험.
+- **KI-110 resolved**(audit 시스템 actor fallback).
+
+### staging 상태 (batch M)
+- `nwcttwuvdnelfbpjeqzr`: 마이그레이션 **40·41 적용**(list_migrations 등록). **pg_cron 1.6.4 설치** + cron job 2개 활성. scheduled_setting_changes apply 엔진 함수 6종(proacl {postgres,service_role}). 테넌트/설정 데이터 0행(검증 후 정리).
+
+### 다음 세션 첫 작업 — WI-033-feat TA-13 회사설정 UI
+- `(tenant)/admin/settings/page.tsx` — SettingsPane(WI-030) 9탭 shell + 회사정보/근무/휴가/결재라인 4탭 폼(react-hook-form + zod). WI-032 `getTenantSettings`(GET)/`patchTenantSetting`(즉시·예약) 소비. 적용일 선택 UI(즉시/예약) + 예약 대기/실패 이력 표시(pending 필드). E2E.
+- ⚠️ **KI-113 사용자 재확인** 후 hr_admin 보안탭 노출 범위 확정.
+- 이어서 WI-034(결재라인 조건 엔진) → 035(OP-04 등록 API) → 036(마법사 UI) → 037(OP-02 목록) → 038(OP-03 상세).
+- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+
+## -0l. 2026-06-01 batch L 세션 진척
 
 ### Sprint 2 진입 (codex 단일안 + 사용자 결정)
 
