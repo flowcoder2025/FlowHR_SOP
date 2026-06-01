@@ -128,44 +128,112 @@ export function buildLeavePolicyPayload(
   return delete_keys.length > 0 ? { leave_types, delete_keys } : { leave_types };
 }
 
-// ── approval_lines ──────────────────────────────────────────────────────────
+// ── approval_lines (WI-034 — 조건 분기 DSL 편집) ──────────────────────────────
+// 결재 단계 초안. order 는 UI 가 관리하지 않고 배열 위치로 부여(1..n 연속 보장 — DSL refine 충족).
+export interface ApprovalStepDraft {
+  approver_role: string;
+  dept_scope: string;
+  specific_employee_id?: string | null;
+}
+
+export interface ApprovalConditionDraft {
+  field: string;
+  op: string;
+  value: number | string | (number | string)[];
+  line: ApprovalStepDraft[];
+}
+
 export interface ApprovalLineDraft {
   id?: string;
   name: string;
   request_type: string;
   is_active: boolean;
+  conditions: ApprovalConditionDraft[];
+  default_line: ApprovalStepDraft[];
 }
 
-export interface ApprovalLineOriginal {
-  id: string;
-  conditions?: unknown;
-  default_line?: unknown;
+/** UI 단계 초안 → DSL step. order=배열 위치+1. 'specific' 이 아니면 employee id 생략. */
+function buildSteps(steps: ApprovalStepDraft[]): Record<string, unknown>[] {
+  return steps.map((s, i) => {
+    const out: Record<string, unknown> = {
+      order: i + 1,
+      approver_role: s.approver_role,
+      dept_scope: s.dept_scope,
+    };
+    if (s.dept_scope === 'specific') {
+      const eid = trimmed(s.specific_employee_id);
+      if (eid) out.specific_employee_id = eid;
+    }
+    return out;
+  });
 }
 
-export function buildApprovalLinesPayload(
-  edited: ApprovalLineDraft[],
-  original: ApprovalLineOriginal[],
-): ApprovalLinesPayload {
-  const byId = new Map(original.map((o) => [o.id, o]));
+/**
+ * field/op 에 맞춰 value 정규화 — leave_days 숫자, in/not_in 배열, 그 외 문자열.
+ * 숫자 자동변환은 하지 않는 게 DSL 규칙이나, UI 입력(문자열/배열)을 의도된 타입으로 만들어
+ * strict zod 검증을 통과시키거나 거부(NaN/빈값)되게 한다. 최종 권위 검증은 actions/patchTenantSetting.
+ */
+function normalizeConditionValue(
+  field: string,
+  op: string,
+  raw: number | string | (number | string)[],
+): number | string | (number | string)[] {
+  const isArrayOp = op === 'in' || op === 'not_in';
+  const numeric = field === 'leave_days';
+  if (isArrayOp) {
+    const arr = Array.isArray(raw) ? raw : trimmed(raw).split(',');
+    const items = arr
+      .map((x) => (typeof x === 'string' ? x.trim() : x))
+      .filter((x) => x !== '' && x != null);
+    return numeric ? items.map((x) => Number(x)) : items.map((x) => String(x));
+  }
+  if (numeric) return numberOrNaN(raw);
+  return trimmed(raw);
+}
+
+function buildConditions(conditions: ApprovalConditionDraft[]): Record<string, unknown>[] {
+  return conditions.map((c) => ({
+    field: c.field,
+    op: c.op,
+    value: normalizeConditionValue(c.field, c.op, c.value),
+    line: buildSteps(c.line ?? []),
+  }));
+}
+
+/**
+ * 편집된 결재라인 → PATCH payload. WI-034 부터 conditions/default_line 을 사용자가 직접 편집한다
+ * (WI-033 의 "원본 보존" 정책 폐기). unknown line id fail-closed + specific_employee_id 테넌트 소속
+ * 검증은 DB 조회가 필요하므로 actions.ts(saveApprovalLinesAction)에서 수행한다.
+ */
+export function buildApprovalLinesPayload(edited: ApprovalLineDraft[]): ApprovalLinesPayload {
   const lines = edited.map((line) => {
-    const id = trimmed(line.id);
     const base = {
       name: trimmed(line.name),
       request_type: line.request_type,
       is_active: Boolean(line.is_active),
+      conditions: buildConditions(line.conditions ?? []),
+      default_line: buildSteps(line.default_line ?? []),
     };
-    const o = id ? byId.get(id) : undefined;
-    if (o) {
-      // 기존 라인 — 조건/단계는 원본 보존(WI-034 가 편집 소유).
-      return {
-        id,
-        ...base,
-        conditions: Array.isArray(o.conditions) ? o.conditions : [],
-        default_line: Array.isArray(o.default_line) ? o.default_line : [],
-      };
-    }
-    // 신규 라인 — 빈 조건.
-    return { ...base, conditions: [], default_line: [] };
+    const id = trimmed(line.id);
+    return id ? { id, ...base } : base;
   });
   return { lines } as ApprovalLinesPayload;
+}
+
+/** 모든 라인의 conditions[].line[] + default_line[] 에서 specific_employee_id 를 수집(중복 제거). */
+export function collectSpecificEmployeeIds(edited: ApprovalLineDraft[]): string[] {
+  const ids = new Set<string>();
+  const fromSteps = (steps: ApprovalStepDraft[]) => {
+    for (const s of steps ?? []) {
+      if (s.dept_scope === 'specific') {
+        const eid = trimmed(s.specific_employee_id);
+        if (eid) ids.add(eid);
+      }
+    }
+  };
+  for (const line of edited) {
+    fromSteps(line.default_line ?? []);
+    for (const c of line.conditions ?? []) fromSteps(c.line ?? []);
+  }
+  return [...ids];
 }

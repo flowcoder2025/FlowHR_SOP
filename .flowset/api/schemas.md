@@ -219,6 +219,14 @@ export const LeaveCreateRequest = z.object({
 ```
 
 ### Approval Line conditions (KI-019 해소)
+
+> **WI-034 확정 SSOT = `packages/schemas/src/approval-line-dsl.ts`** (snake_case, jsonb 1:1). 아래 camelCase
+> 예시는 Phase 4 초안 — 실제 DSL 은 `{order, approver_role, dept_scope, specific_employee_id}` /
+> `{field, op, value, line}` 이며 다음을 강제한다: approver_role=테넌트 4역할만, field 는 enum
+> (leave_days/department_id/employment_type/position/job_title), field-op 호환(숫자op=leave_days 전용,
+> 문자 field=`==/!=/in/not_in`), order 1..n 연속, line/활성라인 default_line ≥1단계, 숫자 자동변환 금지.
+> 평가엔진 `resolveApprovalLine(rawLine, ctx)` 는 첫 매칭 조건 line(없으면 default_line)을 방어적으로 반환.
+
 ```typescript
 export const ConditionOperator = z.enum(['==', '!=', '>=', '<=', '>', '<', 'in', 'not_in']);
 
@@ -378,3 +386,4 @@ export const RealtimeEvent = <T extends z.ZodTypeAny>(payloadSchema: T) =>
 | 2026-05-15 | LegalDocument / UserConsent zod + NotificationListResponse | KI-030 batch-003 |
 | 2026-05-29 | casing/SSOT 정합 노트 — 실제 entity 스키마 SSOT = `packages/schemas/src/entities/*`(DB snake_case 1:1, 45 components openapi.yaml). 본 문서 camelCase 예시는 Phase 4 초안 참고 | WI-021-1 (codex 협의) |
 | 2026-05-29 | 약관/동의 입력 DTO 3종 추가 — `ConsentInput`/`LegalDocumentPublish`(ko/en 페어 강제)/`RequiredConsent` (camelCase API 계약, 48 components). 약관 API 는 서버 액션/서버 컴포넌트 구현 | WI-020-2 (ST-078) |
+| 2026-06-01 | 결재라인 조건 분기 DSL 확정 — Phase 4 camelCase 초안 폐기, 실제 SSOT = `packages/schemas/src/approval-line-dsl.ts`(snake_case `{order,approver_role,dept_scope,specific_employee_id}` / `{field,op,value,line}`). field enum 5종 + field-op 호환 매트릭스 + order 1..n + 활성 라인 default_line≥1 강제 + 순수 평가엔진 `resolveApprovalLine`. entity `approvalLineSchema` 와 `approvalLinePayloadSchema` 의 conditions/default_line 을 z.unknown() → strict DSL 로 승격(openapi 54 defs 유지) | WI-034 (ST-054) |

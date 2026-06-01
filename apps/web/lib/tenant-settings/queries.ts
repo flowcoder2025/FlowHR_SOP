@@ -68,8 +68,16 @@ export async function getTenantSettings(): Promise<TenantSettingsQueryResult> {
     .eq('tenant_id', tenantId)
     .maybeSingle();
 
-  const [workPolicy, leaveTypes, approvalLines, documentTemplates, auditLogs, pendingRows] =
-    await Promise.all([
+  const [
+    workPolicy,
+    leaveTypes,
+    approvalLines,
+    documentTemplates,
+    auditLogs,
+    pendingRows,
+    approvalEmployees,
+    approvalDepartments,
+  ] = await Promise.all([
       canRead(role, 'work_policy')
         ? supabase
             .from('work_policies')
@@ -123,6 +131,26 @@ export async function getTenantSettings(): Promise<TenantSettingsQueryResult> {
         .in('status', ['pending', 'applying', 'failed'])
         .order('apply_at', { ascending: true })
         .then((r) => r.data ?? []),
+      // 결재라인 조건 분기 UI(WI-034) 의 결재자 지정 picker 용 — 재직 직원/활성 부서(id, name).
+      canRead(role, 'approval_lines')
+        ? supabase
+            .from('employees')
+            .select('id, name')
+            .eq('tenant_id', tenantId)
+            .is('deleted_at', null)
+            .in('status', ['invited', 'probation', 'active', 'on_leave'])
+            .order('name', { ascending: true })
+            .then((r) => r.data ?? [])
+        : Promise.resolve([]),
+      canRead(role, 'approval_lines')
+        ? supabase
+            .from('departments')
+            .select('id, name')
+            .eq('tenant_id', tenantId)
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true })
+            .then((r) => r.data ?? [])
+        : Promise.resolve([]),
     ]);
 
   // 예약 대기/실패 변경을 탭별로 그룹화.
@@ -144,7 +172,8 @@ export async function getTenantSettings(): Promise<TenantSettingsQueryResult> {
     work_policy: workPolicy,
     // grant_basis 저장 위치 부재(KI 등재) — WI-032 는 leave_types 만 반환.
     leave_policy: { leave_types: leaveTypes, grant_basis: null },
-    approval_lines: approvalLines,
+    // WI-034: 라인 + 결재자 지정 picker 데이터(employees/departments)를 함께 전달.
+    approval_lines: { lines: approvalLines, employees: approvalEmployees, departments: approvalDepartments },
     roles: null,
     notifications: settingsRow?.notification_config ?? null,
     document_templates: documentTemplates,

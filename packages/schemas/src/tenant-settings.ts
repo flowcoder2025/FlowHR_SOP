@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { uuidSchema } from './common';
 import { approvalRequestTypeEnum } from './entities/enums';
+import {
+  approvalStepArraySchema,
+  conditionRuleSchema,
+} from './approval-line-dsl';
 
 /**
  * TA-13 회사 설정 PATCH payload DTO (WI-032).
@@ -68,19 +72,29 @@ export const leavePolicyPayloadSchema = z
   .strict();
 
 // ── approval_lines (id 있으면 update, 없으면 insert. 삭제는 is_active=false) ──────
-// 조건 DSL(conditions/default_line) 검증 고도화는 WI-034 — 본 WI 는 jsonb passthrough.
-const jsonbArray = z.array(z.unknown()).default([]);
-
+// 조건 DSL(conditions/default_line)은 WI-034 가 `approval-line-dsl.ts` 로 strict 검증.
+//   - conditions: 조건 규칙 배열(field/op/value/line). 각 규칙은 매칭 시 결재 단계 시퀀스를 가진다.
+//   - default_line: 조건 미매칭 시 기본 결재선. **활성 라인은 1단계 이상** 필수(아래 superRefine).
 export const approvalLinePayloadSchema = z
   .object({
     id: uuidSchema.optional(),
     name: z.string().trim().min(1).max(100),
     request_type: approvalRequestTypeEnum,
-    conditions: jsonbArray,
-    default_line: jsonbArray,
+    conditions: z.array(conditionRuleSchema).default([]),
+    default_line: approvalStepArraySchema.default([]),
     is_active: z.boolean().default(true),
   })
-  .strict();
+  .strict()
+  .superRefine((line, ctx) => {
+    // 활성 라인이 기본 결재선 없이 저장되면 매칭 미달 요청에 결재자가 없게 된다 → 차단.
+    if (line.is_active && line.default_line.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['default_line'],
+        message: '활성 라인은 기본 결재선(default_line)이 1단계 이상이어야 합니다',
+      });
+    }
+  });
 
 export const approvalLinesPayloadSchema = z
   .object({

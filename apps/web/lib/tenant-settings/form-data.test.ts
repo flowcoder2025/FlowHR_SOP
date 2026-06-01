@@ -4,9 +4,9 @@ import {
   buildCompanyPayload,
   buildLeavePolicyPayload,
   buildWorkPolicyPayload,
+  collectSpecificEmployeeIds,
   normalizeApplyAt,
   type ApprovalLineDraft,
-  type ApprovalLineOriginal,
   type LeaveTypeDraft,
 } from './form-data';
 import {
@@ -181,56 +181,133 @@ describe('buildLeavePolicyPayload (delete_keys 산출)', () => {
   });
 });
 
-describe('buildApprovalLinesPayload (conditions 병합/보존)', () => {
-  const original: ApprovalLineOriginal[] = [
-    {
-      id: '11111111-1111-1111-1111-111111111111',
-      conditions: [{ field: 'days', op: 'gte', value: 5 }],
-      default_line: [{ step: 1, approver: 'manager' }],
-    },
-  ];
+describe('buildApprovalLinesPayload (WI-034 조건 분기 DSL)', () => {
+  const managerStep = { approver_role: 'tenant_manager', dept_scope: 'own_team' };
+  const ceoStep = { approver_role: 'tenant_super', dept_scope: 'all' };
 
-  it('기존 라인은 원본의 conditions/default_line 을 병합(passthrough)', () => {
+  it('조건/기본선을 편집한 라인을 DSL payload 로 변환 + order 를 위치로 부여', () => {
     const edited: ApprovalLineDraft[] = [
       {
-        id: '11111111-1111-1111-1111-111111111111',
-        name: '휴가 결재선(수정)',
+        id: '11111111-1111-4111-8111-111111111111',
+        name: '휴가 결재선',
         request_type: 'leave',
         is_active: true,
+        conditions: [{ field: 'leave_days', op: '>=', value: '5', line: [ceoStep] }],
+        default_line: [managerStep, { approver_role: 'tenant_hr_admin', dept_scope: 'all' }],
       },
     ];
-    const payload = buildApprovalLinesPayload(edited, original);
-    expect(payload.lines[0]).toMatchObject({
-      id: '11111111-1111-1111-1111-111111111111',
-      name: '휴가 결재선(수정)',
+    const payload = buildApprovalLinesPayload(edited);
+    expect(payload.lines[0]).toEqual({
+      id: '11111111-1111-4111-8111-111111111111',
+      name: '휴가 결재선',
       request_type: 'leave',
       is_active: true,
-      conditions: [{ field: 'days', op: 'gte', value: 5 }],
-      default_line: [{ step: 1, approver: 'manager' }],
+      conditions: [
+        {
+          field: 'leave_days',
+          op: '>=',
+          value: 5, // 문자열 '5' → 숫자 5 정규화
+          line: [{ order: 1, approver_role: 'tenant_super', dept_scope: 'all' }],
+        },
+      ],
+      default_line: [
+        { order: 1, approver_role: 'tenant_manager', dept_scope: 'own_team' },
+        { order: 2, approver_role: 'tenant_hr_admin', dept_scope: 'all' },
+      ],
     });
     expect(approvalLinesPayloadSchema.safeParse(payload).success).toBe(true);
   });
 
-  it('신규 라인(id 없음)은 빈 조건', () => {
+  it('in/not_in 은 콤마 문자열을 배열로(숫자/문자 타입별) 정규화', () => {
     const edited: ApprovalLineDraft[] = [
-      { name: '근태정정 결재선', request_type: 'attendance_mod', is_active: true },
+      {
+        name: 'L1',
+        request_type: 'leave',
+        is_active: true,
+        conditions: [
+          { field: 'leave_days', op: 'in', value: '3, 5, 10', line: [managerStep] },
+          { field: 'employment_type', op: 'in', value: 'regular, contract', line: [managerStep] },
+        ],
+        default_line: [managerStep],
+      },
     ];
-    const payload = buildApprovalLinesPayload(edited, original);
-    expect(payload.lines[0]).toEqual({
-      name: '근태정정 결재선',
-      request_type: 'attendance_mod',
-      is_active: true,
-      conditions: [],
-      default_line: [],
-    });
+    const payload = buildApprovalLinesPayload(edited);
+    expect(payload.lines[0].conditions[0].value).toEqual([3, 5, 10]);
+    expect(payload.lines[0].conditions[1].value).toEqual(['regular', 'contract']);
     expect(approvalLinesPayloadSchema.safeParse(payload).success).toBe(true);
   });
 
-  it('id 가 원본에 없으면(누락/위조) 빈 조건으로 안전 처리', () => {
+  it("dept_scope!=='specific' 단계는 specific_employee_id 를 생략", () => {
     const edited: ApprovalLineDraft[] = [
-      { id: 'deadbeef-0000-0000-0000-000000000000', name: 'X', request_type: 'document', is_active: false },
+      {
+        name: 'L1',
+        request_type: 'leave',
+        is_active: true,
+        conditions: [],
+        default_line: [{ approver_role: 'tenant_manager', dept_scope: 'own_team', specific_employee_id: 'x' }],
+      },
     ];
-    const payload = buildApprovalLinesPayload(edited, original);
-    expect(payload.lines[0].conditions).toEqual([]);
+    const payload = buildApprovalLinesPayload(edited);
+    expect(payload.lines[0].default_line[0]).not.toHaveProperty('specific_employee_id');
+  });
+
+  it("dept_scope==='specific' 단계는 specific_employee_id 보존", () => {
+    const eid = '99999999-9999-4999-8999-999999999999';
+    const edited: ApprovalLineDraft[] = [
+      {
+        name: 'L1',
+        request_type: 'leave',
+        is_active: true,
+        conditions: [],
+        default_line: [{ approver_role: 'employee', dept_scope: 'specific', specific_employee_id: eid }],
+      },
+    ];
+    const payload = buildApprovalLinesPayload(edited);
+    expect(payload.lines[0].default_line[0]).toMatchObject({ dept_scope: 'specific', specific_employee_id: eid });
+    expect(approvalLinesPayloadSchema.safeParse(payload).success).toBe(true);
+  });
+
+  it('비활성 라인은 빈 기본선 허용(zod 통과)', () => {
+    const edited: ApprovalLineDraft[] = [
+      { name: 'inactive', request_type: 'document', is_active: false, conditions: [], default_line: [] },
+    ];
+    const payload = buildApprovalLinesPayload(edited);
+    expect(approvalLinesPayloadSchema.safeParse(payload).success).toBe(true);
+  });
+});
+
+describe('collectSpecificEmployeeIds', () => {
+  it('conditions[].line + default_line 의 specific 직원 id 를 중복 제거 수집', () => {
+    const e1 = '11111111-1111-4111-8111-111111111111';
+    const e2 = '22222222-2222-4222-8222-222222222222';
+    const edited: ApprovalLineDraft[] = [
+      {
+        name: 'L1',
+        request_type: 'leave',
+        is_active: true,
+        conditions: [
+          {
+            field: 'leave_days',
+            op: '>=',
+            value: '5',
+            line: [{ approver_role: 'employee', dept_scope: 'specific', specific_employee_id: e1 }],
+          },
+        ],
+        default_line: [
+          { approver_role: 'employee', dept_scope: 'specific', specific_employee_id: e2 },
+          { approver_role: 'employee', dept_scope: 'specific', specific_employee_id: e1 }, // 중복
+          { approver_role: 'tenant_manager', dept_scope: 'own_team' }, // specific 아님 → 제외
+        ],
+      },
+    ];
+    expect(collectSpecificEmployeeIds(edited).sort()).toEqual([e1, e2].sort());
+  });
+
+  it('specific 단계가 없으면 빈 배열', () => {
+    expect(
+      collectSpecificEmployeeIds([
+        { name: 'L', request_type: 'leave', is_active: true, conditions: [], default_line: [] },
+      ]),
+    ).toEqual([]);
   });
 });
