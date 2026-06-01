@@ -247,5 +247,141 @@
         "back_home": "← Back to FlowHR"
       }
     }
+  },
+  "screens": {
+    "ta-13": {
+      "title": "Company Settings",
+      "subtitle": "Manage company info, work, leave, approval lines and other policies.",
+      "fetch_failed": "Failed to load settings. Please try again shortly.",
+      "tab": {
+        "company": "Company",
+        "work_policy": "Work Policy",
+        "leave_policy": "Leave Policy",
+        "approval_lines": "Approval Lines",
+        "roles": "Roles",
+        "notifications": "Notifications",
+        "document_templates": "Templates",
+        "security": "Security",
+        "audit_logs": "Audit Log"
+      },
+      "action": {
+        "timing_label": "Apply timing",
+        "now": "Apply now",
+        "scheduled": "Schedule",
+        "apply_at_label": "Scheduled apply time (KST)",
+        "apply_at_hint": "Applied automatically at the selected time (Korea Standard Time). A per-minute job applies due changes.",
+        "save": "Save",
+        "save_scheduled": "Save schedule",
+        "saving": "Saving…",
+        "saved_now": "Changes applied immediately.",
+        "saved_scheduled": "Changes scheduled. They will be applied automatically at the set time.",
+        "saved_pending": "Change accepted. It will be applied automatically shortly.",
+        "save_failed": "Save failed. Please check your input and try again.",
+        "apply_at_required": "Enter a scheduled apply time to schedule the change.",
+        "apply_at_past": "The scheduled apply time must be in the future.",
+        "leave_in_use": "Leave types in use cannot be deleted. Clear related leaves and balances first."
+      },
+      "pending": {
+        "title": "Scheduled / pending changes",
+        "apply_at": "Apply at",
+        "attempt": "{count} attempt(s)",
+        "status": {
+          "pending": "Pending",
+          "applying": "Applying",
+          "failed": "Failed"
+        }
+      },
+      "permission": {
+        "read_only": "Read-only. Editing will be available in a later release.",
+        "none": "You do not have permission to view this setting.",
+        "super_only": "This setting is restricted to super admins."
+      },
+      "company": {
+        "section": "Company information",
+        "name": "Company name",
+        "name_placeholder": "Example Inc.",
+        "ceo_name": "CEO name",
+        "contact": "Main contact",
+        "contact_placeholder": "+82-2-0000-0000",
+        "email": "Main email",
+        "email_placeholder": "contact@example.com",
+        "address": "Address",
+        "industry": "Industry",
+        "logo_url": "Logo URL",
+        "logo_url_placeholder": "https://…/logo.png"
+      },
+      "work": {
+        "section": "Work policy",
+        "name": "Policy name",
+        "name_placeholder": "Default work policy",
+        "standard_clock_in": "Standard clock-in",
+        "standard_clock_out": "Standard clock-out",
+        "late_threshold": "Late threshold",
+        "late_threshold_hint": "Set a standard clock-in time before configuring the late threshold.",
+        "time_optional_hint": "Standard hours are optional. Leave blank to store as unset.",
+        "break_minutes_default": "Default break (minutes)",
+        "weekly_max_hours": "Weekly max hours",
+        "applicable_departments": "Applicable departments",
+        "departments_hint": "Comma-separated. Leave blank to apply to all departments.",
+        "applied_from": "Applied from"
+      },
+      "leave": {
+        "section": "Leave types",
+        "add": "Add type",
+        "remove": "Remove",
+        "key": "Key",
+        "key_placeholder": "annual",
+        "label_ko": "Label",
+        "label_placeholder": "Annual leave",
+        "default_days": "Default days",
+        "is_paid": "Paid",
+        "carryover_allowed": "Carryover",
+        "evidence_required": "Evidence",
+        "sort_order": "Order",
+        "empty": "No leave types yet. Start with 'Add type'.",
+        "key_immutable_hint": "Keys cannot be changed after saving. Remove and re-add instead.",
+        "delete_warning": "Removed types are permanently deleted on save."
+      },
+      "approval": {
+        "section": "Approval lines",
+        "add": "Add line",
+        "name": "Line name",
+        "name_placeholder": "Default leave approval",
+        "request_type": "Request type",
+        "is_active": "Active",
+        "conditions_readonly": "Condition and step configuration is edited in the approval-line branching (later work). They are preserved here.",
+        "no_conditions": "No conditions (default line)",
+        "condition_count": "{count} condition(s)",
+        "empty": "No approval lines yet. Start with 'Add line'.",
+        "type": {
+          "leave": "Leave",
+          "attendance_mod": "Attendance correction",
+          "certificate": "Certificate",
+          "change_request": "Change request",
+          "document": "Document"
+        }
+      },
+      "readonly": {
+        "roles": "The role/permission matrix is managed by a super-admin-only later feature.",
+        "notifications": "Notification channels and templates (read-only)",
+        "document_templates": "Document templates (read-only)",
+        "security": "Security policy (super admin only)",
+        "no_data": "No data to display.",
+        "templates_table": {
+          "key": "Key",
+          "label": "Template",
+          "format": "Format"
+        }
+      },
+      "audit": {
+        "section": "Audit log (last 20)",
+        "time": "Time",
+        "actor": "Actor",
+        "action": "Event",
+        "target": "Target",
+        "result": "Result",
+        "empty": "No audit logs."
+      }
+    }
   }
 }

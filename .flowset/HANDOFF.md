@@ -1,10 +1,46 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-01 batch M (WI-032-feat TA-13 회사설정 API 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #50. Server Action + lib + pg_cron 예약 적용 엔진. KI-110 resolved).
-> **신규 세션 첫 작업**: 본 문서 **§-0m (2026-06-01 batch M)** 정독 → **WI-033-feat TA-13 회사설정 UI** 착수(SettingsPane 9탭 shell + 회사정보/근무/휴가/결재라인 4탭 폼 + E2E). WI-032 lib(`apps/web/lib/tenant-settings/{queries,actions,permissions}`)를 소비. ⚠️ **착수 시 KI-113 사용자 재확인** — hr_admin 보안탭 read-only(와이어프레임 §2 state4) 복원 여부(현재 최소권한으로 security/roles super 전용). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-06-01 batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-01 batch N (WI-033-feat TA-13 회사설정 UI 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #52. 9탭 셸 + P0 4탭 폼 + 즉시/예약 + read-only. ★ codex 가 evaluator 통과분에서 P1×2[approval 조건 클라위조 / scheduled UPDATE RLS] 검출 → 듀얼검증 가치 재실증. KI-117~119 등재, KI-113 사용자 결정 현행 유지).
+> **신규 세션 첫 작업**: 본 문서 **§-0n (2026-06-01 batch N)** 정독 → **WI-034-feat 결재라인 조건 분기** 착수(`approval_lines.conditions` jsonb 평가엔진 + 조건트리 UI + E2E). WI-033 이 conditions/default_line 을 **편집 없이 보존**(서버 DB 권위 병합)만 했으므로 WI-034 가 조건 DSL 편집/평가 소유. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-01 batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0m. 2026-06-01 batch M 세션 진척 — **신규 세션 여기부터**
+## -0n. 2026-06-01 batch N 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-033-feat TA-13 회사설정 UI (PR #52 머지)
+
+핸드오프 정독 → **codex 2라운드 협의**(mig 40 apply 엔진 정합 직접 검증) → 구현 → 듀얼검증 PASS_BOTH → auto-merge.
+
+**codex 협의 확정 설계**:
+- 폼: **useActionState 유지**(react-hook-form 미도입 — 미설치 + 기존 8폼 패턴 일관). 동적 배열(leave_types/approval_lines)은 JSON hidden input → 서버 순수 빌더.
+- approval_lines: **기본필드(이름/유형/활성)만 편집**, conditions/default_line 은 read-only 표시 + **보존**(WI-034 가 조건 편집 소유).
+- 탭 상태: URL `?tab=` 동기화(server 1회 fetch + client useState + `history.replaceState`, RSC refetch 회피).
+- 즉시/예약: 탭별 공통 `SettingsActionBar`(apply_at datetime-local → KST `+09:00` 정규화, 과거 거부).
+- read-only 5탭: `ReadonlyPane`(roles/noti/templates/security) + `AuditLogsPane` 전용 — 9탭 shell 완성.
+
+**산출물**: `(tenant)/admin/settings/{page,settings-client,actions}.tsx` + `_components/`(ActionBar/PendingChangeList/PermissionState/ReadonlyPane/AuditLogsPane/format) + `_panes/`(4탭 폼) + `lib/tenant-settings/{form-data,tabs}.ts`(순수, 단위 17) + i18n `screens.ta-13` ko/en(106 leaf 대칭). 라우트 `/admin/settings` SSG 6.83kB.
+
+**★ 듀얼검증 가치 재실증 (이번 세션 핵심)**: evaluator 1차 **PASS 8.75** 통과분에서 **codex 가 P1 2건 + P2 2건 검출** → 1차 FAIL.
+- **P1-1**: approval conditions/default_line 원본을 클라이언트 `original_lines_json` hidden input 으로 전송 → 같은 테넌트 admin 이 개발자도구로 위조 시 타 라인 조건 변조/삭제. (leave 원본 key 도 동일 클래스 — delete_keys 변조.)
+- **P1-2**: `scheduled_setting_changes` UPDATE RLS(mig 39)가 INSERT target 제한(mig 41)과 비대칭 → pending row 사후 변경 여지. **WI-033 UI 미노출(INSERT 전용)** → KI-117.
+- **P2**: leave_types 삭제가 FK(on delete restrict) 충돌 → 실패 큐 / JSON parse 실패가 `[]` 로 삼켜져 leave 대량삭제 payload 가능.
+- **정정**(hotfix c4f6dcb): 원본을 클라이언트 대신 **서버가 DB(RLS tenant 격리)에서 권위 조회**(original hidden input + useRef 제거) + `parseJsonArrayStrict`(손상/위조=invalid 중단) + leave delete_keys 의 `leaves`/`leave_balances` FK 참조 사전 검사(`action.leave_in_use`).
+- **정정2**(hotfix 8943265, codex CONDITIONAL): 세 DB 조회 error 시 **fail-closed**(`save_failed`) — approval 조회 실패 시 conditions 빈배열 저장(조건 소실 fail-open) 차단.
+- 재검증: evaluator 8.63 / codex PASS → **PASS_BOTH**. turbo 21/21 + form-data 단위 17 + E2E 미인증 가드 2 PASS.
+
+### ⚠️ 신규 KI (batch N)
+- **KI-117 (P2)** — `scheduled_setting_changes` UPDATE RLS 가 INSERT target 제한과 비대칭(pending row target/payload/apply_at 사후변경 허용). WI-033 UI 미노출(INSERT 전용)이나 Data API 레벨 P1성. 조치: pending UPDATE 를 **cancel 전용 축소 또는 cancel RPC 대체** + 불변성 강제. **KI-109 보안 하드닝 sweep 동반 권장**.
+- KI-118 (P3) — apply_at 즉시/예약 경계가 actions/patchTenantSetting 두 곳 `now+1s` 판단(datetime-local 분단위라 실질 무해).
+- KI-119 (P3) — settings mutation E2E 가 admin 시드 부재로 env-gate skip(KI-089 동류).
+
+### KI-113 사용자 결정 (batch N)
+- **현행 유지** — hr_admin 보안/역할권한 탭 super 전용(민감 `security_policy` raw jsonb 노출 회피). 와이어프레임 §2 state4 의 hr_admin read-only 진입은 **큐레이션된 마스킹 read 뷰가 필요한 별도 WI** 로 분리(KI-113 유지). `permissions.ts canRead` + `ReadonlyPane` super_only 안내로 코드 반영.
+
+### 다음 세션 첫 작업 — WI-034-feat 결재라인 조건 분기 (ST-054)
+- `approval_lines.conditions`(jsonb) 평가엔진 + 조건트리 UI. WI-033 의 approval 폼은 conditions 를 보존만 하므로(서버 DB 권위 병합) WI-034 가 조건 DSL 편집/평가 소유. schemas `ConditionRule`(KI-019 resolved) 참조. "5일 이상 = 대표 결재" 분기 + audit(sprint-002 DoD).
+- 이어서 WI-035(OP-04 등록 API) → 036(마법사 UI) → 037(OP-02 목록) → 038(OP-03 상세).
+- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+
+## -0m. 2026-06-01 batch M 세션 진척
 
 ### 완료 — WI-032-feat TA-13 회사설정 API (PR #50 머지 43d7e55)
 
