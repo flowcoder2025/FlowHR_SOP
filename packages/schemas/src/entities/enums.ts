@@ -19,6 +19,11 @@ export const backupStatusEnum = z.enum(['pending', 'running', 'success', 'failed
 export const backupKindEnum = z.enum(['auto', 'manual']);
 export const operatorRoleEnum = z.enum(['operator_super', 'operator_staff']);
 export const billingCycleEnum = z.enum(['monthly', 'annual']);
+// Sprint 2 (mig 36/37)
+export const tenantDraftStatusEnum = z.enum(['draft', 'submitting', 'completed', 'abandoned']);
+export const scheduledSettingChangeStatusEnum = z.enum([
+  'pending', 'applying', 'applied', 'failed', 'cancelled',
+]);
 
 // ── 역할 (6 역할, api/schemas.md Role) — 애플리케이션 입력/권한 검증용 ──────
 // DB employees.role/users.role 은 text 컬럼이라 entity 스키마엔 z.string() 적용(DB Row 정합).

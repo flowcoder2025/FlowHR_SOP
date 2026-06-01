@@ -14,6 +14,8 @@ import {
   requiredConsentSchema,
   apiKeySchema,
   auditLogSchema,
+  tenantDraftSchema,
+  scheduledSettingChangeSchema,
   tenantStatusEnum,
   leaveStatusEnum,
 } from './index';
@@ -181,6 +183,36 @@ describe('entities: approval / compliance / settings', () => {
       ip: null, user_agent: null, request_id: 'req-non-uuid-123', created_at: TS,
     };
     expect(auditLogSchema.safeParse(log).success).toBe(true);
+  });
+});
+
+describe('entities: Sprint 2 (mig 36/37)', () => {
+  it('tenant_draft — status enum + 신규 nullable 컬럼', () => {
+    const d = {
+      id: UUID, created_by: UUID, current_step: 3, form_data: {},
+      status: 'draft', submitted_tenant_id: null, completed_at: null, abandoned_at: null,
+      created_at: TS, updated_at: TS,
+    };
+    expect(tenantDraftSchema.safeParse(d).success).toBe(true);
+    expect(tenantDraftSchema.safeParse({ ...d, status: 'completed', submitted_tenant_id: UUID, completed_at: TS }).success).toBe(true);
+    expect(tenantDraftSchema.safeParse({ ...d, status: 'bogus' }).success).toBe(false);
+    expect(tenantDraftSchema.safeParse({ ...d, created_by: null }).success).toBe(true);
+  });
+
+  it('scheduled_setting_change — status enum + target(text) + payload(object) + apply_at(datetime)', () => {
+    const s = {
+      id: UUID, tenant_id: UUID, target: 'work_policy', payload: { name: 'X' },
+      apply_at: TS, status: 'pending', created_by: UUID, applied_at: null,
+      cancelled_at: null, error_message: null, attempt_count: 0, last_attempt_at: null,
+      created_at: TS, updated_at: TS,
+    };
+    expect(scheduledSettingChangeSchema.safeParse(s).success).toBe(true);
+    expect(scheduledSettingChangeSchema.safeParse({ ...s, status: 'applied', applied_at: TS }).success).toBe(true);
+    expect(scheduledSettingChangeSchema.safeParse({ ...s, status: 'bogus' }).success).toBe(false);
+    // apply_at 은 datetime — date 값 거부
+    expect(scheduledSettingChangeSchema.safeParse({ ...s, apply_at: DATE }).success).toBe(false);
+    // created_by nullable
+    expect(scheduledSettingChangeSchema.safeParse({ ...s, created_by: null }).success).toBe(true);
   });
 });
 

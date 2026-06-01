@@ -28,8 +28,8 @@ import {
   auditLogSchema, employeeChangeRequestSchema,
 } from '../src/entities/hr';
 import {
-  tenantSettingsSchema, workPolicySchema, documentTemplateSchema, integrationSchema,
-  integrationLogSchema, apiKeySchema, signatureSchema,
+  tenantSettingsSchema, workPolicySchema, documentTemplateSchema, scheduledSettingChangeSchema,
+  integrationSchema, integrationLogSchema, apiKeySchema, signatureSchema,
 } from '../src/entities/settings';
 import { locationSchema, attendanceSchema, attendanceModificationSchema } from '../src/entities/attendance';
 import { leaveTypeSchema, leaveSchema, leaveBalanceSchema } from '../src/entities/leave';
@@ -72,10 +72,11 @@ registry.register('Notification', notificationSchema);
 registry.register('AuditLog', auditLogSchema);
 registry.register('EmployeeChangeRequest', employeeChangeRequestSchema);
 
-// ── 설정/연동 도메인 (7) ───────────────────────────────────────
+// ── 설정/연동 도메인 (8) ───────────────────────────────────────
 registry.register('TenantSettings', tenantSettingsSchema);
 registry.register('WorkPolicy', workPolicySchema);
 registry.register('DocumentTemplate', documentTemplateSchema);
+registry.register('ScheduledSettingChange', scheduledSettingChangeSchema);
 registry.register('Integration', integrationSchema);
 registry.register('IntegrationLog', integrationLogSchema);
 registry.register('ApiKey', apiKeySchema);

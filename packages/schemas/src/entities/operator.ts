@@ -13,6 +13,7 @@ import {
   backupStatusEnum,
   backupKindEnum,
   operatorRoleEnum,
+  tenantDraftStatusEnum,
 } from './enums';
 
 /**
@@ -60,12 +61,16 @@ export const tenantSchema = z.object({
   updated_at: isoTimestampSchema,
 });
 
-// tenant_drafts
+// tenant_drafts (Sprint 2 mig 36: status/submitted_tenant_id/completed_at/abandoned_at 추가)
 export const tenantDraftSchema = z.object({
   id: uuidSchema,
   created_by: uuidSchema.nullable(),
   current_step: z.number().int(),
   form_data: z.record(z.unknown()),
+  status: tenantDraftStatusEnum,
+  submitted_tenant_id: uuidSchema.nullable(),
+  completed_at: isoTimestampSchema.nullable(),
+  abandoned_at: isoTimestampSchema.nullable(),
   created_at: isoTimestampSchema,
   updated_at: isoTimestampSchema,
 });
