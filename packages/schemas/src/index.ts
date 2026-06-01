@@ -15,6 +15,7 @@ export * from './common';
 export * from './auth';
 export * from './approval-line-dsl';
 export * from './tenant-settings';
+export * from './operator-onboarding';
 export * from './entities/enums';
 export * from './entities/operator';
 export * from './entities/hr';

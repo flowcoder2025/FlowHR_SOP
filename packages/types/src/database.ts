@@ -2628,6 +2628,22 @@ export type Database = {
         Args: { p_max_attempts?: number; p_stale_after?: string }
         Returns: number
       }
+      register_tenant: {
+        Args: {
+          p_admin_invitations: Json
+          p_draft_id: string
+          p_idempotency_key: string
+          p_operator_id: string
+          p_payload: Json
+        }
+        Returns: {
+          already_completed: boolean
+          draft_id: string
+          invitation_ids: string[]
+          status: Database["public"]["Enums"]["tenant_status"]
+          tenant_id: string
+        }[]
+      }
       run_due_scheduled_setting_changes: {
         Args: { p_limit?: number }
         Returns: number

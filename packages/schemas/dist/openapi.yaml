@@ -284,7 +284,7 @@ components:
           format: uuid
         billing_cycle:
           type: string
-          enum:
+          enum: &a8
             - monthly
             - annual
         latched_base_price:
@@ -3030,6 +3030,772 @@ components:
       required:
         - tab
         - payload
+    CheckDomainInput:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 64
+      required:
+        - slug
+      additionalProperties: false
+    CheckBusinessNumberInput:
+      type: object
+      properties:
+        business_number:
+          type: string
+          minLength: 1
+          maxLength: 32
+      required:
+        - business_number
+      additionalProperties: false
+    CheckAdminEmailInput:
+      type: object
+      properties:
+        email:
+          type: string
+          maxLength: 200
+          format: email
+      required:
+        - email
+      additionalProperties: false
+    TenantDraftInput:
+      type: object
+      properties:
+        current_step:
+          type: integer
+          minimum: 1
+          maximum: 7
+        form_data:
+          type: object
+          additionalProperties: {}
+          default: {}
+      required:
+        - current_step
+      additionalProperties: false
+    TenantRegistrationPayload:
+      type: object
+      properties:
+        company:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 200
+            business_number:
+              type: string
+            representative_name:
+              type: string
+              minLength: 1
+              maxLength: 100
+            industry:
+              type:
+                - string
+                - "null"
+              maxLength: 100
+            address:
+              type:
+                - string
+                - "null"
+              maxLength: 500
+            phone:
+              type:
+                - string
+                - "null"
+              maxLength: 50
+            logo_url:
+              type:
+                - string
+                - "null"
+              maxLength: 1000
+              format: uri
+          required:
+            - name
+            - business_number
+            - representative_name
+          additionalProperties: false
+        slug:
+          type: string
+        plan_id:
+          type: string
+          format: uuid
+        contract_start_date:
+          type: string
+          format: date
+        contract_end_date:
+          type:
+            - string
+            - "null"
+          format: date
+        user_limit:
+          type: integer
+          minimum: 1
+          maximum: 100000
+        billing_cycle:
+          type: string
+          enum: *a8
+          default: monthly
+        admin:
+          type: object
+          properties:
+            email:
+              type: string
+              maxLength: 200
+              format: email
+            name:
+              type: string
+              minLength: 1
+              maxLength: 100
+            phone:
+              type:
+                - string
+                - "null"
+              maxLength: 50
+          required:
+            - email
+            - name
+          additionalProperties: false
+        additional_admins:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                maxLength: 200
+                format: email
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+            required:
+              - email
+              - name
+            additionalProperties: false
+          maxItems: 3
+          default: &a9 []
+        enabled_modules:
+          type: array
+          items:
+            type: string
+            enum: &a10
+              - attendance
+              - leave
+              - approval
+              - payroll
+              - documents
+              - integrations
+          default: &a11 []
+        departments:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+              code:
+                type:
+                  - string
+                  - "null"
+                minLength: 1
+                maxLength: 50
+              parent_code:
+                type:
+                  - string
+                  - "null"
+                minLength: 1
+                maxLength: 50
+            required:
+              - name
+            additionalProperties: false
+          maxItems: 200
+          default: &a12 []
+        work_policy:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 100
+              default: 기본 근무제
+            standard_clock_in:
+              type:
+                - string
+                - "null"
+              pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+            standard_clock_out:
+              type:
+                - string
+                - "null"
+              pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+            late_threshold:
+              type:
+                - string
+                - "null"
+              pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+            break_minutes_default:
+              type: integer
+              minimum: 0
+              maximum: 1440
+              default: 0
+            weekly_max_hours:
+              type: integer
+              minimum: 0
+              maximum: 168
+              default: 52
+            applicable_departments:
+              type: array
+              items:
+                type: string
+                minLength: 1
+              default: &a13 []
+          additionalProperties: false
+        leave_types:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                minLength: 1
+                maxLength: 50
+              label_ko:
+                type:
+                  - string
+                  - "null"
+                maxLength: 100
+              default_days:
+                type: integer
+                minimum: 0
+                maximum: 365
+                default: 0
+              is_paid:
+                type: boolean
+                default: true
+              carryover_allowed:
+                type: boolean
+                default: false
+              evidence_required:
+                type: boolean
+                default: false
+              sort_order:
+                type: integer
+                minimum: 0
+                maximum: 9999
+                default: 0
+            required:
+              - key
+            additionalProperties: false
+          maxItems: 50
+          default: &a14 []
+        approval_lines:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+              request_type:
+                type: string
+                enum: *a3
+              conditions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                      enum: *a6
+                    op:
+                      type: string
+                      enum: *a7
+                    value:
+                      anyOf:
+                        - type: number
+                        - type: string
+                        - type: array
+                          items:
+                            anyOf:
+                              - type: number
+                              - type: string
+                    line:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          order:
+                            type: integer
+                            exclusiveMinimum: 0
+                          approver_role:
+                            type: string
+                            enum: *a1
+                          dept_scope:
+                            type: string
+                            enum: *a2
+                          specific_employee_id:
+                            type: string
+                            format: uuid
+                        required:
+                          - order
+                          - approver_role
+                          - dept_scope
+                        additionalProperties: false
+                      minItems: 1
+                  required:
+                    - field
+                    - op
+                    - value
+                    - line
+                  additionalProperties: false
+                default: &a15 []
+              default_line:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    order:
+                      type: integer
+                      exclusiveMinimum: 0
+                    approver_role:
+                      type: string
+                      enum: *a1
+                    dept_scope:
+                      type: string
+                      enum: *a2
+                    specific_employee_id:
+                      type: string
+                      format: uuid
+                  required:
+                    - order
+                    - approver_role
+                    - dept_scope
+                  additionalProperties: false
+                default: &a16 []
+              is_active:
+                type: boolean
+                default: true
+            required:
+              - name
+              - request_type
+            additionalProperties: false
+          maxItems: 50
+          default: &a17 []
+        document_templates:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                minLength: 1
+                maxLength: 50
+              label_ko:
+                type:
+                  - string
+                  - "null"
+                maxLength: 100
+              template_body:
+                type:
+                  - string
+                  - "null"
+                maxLength: 20000
+              variables:
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                default: &a18 []
+              template_format:
+                type:
+                  - string
+                  - "null"
+                maxLength: 50
+            required:
+              - key
+            additionalProperties: false
+          maxItems: 50
+          default: &a19 []
+      required:
+        - company
+        - slug
+        - plan_id
+        - contract_start_date
+        - user_limit
+        - admin
+      additionalProperties: false
+    TenantRegistrationInput:
+      type: object
+      properties:
+        draft_id:
+          type: string
+          format: uuid
+        idempotency_key:
+          type: string
+          minLength: 8
+          maxLength: 200
+        payload:
+          type: object
+          properties:
+            company:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                business_number:
+                  type: string
+                representative_name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                industry:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 100
+                address:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 500
+                phone:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 50
+                logo_url:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 1000
+                  format: uri
+              required:
+                - name
+                - business_number
+                - representative_name
+              additionalProperties: false
+            slug:
+              type: string
+            plan_id:
+              type: string
+              format: uuid
+            contract_start_date:
+              type: string
+              format: date
+            contract_end_date:
+              type:
+                - string
+                - "null"
+              format: date
+            user_limit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+            billing_cycle:
+              type: string
+              enum: *a8
+              default: monthly
+            admin:
+              type: object
+              properties:
+                email:
+                  type: string
+                  maxLength: 200
+                  format: email
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                phone:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 50
+              required:
+                - email
+                - name
+              additionalProperties: false
+            additional_admins:
+              type: array
+              items:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    maxLength: 200
+                    format: email
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                required:
+                  - email
+                  - name
+                additionalProperties: false
+              maxItems: 3
+              default: *a9
+            enabled_modules:
+              type: array
+              items:
+                type: string
+                enum: *a10
+              default: *a11
+            departments:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                  code:
+                    type:
+                      - string
+                      - "null"
+                    minLength: 1
+                    maxLength: 50
+                  parent_code:
+                    type:
+                      - string
+                      - "null"
+                    minLength: 1
+                    maxLength: 50
+                required:
+                  - name
+                additionalProperties: false
+              maxItems: 200
+              default: *a12
+            work_policy:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  default: 기본 근무제
+                standard_clock_in:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+                standard_clock_out:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+                late_threshold:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+                break_minutes_default:
+                  type: integer
+                  minimum: 0
+                  maximum: 1440
+                  default: 0
+                weekly_max_hours:
+                  type: integer
+                  minimum: 0
+                  maximum: 168
+                  default: 52
+                applicable_departments:
+                  type: array
+                  items:
+                    type: string
+                    minLength: 1
+                  default: *a13
+              additionalProperties: false
+            leave_types:
+              type: array
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                  label_ko:
+                    type:
+                      - string
+                      - "null"
+                    maxLength: 100
+                  default_days:
+                    type: integer
+                    minimum: 0
+                    maximum: 365
+                    default: 0
+                  is_paid:
+                    type: boolean
+                    default: true
+                  carryover_allowed:
+                    type: boolean
+                    default: false
+                  evidence_required:
+                    type: boolean
+                    default: false
+                  sort_order:
+                    type: integer
+                    minimum: 0
+                    maximum: 9999
+                    default: 0
+                required:
+                  - key
+                additionalProperties: false
+              maxItems: 50
+              default: *a14
+            approval_lines:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                  request_type:
+                    type: string
+                    enum: *a3
+                  conditions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          enum: *a6
+                        op:
+                          type: string
+                          enum: *a7
+                        value:
+                          anyOf:
+                            - type: number
+                            - type: string
+                            - type: array
+                              items:
+                                anyOf:
+                                  - type: number
+                                  - type: string
+                        line:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              order:
+                                type: integer
+                                exclusiveMinimum: 0
+                              approver_role:
+                                type: string
+                                enum: *a1
+                              dept_scope:
+                                type: string
+                                enum: *a2
+                              specific_employee_id:
+                                type: string
+                                format: uuid
+                            required:
+                              - order
+                              - approver_role
+                              - dept_scope
+                            additionalProperties: false
+                          minItems: 1
+                      required:
+                        - field
+                        - op
+                        - value
+                        - line
+                      additionalProperties: false
+                    default: *a15
+                  default_line:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        order:
+                          type: integer
+                          exclusiveMinimum: 0
+                        approver_role:
+                          type: string
+                          enum: *a1
+                        dept_scope:
+                          type: string
+                          enum: *a2
+                        specific_employee_id:
+                          type: string
+                          format: uuid
+                      required:
+                        - order
+                        - approver_role
+                        - dept_scope
+                      additionalProperties: false
+                    default: *a16
+                  is_active:
+                    type: boolean
+                    default: true
+                required:
+                  - name
+                  - request_type
+                additionalProperties: false
+              maxItems: 50
+              default: *a17
+            document_templates:
+              type: array
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                  label_ko:
+                    type:
+                      - string
+                      - "null"
+                    maxLength: 100
+                  template_body:
+                    type:
+                      - string
+                      - "null"
+                    maxLength: 20000
+                  variables:
+                    type: array
+                    items:
+                      type: string
+                      minLength: 1
+                    default: *a18
+                  template_format:
+                    type:
+                      - string
+                      - "null"
+                    maxLength: 50
+                required:
+                  - key
+                additionalProperties: false
+              maxItems: 50
+              default: *a19
+          required:
+            - company
+            - slug
+            - plan_id
+            - contract_start_date
+            - user_limit
+            - admin
+          additionalProperties: false
+      required:
+        - idempotency_key
+        - payload
+      additionalProperties: false
   parameters: {}
 paths: {}
 webhooks: {}
