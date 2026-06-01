@@ -50,7 +50,9 @@ export async function saveDraft(input: unknown): Promise<DraftSaveResult> {
     .maybeSingle();
 
   if (open) {
-    const { error } = await supabase
+    // completed/abandoned draft 은 불변 — status 가드로 race(등록 완료 직후 stale autosave)가
+    // form_data._submission(멱등 근거)를 덮어쓰지 못하게 한다(codex P1).
+    const { data: updated, error } = await supabase
       .from('tenant_drafts')
       .update({
         current_step: parsed.data.current_step,
@@ -58,9 +60,13 @@ export async function saveDraft(input: unknown): Promise<DraftSaveResult> {
         updated_at: new Date().toISOString(),
       })
       .eq('id', open.id)
-      .eq('created_by', userId);
+      .eq('created_by', userId)
+      .in('status', ['draft', 'submitting'])
+      .select('id')
+      .maybeSingle();
     if (error) return { ok: false, error: 'failed' };
-    return { ok: true, draftId: open.id };
+    // 0 row = 그 사이 draft 가 completed/abandoned 로 전이 → stale autosave 무시(no-op).
+    return { ok: true, draftId: updated?.id ?? open.id };
   }
 
   const { data: created, error } = await supabase
@@ -88,11 +94,13 @@ export async function deleteDraft(draftId: string): Promise<DraftDeleteResult> {
   if (!canRegisterTenant(profile.role)) return { ok: false, error: 'forbidden' };
 
   const supabase = await createSupabaseServerClient();
+  // completed draft 은 등록 결과(submitted_tenant_id/멱등 근거) 보존을 위해 삭제 금지 — 열린 draft 만 폐기(codex P1).
   const { error } = await supabase
     .from('tenant_drafts')
     .delete()
     .eq('id', draftId)
-    .eq('created_by', profile.user.id);
+    .eq('created_by', profile.user.id)
+    .in('status', ['draft', 'submitting']);
   if (error) return { ok: false, error: 'failed' };
   return { ok: true };
 }
@@ -146,6 +154,7 @@ function mapRpcError(code: string | undefined): RegisterTenantError {
     case 'P0104':
     case 'P0105':
     case 'P0109':
+    case 'P0111':
       return 'invalid';
     default:
       return 'failed';
@@ -271,12 +280,16 @@ export async function sendInvite(tenantId: string, email?: string): Promise<Send
   if (!canRegisterTenant(profile.role)) return { ok: false, error: 'forbidden' };
 
   const service = createServiceRoleClient();
+  // 관리자 초대(tenant_super/tenant_hr_admin)만 대상 — 같은 테넌트의 pending 직원 초대(target_role=employee,
+  // employee_id 보유)를 잘못 잡아 createInvitation 이 employee_id 를 지우는 것을 차단(codex P1).
   let query = service
     .from('invitations')
     .select('email, target_role')
     .eq('tenant_id', tenantId)
     .eq('operator_flag', false)
-    .eq('status', 'pending');
+    .eq('status', 'pending')
+    .in('target_role', ['tenant_super', 'tenant_hr_admin'])
+    .is('employee_id', null);
   query = email
     ? query.ilike('email', email.trim().toLowerCase())
     : query.eq('target_role', 'tenant_super');

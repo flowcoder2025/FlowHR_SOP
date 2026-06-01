@@ -113,7 +113,10 @@ export type PlansResult =
   | { ok: true; plans: PlanOption[] }
   | { ok: false; error: 'unauthenticated' | 'forbidden' };
 
-/** OP-04 3단계 — 선택 가능한 공개 플랜(plans_read=using(true)). 비활성 제외 + sort_order 정렬. */
+/**
+ * OP-04 3단계 — 선택 가능한 공개 플랜(plans_read=using(true)).
+ * 신규 등록 후보는 active + custom 만(inactive/sales_stopped 는 신규 가입 불가, codex P3).
+ */
 export async function getRegistrationPlans(): Promise<PlansResult> {
   const guard = await requireOperator();
   if (!guard.ok) return guard;
@@ -123,7 +126,7 @@ export async function getRegistrationPlans(): Promise<PlansResult> {
     .from('plans')
     .select('id, slug, name, base_price_krw, per_user_price_krw, included_users, modules, status, is_public, sort_order')
     .eq('is_public', true)
-    .neq('status', 'inactive')
+    .in('status', ['active', 'custom'])
     .order('sort_order', { ascending: true });
   if (error || !data) return { ok: true, plans: [] };
 

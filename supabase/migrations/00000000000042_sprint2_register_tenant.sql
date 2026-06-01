@@ -150,6 +150,11 @@ begin
     raise exception 'idempotency conflict' using errcode = 'P0103';
   end if;
 
+  -- 2-1) 신규 등록은 열린 draft(draft/submitting)만 — completed 는 위 replay, abandoned/기타 거부(codex P2).
+  if v_draft.status not in ('draft', 'submitting') then
+    raise exception 'draft not registerable' using errcode = 'P0102';
+  end if;
+
   -- 3) 관리자 invitation 최소 1건(대표) 필요.
   if p_admin_invitations is null or jsonb_typeof(p_admin_invitations) <> 'array'
      or jsonb_array_length(p_admin_invitations) = 0 then
@@ -175,6 +180,14 @@ begin
   select * into v_plan from public.plans where id = (p_payload #>> '{plan_id}')::uuid;
   if not found then
     raise exception 'plan not found' using errcode = 'P0108';
+  end if;
+
+  -- 5-1) enabled_modules 는 선택 plan 의 modules subset 만 허용(OP-07 침범 없이 metadata 저장, codex P2).
+  if exists (
+    select 1 from jsonb_array_elements_text(coalesce(p_payload -> 'enabled_modules', '[]'::jsonb)) m(val)
+     where m.val <> all (v_plan.modules)
+  ) then
+    raise exception 'module not in plan' using errcode = 'P0111';
   end if;
 
   -- 6) 관리자 이메일 hard-check(전역 invitation pending/accepted + auth.users + 역할 화이트리스트).
@@ -362,7 +375,7 @@ exception
         raise exception 'slug taken' using errcode = 'P0106';
       elsif v_constraint = 'tenants_business_number_key' then
         raise exception 'business number taken' using errcode = 'P0107';
-      elsif v_constraint in ('invitations_token_hash_key', 'ux_invitations_pending_email') then
+      elsif v_constraint = 'ux_invitations_pending_email' then
         raise exception 'admin email taken' using errcode = 'P0110';
       else
         raise;
