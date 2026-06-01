@@ -279,7 +279,10 @@
         "save_failed": "Save failed. Please check your input and try again.",
         "apply_at_required": "Enter a scheduled apply time to schedule the change.",
         "apply_at_past": "The scheduled apply time must be in the future.",
-        "leave_in_use": "Leave types in use cannot be deleted. Clear related leaves and balances first."
+        "leave_in_use": "Leave types in use cannot be deleted. Clear related leaves and balances first.",
+        "approval_invalid": "Approval line conditions are invalid. Please check the conditions and approval steps.",
+        "approval_unknown_line": "This approval line does not exist. Please refresh the page and try again.",
+        "approval_unknown_employee": "The selected approver could not be found. Please check the employee list."
       },
       "pending": {
         "title": "Scheduled / pending changes",
@@ -349,16 +352,76 @@
         "name_placeholder": "Default leave approval",
         "request_type": "Request type",
         "is_active": "Active",
-        "conditions_readonly": "Condition and step configuration is edited in the approval-line branching (later work). They are preserved here.",
-        "no_conditions": "No conditions (default line)",
-        "condition_count": "{count} condition(s)",
+        "intro": "The first matching condition's line applies; if none match, the default line applies. (e.g. leave of 5+ days = CEO approval)",
         "empty": "No approval lines yet. Start with 'Add line'.",
+        "remove_line": "Remove line",
+        "conditions_label": "Conditional branches",
+        "no_conditions": "No conditions — the default line always applies.",
+        "add_condition": "Add condition",
+        "condition_n": "Condition {n}",
+        "remove": "Remove",
+        "default_line": "Default line",
+        "no_default_hint": "An active line needs at least one default approval step.",
+        "matched_line": "Line applied when this condition matches",
+        "add_step": "Add step",
+        "step_n": "Step {n}",
+        "no_steps": "No approval steps.",
+        "field_label": "Field",
+        "op_label": "Operator",
+        "value_label": "Value",
+        "approver_role": "Approver role",
+        "dept_scope_label": "Dept scope",
+        "employee_label": "Specific employee",
+        "select_employee": "Select employee…",
+        "select_department": "Select department…",
+        "select_value": "Select…",
         "type": {
           "leave": "Leave",
           "attendance_mod": "Attendance correction",
           "certificate": "Certificate",
           "change_request": "Change request",
           "document": "Document"
+        },
+        "field": {
+          "leave_days": "Leave days",
+          "department_id": "Department",
+          "employment_type": "Employment type",
+          "position": "Position",
+          "job_title": "Job title"
+        },
+        "op": {
+          "eq": "Equals (=)",
+          "ne": "Not equal (≠)",
+          "gte": "At least (≥)",
+          "lte": "At most (≤)",
+          "gt": "Greater than (>)",
+          "lt": "Less than (<)",
+          "in": "In list",
+          "not_in": "Not in list"
+        },
+        "dept_scope": {
+          "own_team": "Own team",
+          "parent": "Parent dept",
+          "all": "Company-wide",
+          "specific": "Specific employee"
+        },
+        "role": {
+          "tenant_super": "Super admin",
+          "tenant_hr_admin": "HR admin",
+          "tenant_manager": "Manager",
+          "employee": "Employee"
+        },
+        "employment_type": {
+          "regular": "Regular",
+          "contract": "Contract",
+          "part_time": "Part-time",
+          "freelancer": "Freelancer"
+        },
+        "value_ph": {
+          "number": "e.g. 5",
+          "number_list": "e.g. 3, 5, 10",
+          "text": "Enter value",
+          "text_list": "Comma-separated"
         }
       },
       "readonly": {

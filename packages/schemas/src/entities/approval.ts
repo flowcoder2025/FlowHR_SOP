@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { uuidSchema, isoTimestampSchema } from '../common';
+import { conditionRuleSchema, approvalStepArraySchema } from '../approval-line-dsl';
 import {
   approvalRequestTypeEnum,
   approvalStatusEnum,
@@ -12,17 +13,18 @@ import {
 
 /**
  * 결재/문서/증명서 도메인 entity (database.ts Row 1:1, snake_case).
- * approval_lines.conditions/default_line 은 jsonb 배열. documents.expires_at 은 DB date.
+ * approval_lines.conditions/default_line 은 jsonb 배열 — WI-034 조건 분기 DSL(approval-line-dsl.ts).
+ * documents.expires_at 은 DB date.
  */
 
-// approval_lines
+// approval_lines (conditions/default_line = 조건 분기 DSL, WI-034)
 export const approvalLineSchema = z.object({
   id: uuidSchema,
   tenant_id: uuidSchema,
   name: z.string(),
   request_type: approvalRequestTypeEnum,
-  conditions: z.array(z.unknown()),
-  default_line: z.array(z.unknown()),
+  conditions: z.array(conditionRuleSchema),
+  default_line: approvalStepArraySchema,
   is_active: z.boolean(),
   created_at: isoTimestampSchema,
   updated_at: isoTimestampSchema,

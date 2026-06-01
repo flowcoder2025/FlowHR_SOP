@@ -2,15 +2,16 @@
 
 import { getSessionProfile } from '@/lib/auth/session';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { approvalLinesPayloadSchema } from '@flowhr/schemas';
 import { patchTenantSetting } from '@/lib/tenant-settings/actions';
 import {
   buildApprovalLinesPayload,
   buildCompanyPayload,
   buildLeavePolicyPayload,
   buildWorkPolicyPayload,
+  collectSpecificEmployeeIds,
   normalizeApplyAt,
   type ApprovalLineDraft,
-  type ApprovalLineOriginal,
   type LeaveTypeDraft,
 } from '@/lib/tenant-settings/form-data';
 
@@ -157,19 +158,46 @@ export async function saveApprovalLinesAction(_prev: SaveState, formData: FormDa
   const profile = await getSessionProfile();
   if (!profile?.tenantId) return { status: 'error', messageKey: 'action.save_failed' };
 
-  // 조건/단계 원본은 클라이언트(위조 가능) 대신 DB(RLS)에서 권위 조회 → 같은 테넌트 내 조건 변조/삭제 차단.
-  // 조회 실패 시 원본 미상 → conditions/default_line 이 빈 배열로 저장돼 기존 조건이 소실(fail-open)되므로 중단.
+  // WI-034: 사용자가 conditions/default_line(조건 분기 DSL)을 직접 편집한다.
+  const drafts = edited as ApprovalLineDraft[];
+  const payload = buildApprovalLinesPayload(drafts);
+
+  // 1. strict DSL 검증(서버 권위). patchTenantSetting 도 재검증하나, 여기서 명시적 사용자 에러를 준다.
+  const parsed = approvalLinesPayloadSchema.safeParse(payload);
+  if (!parsed.success) return { status: 'error', messageKey: 'action.approval_invalid' };
+
   const supabase = await createSupabaseServerClient();
-  const { data: existing, error: fetchError } = await supabase
-    .from('approval_lines')
-    .select('id, conditions, default_line')
-    .eq('tenant_id', profile.tenantId);
-  if (fetchError) return { status: 'error', messageKey: 'action.save_failed' };
 
-  const payload = buildApprovalLinesPayload(
-    edited as ApprovalLineDraft[],
-    (existing ?? []) as ApprovalLineOriginal[],
+  // 2. unknown line id fail-closed — 제출된 id 가 현재 테넌트 라인에 없으면 거부(클라 위조/예약 후 삭제 방어).
+  const submittedIds = parsed.data.lines.map((l) => l.id).filter((id): id is string => Boolean(id));
+  if (submittedIds.length > 0) {
+    const { data: existing, error: fetchError } = await supabase
+      .from('approval_lines')
+      .select('id')
+      .eq('tenant_id', profile.tenantId);
+    if (fetchError) return { status: 'error', messageKey: 'action.save_failed' };
+    const existingIds = new Set((existing ?? []).map((r) => r.id));
+    if (submittedIds.some((id) => !existingIds.has(id))) {
+      return { status: 'error', messageKey: 'action.approval_unknown_line' };
+    }
+  }
+
+  // 3. specific_employee_id 테넌트 소속 검증 — uuid 형식만으론 cross-tenant 직원 지정을 못 막는다.
+  const empIds = collectSpecificEmployeeIds(drafts);
+  if (empIds.length > 0) {
+    const { data: emps, error: empError } = await supabase
+      .from('employees')
+      .select('id')
+      .eq('tenant_id', profile.tenantId)
+      .in('id', empIds);
+    if (empError) return { status: 'error', messageKey: 'action.save_failed' };
+    const found = new Set((emps ?? []).map((r) => r.id));
+    if (empIds.some((id) => !found.has(id))) {
+      return { status: 'error', messageKey: 'action.approval_unknown_employee' };
+    }
+  }
+
+  return toState(
+    await patchTenantSetting({ tab: 'approval_lines', payload: parsed.data, apply_at: at.applyAt }),
   );
-
-  return toState(await patchTenantSetting({ tab: 'approval_lines', payload, apply_at: at.applyAt }));
 }

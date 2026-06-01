@@ -90,27 +90,69 @@ describe('leavePolicyPayloadSchema', () => {
   });
 });
 
-describe('approvalLinesPayloadSchema', () => {
-  it('id 없는 신규 라인(insert) 통과 + is_active 기본 true', () => {
+describe('approvalLinesPayloadSchema (WI-034 DSL 강화)', () => {
+  const defaultStep = { order: 1, approver_role: 'tenant_manager', dept_scope: 'own_team' } as const;
+  const ceoStep = { order: 1, approver_role: 'tenant_super', dept_scope: 'all' } as const;
+
+  it('id 없는 신규 활성 라인(insert) 통과 + is_active 기본 true', () => {
     const r = approvalLinesPayloadSchema.safeParse({
-      lines: [{ name: '휴가결재', request_type: 'leave' }],
+      lines: [{ name: '휴가결재', request_type: 'leave', default_line: [defaultStep] }],
     });
     expect(r.success).toBe(true);
     if (r.success) expect(r.data.lines[0]!.is_active).toBe(true);
   });
-  it('id 있는 기존 라인(update) 통과', () => {
+  it('활성 라인인데 default_line 이 비면 거부(결재자 없음 차단)', () => {
+    expect(
+      approvalLinesPayloadSchema.safeParse({ lines: [{ name: 'x', request_type: 'leave' }] }).success,
+    ).toBe(false);
+  });
+  it('비활성 라인은 default_line 없이도 통과', () => {
     expect(
       approvalLinesPayloadSchema.safeParse({
         lines: [{ id: '11111111-1111-4111-8111-111111111111', name: 'x', request_type: 'leave', is_active: false }],
       }).success,
     ).toBe(true);
   });
+  it('조건 분기 DSL(5일 이상=대표) 통과', () => {
+    expect(
+      approvalLinesPayloadSchema.safeParse({
+        lines: [
+          {
+            name: '휴가결재',
+            request_type: 'leave',
+            conditions: [{ field: 'leave_days', op: '>=', value: 5, line: [ceoStep] }],
+            default_line: [defaultStep],
+          },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+  it('malformed 조건(잘못된 op) 거부', () => {
+    expect(
+      approvalLinesPayloadSchema.safeParse({
+        lines: [
+          {
+            name: 'x',
+            request_type: 'leave',
+            conditions: [{ field: 'leave_days', op: 'gte', value: 5, line: [ceoStep] }],
+            default_line: [defaultStep],
+          },
+        ],
+      }).success,
+    ).toBe(false);
+  });
   it('잘못된 request_type 거부', () => {
-    expect(approvalLinesPayloadSchema.safeParse({ lines: [{ name: 'x', request_type: 'nope' }] }).success).toBe(false);
+    expect(
+      approvalLinesPayloadSchema.safeParse({
+        lines: [{ name: 'x', request_type: 'nope', default_line: [defaultStep] }],
+      }).success,
+    ).toBe(false);
   });
   it('잘못된 id(uuid 아님) 거부', () => {
     expect(
-      approvalLinesPayloadSchema.safeParse({ lines: [{ id: 'not-uuid', name: 'x', request_type: 'leave' }] }).success,
+      approvalLinesPayloadSchema.safeParse({
+        lines: [{ id: 'not-uuid', name: 'x', request_type: 'leave', default_line: [defaultStep] }],
+      }).success,
     ).toBe(false);
   });
 });

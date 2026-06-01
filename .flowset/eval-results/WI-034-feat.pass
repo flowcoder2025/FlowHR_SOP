@@ -1,0 +1,19 @@
+WI-034-feat 결재라인 조건 분기 (ST-054) — 듀얼검증 통합 판정
+
+VERDICT: PASS_BOTH
+- evaluator: PASS 8.72/10 (기능 8.6 / 품질 8.8 / 테스트 8.8 / 계약 8.7 — 전 축 ≥ 7.5)
+- codex: PASS (1차 P2×2 + P3×2 → hotfix 94742e1 → 재검증 PASS, P0/P1 없음)
+
+통합: review-system.md §4 매트릭스 PASS_BOTH → 머지 승인 (project.md §1-1).
+
+hotfix 정정(머지 전):
+- [codex P2] evaluateCondition isValidActual 가드(NaN/빈문자/잘못된 enum actual 과매칭 차단)
+- [codex P2] refineStepOrder 위치 정합(steps[i].order===i+1, 역순 거부)
+- [codex P3] form-data 숫자 배열 strictNumber(boolean/비숫자 coerce 차단)
+- [codex P3] entity default_line → approvalStepArraySchema(order refine 정합)
+- [evaluator P2] 라인 삭제 → 기존 id 라인 비활성화(is_active=false) 항목 제출(apply 반영)
+
+검증: turbo lint/typecheck/test/build 21/21 + 단위(approval-line-dsl 27 + tenant-settings 30 + form-data 22, schemas 110 / web 84) + openapi 54 defs.
+
+NON_BLOCKING (KI 적재): KI-120(P3 mig40 affected-row-0)/KI-121(P3 ST-046 소비 재검증)/KI-122(P3 matrix.json entity status drift).
+日: 2026-06-01

@@ -1887,7 +1887,7 @@ components:
             - outside
         status:
           type: string
-          enum: &a2
+          enum: &a4
             - draft
             - pending
             - in_progress
@@ -2142,7 +2142,7 @@ components:
           type: string
         request_type:
           type: string
-          enum: &a1
+          enum: &a3
             - leave
             - attendance_mod
             - certificate
@@ -2150,10 +2150,96 @@ components:
             - document
         conditions:
           type: array
-          items: {}
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                enum: &a6
+                  - leave_days
+                  - department_id
+                  - employment_type
+                  - position
+                  - job_title
+              op:
+                type: string
+                enum: &a7
+                  - ==
+                  - "!="
+                  - ">="
+                  - <=
+                  - ">"
+                  - <
+                  - in
+                  - not_in
+              value:
+                anyOf:
+                  - type: number
+                  - type: string
+                  - type: array
+                    items:
+                      anyOf:
+                        - type: number
+                        - type: string
+              line:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    order:
+                      type: integer
+                      exclusiveMinimum: 0
+                    approver_role:
+                      type: string
+                      enum: &a1
+                        - tenant_super
+                        - tenant_hr_admin
+                        - tenant_manager
+                        - employee
+                    dept_scope:
+                      type: string
+                      enum: &a2
+                        - own_team
+                        - parent
+                        - all
+                        - specific
+                    specific_employee_id:
+                      type: string
+                      format: uuid
+                  required:
+                    - order
+                    - approver_role
+                    - dept_scope
+                  additionalProperties: false
+                minItems: 1
+            required:
+              - field
+              - op
+              - value
+              - line
+            additionalProperties: false
         default_line:
           type: array
-          items: {}
+          items:
+            type: object
+            properties:
+              order:
+                type: integer
+                exclusiveMinimum: 0
+              approver_role:
+                type: string
+                enum: *a1
+              dept_scope:
+                type: string
+                enum: *a2
+              specific_employee_id:
+                type: string
+                format: uuid
+            required:
+              - order
+              - approver_role
+              - dept_scope
+            additionalProperties: false
         is_active:
           type: boolean
         created_at:
@@ -2186,7 +2272,7 @@ components:
           format: uuid
         request_type:
           type: string
-          enum: *a1
+          enum: *a3
         request_object_id:
           type:
             - string
@@ -2198,7 +2284,7 @@ components:
             - "null"
         status:
           type: string
-          enum: *a2
+          enum: *a4
         current_step:
           type: integer
         total_steps:
@@ -2499,7 +2585,7 @@ components:
           format: uuid
         type:
           type: string
-          enum: &a3
+          enum: &a5
             - terms
             - privacy
         version:
@@ -2621,7 +2707,7 @@ components:
       properties:
         type:
           type: string
-          enum: *a3
+          enum: *a5
         version:
           type: string
           minLength: 1
@@ -2674,7 +2760,7 @@ components:
       properties:
         type:
           type: string
-          enum: *a3
+          enum: *a5
         documentId:
           type: string
           format: uuid
@@ -2841,15 +2927,80 @@ components:
                 maxLength: 100
               request_type:
                 type: string
-                enum: *a1
+                enum: *a3
               conditions:
                 type: array
-                items: {}
-                default: &a4 []
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                      enum: *a6
+                    op:
+                      type: string
+                      enum: *a7
+                    value:
+                      anyOf:
+                        - type: number
+                        - type: string
+                        - type: array
+                          items:
+                            anyOf:
+                              - type: number
+                              - type: string
+                    line:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          order:
+                            type: integer
+                            exclusiveMinimum: 0
+                          approver_role:
+                            type: string
+                            enum: *a1
+                          dept_scope:
+                            type: string
+                            enum: *a2
+                          specific_employee_id:
+                            type: string
+                            format: uuid
+                        required:
+                          - order
+                          - approver_role
+                          - dept_scope
+                        additionalProperties: false
+                      minItems: 1
+                  required:
+                    - field
+                    - op
+                    - value
+                    - line
+                  additionalProperties: false
+                default: []
               default_line:
                 type: array
-                items: {}
-                default: *a4
+                items:
+                  type: object
+                  properties:
+                    order:
+                      type: integer
+                      exclusiveMinimum: 0
+                    approver_role:
+                      type: string
+                      enum: *a1
+                    dept_scope:
+                      type: string
+                      enum: *a2
+                    specific_employee_id:
+                      type: string
+                      format: uuid
+                  required:
+                    - order
+                    - approver_role
+                    - dept_scope
+                  additionalProperties: false
+                default: []
               is_active:
                 type: boolean
                 default: true

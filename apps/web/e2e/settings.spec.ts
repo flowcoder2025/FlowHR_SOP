@@ -77,4 +77,33 @@ test.describe('TA-13 회사 설정 (ST-053)', () => {
       'page',
     );
   });
+
+  // WI-034 결재라인 조건 분기 편집기 — 라인/조건/단계 컨트롤 렌더 + 저장(즉시) 라운드트립.
+  // 실제 요청시점 분기 적용(approvals 생성)은 ST-046(Sprint 6, EM-03 휴가신청 의존)이라 본 E2E 범위 밖.
+  test('결재라인 탭에서 조건 분기 편집기 렌더 + 5일 이상=대표 조건 저장 (admin 시드 필요)', async ({
+    page,
+  }) => {
+    test.skip(!enabled, 'E2E_ADMIN_EMAIL/PASSWORD 미설정 — tenant 관리자 시드 필요');
+    await loginAsAdmin(page);
+    await page.goto('/ko/admin/settings?tab=approval_lines');
+
+    // 라인 추가 → 편집기(기본 결재선 + 단계 추가 + 조건 추가)가 렌더.
+    await page.getByRole('button', { name: '라인 추가' }).click();
+    await expect(page.getByText('기본 결재선')).toBeVisible();
+    await expect(page.getByRole('button', { name: '+ 단계 추가' })).toBeVisible();
+
+    await page.locator('input[placeholder="휴가 기본 결재선"]').first().fill('휴가 결재선');
+
+    // 조건 추가 → 필드/연산자/비교값 컨트롤이 나타남.
+    await page.getByRole('button', { name: '+ 조건 추가' }).click();
+    await expect(page.getByText('필드').first()).toBeVisible();
+    await expect(page.getByText('비교값').first()).toBeVisible();
+
+    // 비교값(휴가 일수 >= 5) 입력 후 즉시 저장.
+    await page.locator('input[type="number"]').first().fill('5');
+    await page.getByRole('button', { name: '저장', exact: true }).click();
+
+    // 즉시 적용 성공 알림(부분 검증) — 실패 시 approval_invalid 등 에러 알림.
+    await expect(page.getByText('변경 사항이 즉시 적용되었습니다.')).toBeVisible();
+  });
 });
