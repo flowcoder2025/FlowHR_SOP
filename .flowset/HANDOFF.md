@@ -1,10 +1,38 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-01 batch N (WI-033-feat TA-13 회사설정 UI 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #52. 9탭 셸 + P0 4탭 폼 + 즉시/예약 + read-only. ★ codex 가 evaluator 통과분에서 P1×2[approval 조건 클라위조 / scheduled UPDATE RLS] 검출 → 듀얼검증 가치 재실증. KI-117~119 등재, KI-113 사용자 결정 현행 유지).
-> **신규 세션 첫 작업**: 본 문서 **§-0n (2026-06-01 batch N)** 정독 → **WI-034-feat 결재라인 조건 분기** 착수(`approval_lines.conditions` jsonb 평가엔진 + 조건트리 UI + E2E). WI-033 이 conditions/default_line 을 **편집 없이 보존**(서버 DB 권위 병합)만 했으므로 WI-034 가 조건 DSL 편집/평가 소유. ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-06-01 batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-01 batch O (WI-034-feat 결재라인 조건 분기 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #53. **DB/RLS 변경 없음**. approval_lines.conditions/default_line 조건 분기 DSL(snake_case) + 순수 평가엔진 `resolveApprovalLine` + 조건 트리 편집 UI. ★ codex 가 actual 무효값 과매칭(NaN/빈문자/잘못된 enum) + order 위치정합 + 숫자 coerce 우회를 P2/P3 로 검출 → hotfix. KI-120~122 등재).
+> **신규 세션 첫 작업**: 본 문서 **§-0o (2026-06-01 batch O)** 정독 → **WI-035-feat OP-04 등록 API** 착수(check-domain/check-business-number 검증 + tenant_drafts upsert + 최종 등록 트랜잭션[tenants/subscriptions/tenant_settings/admin user 동시 INSERT] + 관리자 초대). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-01 batch N (WI-033 TA-13 설정 UI, §-0n) / batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0n. 2026-06-01 batch N 세션 진척 — **신규 세션 여기부터**
+## -0o. 2026-06-01 batch O 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-034-feat 결재라인 조건 분기 (ST-054, PR #53 머지)
+
+핸드오프 정독 → **codex 2라운드 협의**(범위 경계 + field-op 매트릭스 확정) → 구현 → 듀얼검증 PASS_BOTH → auto-merge. **DB/RLS 변경 없음**(§5 게이트 비대상).
+
+**codex 협의 확정 설계**:
+- DSL SSOT = `packages/schemas/src/approval-line-dsl.ts`(신규) — zod schema + 타입 + 순수 평가엔진 co-locate. **snake_case**(entity 컨벤션, schemas.md camelCase 초안 폐기 + 변경이력 기록).
+- step `{order, approver_role(테넌트 4역할만 — operator_* 제외), dept_scope, specific_employee_id}`: `specific` ↔ employee id 상호강제. order는 **배열 위치 정합**(steps[i].order===i+1).
+- condition `{field(enum 5: leave_days/department_id/employment_type/position/job_title), op, value, line.min(1)}`: field-op 매트릭스(숫자op=leave_days 전용, 문자 field=`==,!=,in,not_in`, employment_type enum 강제), 숫자 coerce 금지/NaN 거부.
+- `resolveApprovalLine(rawLine, ctx)`: 첫 매칭 조건 line(없으면 default_line), **방어적 parse**(malformed condition skip, parse 실패→빈 steps), **미존재/무효 ctx field→false**(NaN/빈문자/잘못된 enum 과매칭 차단 — !=/not_in 방어).
+- 스키마 승격: tenant-settings `approvalLinePayloadSchema` + `entities/approval.ts` 의 conditions/default_line 을 `z.unknown()` → strict DSL. 활성 라인 default_line≥1 강제. openapi 54 defs 유지(zod-to-openapi ZodEffects 정상).
+- 앱 write: `actions.ts` strict 사전검증 + **unknown line id fail-closed**(현 테넌트 부재 id 거부) + **specific_employee_id 테넌트 소속 검증**(employees in 조회). queries 결재자 picker(employees/departments id,name RLS 조회), approval_lines data = `{lines, employees, departments}`.
+- UI: 조건 트리 편집기(라인/조건/단계 + 부서·직원 picker, useActionState 유지). **라인 삭제 = 기존 id 라인 is_active=false 비활성화 항목 제출**(mig 40 apply 는 제출 lines[]만 순회 — 단순 배열 제거는 미반영이므로 initialRef 스냅샷으로 비활성화 항목 추가).
+- audit: 정의 변경은 mig 29 `audit_row_change` 트리거가 before/after 자동 기록(추가 코드 불요). SLA 제외(스키마 부재).
+
+**★ 듀얼검증 (codex 가 evaluator 통과분에서 P2 검출)**: evaluator **PASS 8.72**(기능8.6/품질8.8/테스트8.8/계약8.7) / codex 1차 **P0/P1 없음** + P2×2(`evaluateCondition` actual 무효값 과매칭[NaN→!=/not_in true] / `refineStepOrder` 집합검사만→역순 저장 통과) + P3×2(form-data 숫자 `Number(true)=1` coerce / entity default_line order refine 미적용) + evaluator P2(라인 삭제 동선) → **hotfix `94742e1`**(isValidActual 가드 / order 위치정합 / strictNumber / entity approvalStepArraySchema / 라인삭제 비활성화) → **재검증 PASS** → PASS_BOTH. turbo 21/21 + 단위(approval-line-dsl 27 신규 / tenant-settings 30 / form-data 22, schemas 110 / web 84) + openapi 54.
+
+### ⚠️ 신규 KI (batch O)
+- **KI-120 (P3)** — mig 40 `_apply_claimed` id-update affected-row-0 silent success(예약 후 라인 삭제). 전 target 공통(데이터 무해, 보고값 부정확, KI-114 동류). 예약 엔진 리팩토링(KI-116) 시.
+- **KI-121 (P3)** — ST-046(Sprint 6) 실 요청시점 소비 시 `resolveApprovalLine` 방어 parse 외 specific_employee_id 테넌트 소속 **재검증** + approver_role 해석 필요(저장 시점 검증은 사후 직원 퇴사/이동 stale 가능).
+- **KI-122 (P3)** — matrix.json ApprovalLine status(C/U/D missing) WI-032/033/034 미반영(전역 entity status drift, project.md §3). Phase 7 종료 시 일괄 갱신.
+
+### 다음 세션 첫 작업 — WI-035-feat OP-04 등록 API (ST-006)
+- check-domain/check-business-number 실시간 중복검증(≤300ms) + tenant_drafts upsert(임시저장/재진입, mig 36 `ux_tenant_drafts_one_open_per_operator`) + 최종 등록 **트랜잭션**(tenants + subscriptions + tenant_settings + admin user 동시 INSERT) + 관리자 초대(WI-020-6 `createInvitation` 재사용, Resend 미설정→URL 반환 KI-103). 결재라인 초기값은 WI-034 DSL 사용 가능.
+- 이어서 WI-036(OP-04 마법사 UI, Stepper WI-030) → 037(OP-02 목록) → 038(OP-03 상세).
+- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+
+## -0n. 2026-06-01 batch N 세션 진척
 
 ### 완료 — WI-033-feat TA-13 회사설정 UI (PR #52 머지)
 
