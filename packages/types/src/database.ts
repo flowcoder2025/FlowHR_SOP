@@ -1,7 +1,3 @@
-// 자동 생성 파일 — 직접 편집 금지.
-// 생성: supabase gen types typescript (원격 staging nwcttwuvdnelfbpjeqzr, supabase MCP)
-// 재생성: 스키마 변경 후 mcp__supabase__generate_typescript_types 결과를 본 파일로 갱신.
-
 export type Json =
   | string
   | number
@@ -2509,6 +2505,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _apply_claimed_scheduled_setting_change: {
+        Args: { p_id: string }
+        Returns: {
+          applied_at: string | null
+          apply_at: string
+          attempt_count: number
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          last_attempt_at: string | null
+          payload: Json
+          status: Database["public"]["Enums"]["scheduled_setting_change_status"]
+          target: string
+          tenant_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "scheduled_setting_changes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       accept_invitation: {
         Args: { p_token_hash: string; p_user_id: string }
         Returns: {
@@ -2516,6 +2537,31 @@ export type Database = {
           target_role: string
           tenant_id: string
         }[]
+      }
+      apply_one_scheduled_setting_change: {
+        Args: { p_id: string }
+        Returns: {
+          applied_at: string | null
+          apply_at: string
+          attempt_count: number
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          last_attempt_at: string | null
+          payload: Json
+          status: Database["public"]["Enums"]["scheduled_setting_change_status"]
+          target: string
+          tenant_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "scheduled_setting_changes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       claim_due_scheduled_setting_changes: {
         Args: { p_limit?: number }
@@ -2577,6 +2623,14 @@ export type Database = {
           out_attempt_count: number
           out_locked_until: string
         }[]
+      }
+      recover_stale_scheduled_setting_changes: {
+        Args: { p_max_attempts?: number; p_stale_after?: string }
+        Returns: number
+      }
+      run_due_scheduled_setting_changes: {
+        Args: { p_limit?: number }
+        Returns: number
       }
     }
     Enums: {

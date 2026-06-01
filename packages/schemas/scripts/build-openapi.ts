@@ -40,6 +40,10 @@ import {
   legalDocumentSchema, userConsentSchema,
   consentInputSchema, legalDocumentPublishSchema, requiredConsentSchema,
 } from '../src/entities/compliance';
+import {
+  companySettingsPayloadSchema, workPolicyPayloadSchema, leavePolicyPayloadSchema,
+  approvalLinesPayloadSchema, settingsPatchInputSchema,
+} from '../src/tenant-settings';
 
 // ── 공통/인증 utility 스키마 ───────────────────────────────────
 registry.register('Login', loginSchema);
@@ -105,6 +109,13 @@ registry.register('UserConsent', userConsentSchema);
 registry.register('ConsentInput', consentInputSchema);
 registry.register('LegalDocumentPublish', legalDocumentPublishSchema);
 registry.register('RequiredConsent', requiredConsentSchema);
+
+// ── TA-13 회사 설정 PATCH payload DTO (WI-032, P0 4탭) ──────────
+registry.register('CompanySettingsPayload', companySettingsPayloadSchema);
+registry.register('WorkPolicyPayload', workPolicyPayloadSchema);
+registry.register('LeavePolicyPayload', leavePolicyPayloadSchema);
+registry.register('ApprovalLinesPayload', approvalLinesPayloadSchema);
+registry.register('SettingsPatchInput', settingsPatchInputSchema);
 
 const generator = new OpenApiGeneratorV31(registry.definitions);
 const document = generator.generateDocument({

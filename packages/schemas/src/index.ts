@@ -13,6 +13,7 @@ export const registry = new OpenAPIRegistry();
 export { z };
 export * from './common';
 export * from './auth';
+export * from './tenant-settings';
 export * from './entities/enums';
 export * from './entities/operator';
 export * from './entities/hr';

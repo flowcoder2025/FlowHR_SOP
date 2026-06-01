@@ -183,6 +183,10 @@
 | POST | `/document-templates` | super/hr_admin | body: `{key, labelKo, templateBody, variables[], format}` |
 | GET | `/audit-logs?from&to&event&userId&result&page` | super (전체), hr_admin (일부) |
 
+> **구현 노트 (WI-032, 2026-06-01)**: 위 REST 경로는 도메인 계약. 실제 구현은 기존 패턴대로 **Next.js Server Action + `apps/web/lib/tenant-settings/{queries,actions}`** (REST route handler 미신설, `app/api/` 부재). `getTenantSettings()`가 9탭 envelope(탭별 permission/implemented/data/pending) 반환, `patchTenantSetting()`가 P0 4탭(company/work_policy/leave_policy/approval_lines)만 변경 — `scheduled_setting_changes` 큐에 적재(INSERT RLS 가 P0 4 target 으로 제한, mig 41) 후 즉시(apply_at≤now: `apply_one_scheduled_setting_change` service_role RPC) 또는 예약(pg_cron `run_due_scheduled_setting_changes` 매분, mig 40). roles/notifications/document_templates/security PATCH 와 audit_logs 페이지네이션은 후속 WI. `leave_policy.grant_basis`는 tenant_settings 전용 컬럼 부재로 본 WI 제외(leave_types 만 처리, KI-112).
+>
+> **권한 매트릭스 (구현 — 와이어프레임 TA-13 §1/§6 + RLS 정합, 최소권한)**: 위 표의 GET `hr_admin (회사정보/근무/휴가/문서양식만)` 표기는 본 구현에서 다음으로 구체화한다 — **편집(PATCH)**: super/hr_admin × P0 4탭. **조회(GET)**: super 전탭 / hr_admin 은 `security`·`roles` 제외(audit_logs 포함 — RLS `audit_logs_read=is_tenant_admin` + 본 표 `/audit-logs hr_admin 일부` 정합) / manager 는 `security`·`roles`·`audit_logs` 제외. 와이어프레임 §2 state4 의 hr_admin 보안 read-only 진입은 민감 정책 raw 노출 회피로 본 WI 미적용(KI-113, WI-033/사용자 재확인).
+
 ## TA-14 외부 연동
 
 | 메서드 | 경로 | 권한 |
@@ -202,3 +206,4 @@
 | 일자 | 변경 | 사유 |
 |------|------|------|
 | 2026-05-15 | 초안 — 14 화면 × 약 130 엔드포인트 | Phase 4 진입 |
+| 2026-06-01 | TA-13 구현 노트 추가 (WI-032 — Server Action + scheduled_setting_changes 큐 + pg_cron apply 엔진) | Sprint 2 회사설정 API 착수 |

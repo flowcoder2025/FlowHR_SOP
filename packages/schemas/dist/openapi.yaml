@@ -2703,6 +2703,182 @@ components:
         - title
         - effectiveDate
         - summaryMd
+    CompanySettingsPayload:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        ceo_name:
+          type: string
+          maxLength: 100
+        contact:
+          type: string
+          maxLength: 50
+        email:
+          type: string
+          maxLength: 200
+          format: email
+        address:
+          type: string
+          maxLength: 500
+        industry:
+          type: string
+          maxLength: 100
+        logo_url:
+          type: string
+          maxLength: 1000
+          format: uri
+      additionalProperties: false
+    WorkPolicyPayload:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        standard_clock_in:
+          type:
+            - string
+            - "null"
+          pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+        standard_clock_out:
+          type:
+            - string
+            - "null"
+          pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+        late_threshold:
+          type:
+            - string
+            - "null"
+          pattern: ^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$
+        break_minutes_default:
+          type: integer
+          minimum: 0
+          maximum: 1440
+        weekly_max_hours:
+          type: integer
+          minimum: 0
+          maximum: 168
+        applicable_departments:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          default: []
+        applied_from:
+          type:
+            - string
+            - "null"
+          format: date
+      required:
+        - name
+        - break_minutes_default
+        - weekly_max_hours
+      additionalProperties: false
+    LeavePolicyPayload:
+      type: object
+      properties:
+        leave_types:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                minLength: 1
+                maxLength: 50
+              label_ko:
+                type:
+                  - string
+                  - "null"
+                maxLength: 100
+              default_days:
+                type: integer
+                minimum: 0
+                maximum: 365
+              is_paid:
+                type: boolean
+              carryover_allowed:
+                type: boolean
+              evidence_required:
+                type: boolean
+              sort_order:
+                type: integer
+                minimum: 0
+                maximum: 9999
+            required:
+              - key
+              - default_days
+              - is_paid
+              - carryover_allowed
+              - evidence_required
+              - sort_order
+            additionalProperties: false
+        delete_keys:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+        - leave_types
+      additionalProperties: false
+    ApprovalLinesPayload:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+                minLength: 1
+                maxLength: 100
+              request_type:
+                type: string
+                enum: *a1
+              conditions:
+                type: array
+                items: {}
+                default: &a4 []
+              default_line:
+                type: array
+                items: {}
+                default: *a4
+              is_active:
+                type: boolean
+                default: true
+            required:
+              - name
+              - request_type
+            additionalProperties: false
+      required:
+        - lines
+      additionalProperties: false
+    SettingsPatchInput:
+      type: object
+      properties:
+        tab:
+          type: string
+          enum:
+            - company
+            - work_policy
+            - leave_policy
+            - approval_lines
+        payload:
+          type: object
+          additionalProperties: {}
+        apply_at:
+          type: string
+          format: date-time
+      required:
+        - tab
+        - payload
   parameters: {}
 paths: {}
 webhooks: {}

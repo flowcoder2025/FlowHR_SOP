@@ -1,0 +1,21 @@
+WI-032-feat TA-13 회사설정 API (GET 9탭 + PATCH P0 4탭 + 적용일 즉시/예약 pg_cron 엔진) — 듀얼검증 통합 판정: PASS_BOTH
+
+- evaluator: PASS 8.45/10 (기능완성도 8.5 / 코드품질 8.5 / 테스트 8.0 / 계약준수 8.5, 각 축 ≥7.5) — WI-032-feat.eval.md. 차단 ISSUE 0.
+- codex: 1차 WARNING(P1 hr_admin 권한 과다 + P2 큐 INSERT target 미제한) → hotfix 31c9271 → 재검증 PASS — WI-032-feat.codex.md
+- verdict: PASS_BOTH (review-system.md §4: PASS + PASS)
+
+핵심 산출물:
+- mig 40 예약 적용 엔진: audit_row_change 시스템 actor fallback(KI-110 resolved) / claim_due backoff+cap / apply_one(즉시) / _apply_claimed(target apply) / recover_stale(15분) / run_due(cron) / pg_cron 설치+스케줄. 신규 5함수 anon/auth EXECUTE revoke(KI-109 클래스 재발 없음).
+- mig 41 hotfix: scheduled_setting_changes INSERT RLS 를 P0 4 target 으로 제한(codex P2).
+- packages/schemas tenant-settings.ts: P0 4탭 payload zod(snake_case, strict) + 단위 27. OpenAPI 54 defs.
+- apps/web/lib/tenant-settings: queries(9탭 envelope) + actions(즉시/예약) + permissions(순수 권한 + 단위 테스트).
+- database.ts 재생성(apply_one/run_due/recover_stale 함수 타입).
+
+검증 (staging 실증 + 빌드):
+- staging DB 엔진 전 시나리오 실증: company 즉시 apply + audit actor=예약자/system:scheduled-settings(KI-110) / work_policy insert·update 중복없음 / leave_policy upsert+delete_keys / approval_lines insert+update / 미래예약 no-op / run_due due만 / 실패→pending 재시도·소진→failed / stale 복구(pending·failed·비stale제외). proacl {postgres,service_role}만.
+- turbo lint/typecheck/test/build 21/21 PASS. schemas 단위 80(신규 tenant-settings 27) + web 권한 매트릭스 단위 + 기존 회귀 무손상.
+
+★ 듀얼검증 가치: codex 가 evaluator(PASS) 가 비차단 처리한 권한 과다(P1)+큐 오염(P2)을 검출 → hotfix 후 PASS_BOTH.
+
+KI: KI-110 resolved(audit 시스템 actor). 신규 KI-112(grant_basis 저장 위치)/113(hr_admin 보안 read-only defer)/114(apply RPC status 보고)/115(pgTAP·actions 테스트)/116(audit_row_change 재정의 드리프트).
+최종 코드 커밋 31c9271 — 본 마커는 그 후손.
