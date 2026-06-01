@@ -1,0 +1,31 @@
+WI-033-feat TA-13 회사설정 UI (9탭 셸 + P0 4탭 폼 + 즉시/예약 + read-only) — 듀얼검증 통합 판정: PASS_BOTH
+
+- evaluator: 1차 PASS 8.75/10 → 정정 후 재검증 PASS 8.63/10 (기능 9.0 / 품질 9.0 / 테스트 7.5 / 계약 9.0, 각 축 ≥7.5) — WI-033-feat.eval.md. 차단 ISSUE 0.
+- codex: 1차 FAIL(P1×2+P2×2) → hotfix c4f6dcb → 2차 CONDITIONAL(DB 조회 fail-open) → hotfix 8943265 → 3차 PASS.
+- verdict: PASS_BOTH (review-system.md §4: PASS + PASS). 최종 코드 커밋 8943265 — 본 마커는 그 후손.
+
+핵심 산출물:
+- 라우트 (tenant)/admin/settings — 세션+tenant 가드 → getTenantSettings(WI-032) 9탭 envelope → SettingsClient.
+- SettingsPane+VerticalTabs(WI-030) 9탭 셸 + URL ?tab= 동기화(history.replaceState, RSC refetch 회피, 탭별 key remount).
+- P0 4탭 폼(company/work_policy/leave_policy/approval_lines) useActionState — react-hook-form 미도입(기존 8폼 패턴 일관).
+- 즉시/예약 공통 SettingsActionBar(apply_at datetime-local → KST +09:00 정규화, 과거 거부) + 탭별 pending 이력(PendingChangeList).
+- read-only 5탭(ReadonlyPane roles/noti/templates/security + AuditLogsPane 전용) — 9탭 shell 완성.
+- lib/tenant-settings/form-data.ts 순수 변환(단위 17) + tabs.ts + i18n screens.ta-13 ko/en(106 leaf 대칭).
+
+★ 듀얼검증 가치 재실증: codex 가 evaluator(1차 PASS 8.75) 통과분에서 P1 2건(approval 조건 클라 위조 / scheduled UPDATE RLS) + P2 2건(leave FK 실패큐 / JSON 대량삭제) 검출.
+
+정정(codex 검출):
+- P1 approval/leave 원본을 클라이언트 hidden input(위조 가능) 대신 **서버가 DB(RLS tenant 격리)에서 권위 조회** + 세 조회 error fail-closed. original_lines_json/original_keys_json + useRef 제거.
+- P2 parseJsonArrayStrict(손상/위조=invalid 중단) + leave delete_keys 의 leaves/leave_balances FK(on delete restrict) 사전 참조 검사(action.leave_in_use).
+- P3 dead i18n 키 4개 제거 + action.leave_in_use 추가.
+
+KI 분리(범위밖/minor):
+- KI-117 (P2) — scheduled_setting_changes UPDATE RLS cancel 전용 축소(WI-033 UI 미노출, DB 레벨 보안 sweep, KI-109 인접).
+- KI-118 (P3) — apply_at 이중 now+1s 경계(datetime-local 분단위라 실질 무해).
+- KI-119 (P3) — settings mutation E2E admin 시드 부재(KI-089 동류).
+
+사용자 결정: KI-113 현행 유지(hr_admin 보안/역할권한 탭 super 전용 — 민감 raw jsonb 노출 회피, 큐레이션 read-only는 별도 WI).
+
+검증:
+- turbo lint/typecheck/test/build 21/21 PASS. form-data 단위 17(apply_at 정규화/full-replace/delete_keys/conditions 병합·위조-id 음성 + zod 정합). E2E 미인증 가드 2 PASS + admin env-gate 4 skip(KI-119). 빌드 SSG 28/28, /admin/settings 6.83kB.
+- evaluator 독립 검증: form-data 17/17 직접 실행 + tsc EXIT=0 + 위조 벡터 완전 제거 + 데이터 손실 회귀 부재(approval apply 가 omitted 라인 미삭제) 확인.
