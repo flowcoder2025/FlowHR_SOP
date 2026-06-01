@@ -2,7 +2,7 @@
 
 import { Button, Card, CardTitle, Input, Label } from '@flowhr/ui';
 import { useTranslations } from 'next-intl';
-import { useActionState, useRef, useState } from 'react';
+import { useActionState, useState } from 'react';
 import type { PendingChangeSummary } from '@/lib/tenant-settings/queries';
 import { SAVE_INIT, saveApprovalLinesAction } from '../actions';
 import { PendingChangeList } from '../_components/pending-change-list';
@@ -46,10 +46,7 @@ export function ApprovalLinesForm({
   const [state, formAction, submitting] = useActionState(saveApprovalLinesAction, SAVE_INIT);
 
   const initial = (Array.isArray(data) ? data : []) as ApprovalLineData[];
-  // 조건/단계 원본 — 제출 시 id 매칭으로 병합 보존.
-  const originalLines = useRef(
-    initial.map((l) => ({ id: l.id, conditions: l.conditions, default_line: l.default_line })),
-  ).current;
+  // 조건/단계 원본은 제출 시 서버가 DB(RLS)에서 권위 조회해 병합한다(클라 위조 차단). 여기선 표시 전용.
   const [lines, setLines] = useState<ApprovalRow[]>(
     initial.map((l) => ({
       id: l.id,
@@ -78,7 +75,6 @@ export function ApprovalLinesForm({
       <CardTitle>{t('section')}</CardTitle>
       <form action={formAction} className="mt-2 flex flex-col gap-3">
         <input type="hidden" name="lines_json" value={JSON.stringify(submitLines)} />
-        <input type="hidden" name="original_lines_json" value={JSON.stringify(originalLines)} />
 
         <p className="text-[12px] text-text-muted">{t('conditions_readonly')}</p>
 

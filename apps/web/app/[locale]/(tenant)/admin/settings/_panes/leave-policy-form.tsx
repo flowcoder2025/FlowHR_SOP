@@ -2,7 +2,7 @@
 
 import { Button, Card, CardTitle, Input } from '@flowhr/ui';
 import { useTranslations } from 'next-intl';
-import { useActionState, useRef, useState } from 'react';
+import { useActionState, useState } from 'react';
 import type { PendingChangeSummary } from '@/lib/tenant-settings/queries';
 import { SAVE_INIT, saveLeavePolicyAction } from '../actions';
 import { PendingChangeList } from '../_components/pending-change-list';
@@ -58,7 +58,7 @@ export function LeavePolicyForm({
   const [state, formAction, submitting] = useActionState(saveLeavePolicyAction, SAVE_INIT);
 
   const initial = (((data as { leave_types?: LeaveTypeData[] } | null)?.leave_types ?? []) as LeaveTypeData[]).map(toRow);
-  const originalKeys = useRef(initial.map((r) => r.key)).current;
+  // 원본 key 는 제출 시 서버가 DB(RLS)에서 권위 조회해 delete_keys 를 산출한다(클라 위조 차단).
   const [rows, setRows] = useState<LeaveRow[]>(initial);
 
   const update = (i: number, patch: Partial<LeaveRow>) =>
@@ -84,7 +84,6 @@ export function LeavePolicyForm({
       <CardTitle>{t('section')}</CardTitle>
       <form action={formAction} className="mt-2 flex flex-col">
         <input type="hidden" name="leave_types_json" value={JSON.stringify(rows)} />
-        <input type="hidden" name="original_keys_json" value={JSON.stringify(originalKeys)} />
 
         {rows.length === 0 ? (
           <p className="py-4 text-[13px] text-text-muted">{t('empty')}</p>

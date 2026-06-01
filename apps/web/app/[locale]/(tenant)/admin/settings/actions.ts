@@ -1,5 +1,7 @@
 'use server';
 
+import { getSessionProfile } from '@/lib/auth/session';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { patchTenantSetting } from '@/lib/tenant-settings/actions';
 import {
   buildApprovalLinesPayload,
@@ -7,7 +9,6 @@ import {
   buildLeavePolicyPayload,
   buildWorkPolicyPayload,
   normalizeApplyAt,
-  type ApplyMode,
   type ApprovalLineDraft,
   type ApprovalLineOriginal,
   type LeaveTypeDraft,
@@ -18,7 +19,11 @@ import {
  *
  * 기존 8개 폼과 동일한 useActionState 패턴. FormData 의 raw 입력을 `form-data.ts` 순수
  * 빌더로 payload 화한 뒤 WI-032 `patchTenantSetting`(즉시/예약 + apply_one RPC)에 위임한다.
- * 동적 배열(leave_types/approval_lines)은 클라이언트가 JSON hidden input 으로 전송한다.
+ *
+ * 동적 배열(leave_types/approval_lines)은 클라이언트가 **편집 대상만** JSON hidden input 으로
+ * 보낸다. 보존이 필요한 원본(approval conditions/default_line, leave 원본 key)은 클라이언트가
+ * 위조할 수 있으므로 신뢰하지 않고 **서버가 DB(RLS tenant 격리)에서 권위 조회**한다.
+ * (codex 듀얼검증 P1: 클라 original 위조로 같은 테넌트 내 조건 변조/대량삭제 차단.)
  */
 
 /** patchTenantSetting status 그대로(applied=즉시 / scheduled=예약 / pending|applying / failed). */
@@ -31,7 +36,7 @@ export type SaveState =
 
 export const SAVE_INIT: SaveState = { status: 'idle' };
 
-function readMode(formData: FormData): ApplyMode {
+function readMode(formData: FormData): 'now' | 'scheduled' {
   return formData.get('apply_mode') === 'scheduled' ? 'scheduled' : 'now';
 }
 
@@ -51,14 +56,15 @@ function toState(result: Awaited<ReturnType<typeof patchTenantSetting>>): SaveSt
   return { status: 'error', messageKey: 'action.save_failed' };
 }
 
-function parseJsonArray(formData: FormData, key: string): unknown[] {
+/** 동적 배열 hidden JSON 파싱 — 손상/위조(malformed/비배열)는 null(=invalid 중단). 빈/미존재는 빈 배열. */
+function parseJsonArrayStrict(formData: FormData, key: string): unknown[] | null {
   const raw = formData.get(key);
-  if (typeof raw !== 'string' || !raw) return [];
+  if (typeof raw !== 'string' || raw === '') return [];
   try {
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed : null;
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -96,17 +102,68 @@ export async function saveWorkPolicyAction(_prev: SaveState, formData: FormData)
 export async function saveLeavePolicyAction(_prev: SaveState, formData: FormData): Promise<SaveState> {
   const at = resolveApplyAt(formData);
   if ('error' in at) return { status: 'error', messageKey: at.error };
-  const current = parseJsonArray(formData, 'leave_types_json') as LeaveTypeDraft[];
-  const originalKeys = parseJsonArray(formData, 'original_keys_json').map(String);
-  const payload = buildLeavePolicyPayload(current, originalKeys);
+
+  const current = parseJsonArrayStrict(formData, 'leave_types_json');
+  if (current === null) return { status: 'error', messageKey: 'action.save_failed' };
+
+  const profile = await getSessionProfile();
+  if (!profile?.tenantId) return { status: 'error', messageKey: 'action.save_failed' };
+
+  // 원본 key 는 클라이언트(위조 가능) 대신 DB(RLS tenant 격리)에서 권위 조회 → delete_keys 변조 차단.
+  const supabase = await createSupabaseServerClient();
+  const { data: existing } = await supabase
+    .from('leave_types')
+    .select('id, key')
+    .eq('tenant_id', profile.tenantId);
+  const rows = existing ?? [];
+
+  const payload = buildLeavePolicyPayload(
+    current as LeaveTypeDraft[],
+    rows.map((r) => r.key),
+  );
+
+  // 삭제 대상이 leaves/leave_balances 에서 참조되면(FK on delete restrict, mig 13) apply 가
+  // FK 위반으로 실패 큐를 만든다 → enqueue 전 사전 차단(codex 듀얼검증 P2).
+  if (payload.delete_keys && payload.delete_keys.length > 0) {
+    const deleteIds = rows.filter((r) => payload.delete_keys!.includes(r.key)).map((r) => r.id);
+    if (deleteIds.length > 0) {
+      const [leaves, balances] = await Promise.all([
+        supabase.from('leaves').select('id', { count: 'exact', head: true }).in('leave_type_id', deleteIds),
+        supabase
+          .from('leave_balances')
+          .select('id', { count: 'exact', head: true })
+          .in('leave_type_id', deleteIds),
+      ]);
+      if ((leaves.count ?? 0) + (balances.count ?? 0) > 0) {
+        return { status: 'error', messageKey: 'action.leave_in_use' };
+      }
+    }
+  }
+
   return toState(await patchTenantSetting({ tab: 'leave_policy', payload, apply_at: at.applyAt }));
 }
 
 export async function saveApprovalLinesAction(_prev: SaveState, formData: FormData): Promise<SaveState> {
   const at = resolveApplyAt(formData);
   if ('error' in at) return { status: 'error', messageKey: at.error };
-  const edited = parseJsonArray(formData, 'lines_json') as ApprovalLineDraft[];
-  const original = parseJsonArray(formData, 'original_lines_json') as ApprovalLineOriginal[];
-  const payload = buildApprovalLinesPayload(edited, original);
+
+  const edited = parseJsonArrayStrict(formData, 'lines_json');
+  if (edited === null) return { status: 'error', messageKey: 'action.save_failed' };
+
+  const profile = await getSessionProfile();
+  if (!profile?.tenantId) return { status: 'error', messageKey: 'action.save_failed' };
+
+  // 조건/단계 원본은 클라이언트(위조 가능) 대신 DB(RLS)에서 권위 조회 → 같은 테넌트 내 조건 변조/삭제 차단.
+  const supabase = await createSupabaseServerClient();
+  const { data: existing } = await supabase
+    .from('approval_lines')
+    .select('id, conditions, default_line')
+    .eq('tenant_id', profile.tenantId);
+
+  const payload = buildApprovalLinesPayload(
+    edited as ApprovalLineDraft[],
+    (existing ?? []) as ApprovalLineOriginal[],
+  );
+
   return toState(await patchTenantSetting({ tab: 'approval_lines', payload, apply_at: at.applyAt }));
 }

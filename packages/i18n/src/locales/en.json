@@ -278,11 +278,11 @@
         "saved_pending": "Change accepted. It will be applied automatically shortly.",
         "save_failed": "Save failed. Please check your input and try again.",
         "apply_at_required": "Enter a scheduled apply time to schedule the change.",
-        "apply_at_past": "The scheduled apply time must be in the future."
+        "apply_at_past": "The scheduled apply time must be in the future.",
+        "leave_in_use": "Leave types in use cannot be deleted. Clear related leaves and balances first."
       },
       "pending": {
         "title": "Scheduled / pending changes",
-        "empty": "No scheduled or pending changes.",
         "apply_at": "Apply at",
         "attempt": "{count} attempt(s)",
         "status": {
@@ -345,16 +345,13 @@
       "approval": {
         "section": "Approval lines",
         "add": "Add line",
-        "remove": "Deactivate",
         "name": "Line name",
         "name_placeholder": "Default leave approval",
         "request_type": "Request type",
         "is_active": "Active",
-        "conditions": "Conditions",
         "conditions_readonly": "Condition and step configuration is edited in the approval-line branching (later work). They are preserved here.",
         "no_conditions": "No conditions (default line)",
         "condition_count": "{count} condition(s)",
-        "step_count": "{count} step(s)",
         "empty": "No approval lines yet. Start with 'Add line'.",
         "type": {
           "leave": "Leave",
