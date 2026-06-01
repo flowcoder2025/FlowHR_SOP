@@ -247,5 +247,144 @@
         "back_home": "← FlowHR 홈으로"
       }
     }
+  },
+  "screens": {
+    "ta-13": {
+      "title": "회사 설정",
+      "subtitle": "회사 정보·근무·휴가·결재 라인 등 운영 정책을 관리합니다.",
+      "fetch_failed": "설정을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+      "tab": {
+        "company": "회사정보",
+        "work_policy": "근무정책",
+        "leave_policy": "휴가정책",
+        "approval_lines": "결재라인",
+        "roles": "역할권한",
+        "notifications": "알림",
+        "document_templates": "문서양식",
+        "security": "보안",
+        "audit_logs": "감사로그"
+      },
+      "action": {
+        "timing_label": "적용 시점",
+        "now": "즉시 적용",
+        "scheduled": "예약 적용",
+        "apply_at_label": "적용 예정 시각 (KST)",
+        "apply_at_hint": "선택한 시각(한국 표준시)에 자동 적용됩니다. 매분 적용 작업이 도래한 변경을 반영합니다.",
+        "save": "저장",
+        "save_scheduled": "예약 저장",
+        "saving": "저장 중…",
+        "saved_now": "변경 사항이 즉시 적용되었습니다.",
+        "saved_scheduled": "변경 사항이 예약되었습니다. 예정 시각에 자동 적용됩니다.",
+        "saved_pending": "적용을 접수했습니다. 잠시 후 자동 적용됩니다.",
+        "save_failed": "저장에 실패했습니다. 입력값을 확인하고 다시 시도해 주세요.",
+        "apply_at_required": "예약하려면 적용 예정 시각을 입력해 주세요.",
+        "apply_at_past": "적용 예정 시각은 현재보다 미래여야 합니다."
+      },
+      "pending": {
+        "title": "예약·대기 중인 변경",
+        "empty": "예약되었거나 대기 중인 변경이 없습니다.",
+        "apply_at": "적용 예정",
+        "attempt": "시도 {count}회",
+        "status": {
+          "pending": "대기 중",
+          "applying": "적용 중",
+          "failed": "실패"
+        }
+      },
+      "permission": {
+        "read_only": "조회 전용입니다. 편집 기능은 후속 작업에서 제공됩니다.",
+        "none": "현재 권한으로는 이 설정을 조회할 수 없습니다.",
+        "super_only": "이 설정은 최고관리자(super) 전용입니다."
+      },
+      "company": {
+        "section": "회사 정보",
+        "name": "회사명",
+        "name_placeholder": "(주)예시",
+        "ceo_name": "대표자명",
+        "contact": "대표 연락처",
+        "contact_placeholder": "02-0000-0000",
+        "email": "대표 이메일",
+        "email_placeholder": "contact@example.com",
+        "address": "주소",
+        "industry": "업종",
+        "logo_url": "로고 URL",
+        "logo_url_placeholder": "https://…/logo.png"
+      },
+      "work": {
+        "section": "근무 정책",
+        "name": "정책명",
+        "name_placeholder": "기본 근무정책",
+        "standard_clock_in": "표준 출근 시각",
+        "standard_clock_out": "표준 퇴근 시각",
+        "late_threshold": "지각 기준 시각",
+        "late_threshold_hint": "표준 출근 시각을 입력해야 지각 기준을 설정할 수 있습니다.",
+        "time_optional_hint": "표준 근무시간은 선택 입력입니다. 비워 두면 미설정으로 저장됩니다.",
+        "break_minutes_default": "기본 휴게 시간(분)",
+        "weekly_max_hours": "주 최대 근로시간",
+        "applicable_departments": "적용 부서",
+        "departments_hint": "쉼표로 구분해 입력하세요. 비워 두면 전체 부서에 적용됩니다.",
+        "applied_from": "적용 시작일"
+      },
+      "leave": {
+        "section": "휴가 유형",
+        "add": "유형 추가",
+        "remove": "삭제",
+        "key": "키",
+        "key_placeholder": "annual",
+        "label_ko": "표시명",
+        "label_placeholder": "연차",
+        "default_days": "기본 일수",
+        "is_paid": "유급",
+        "carryover_allowed": "이월 허용",
+        "evidence_required": "증빙 필요",
+        "sort_order": "정렬",
+        "empty": "등록된 휴가 유형이 없습니다. '유형 추가'로 시작하세요.",
+        "key_immutable_hint": "키는 저장 후 변경할 수 없습니다. 삭제 후 다시 추가하세요.",
+        "delete_warning": "삭제한 유형은 저장 시 영구 제거됩니다."
+      },
+      "approval": {
+        "section": "결재 라인",
+        "add": "라인 추가",
+        "remove": "비활성화",
+        "name": "라인명",
+        "name_placeholder": "휴가 기본 결재선",
+        "request_type": "요청 유형",
+        "is_active": "활성",
+        "conditions": "조건",
+        "conditions_readonly": "조건·결재 단계 설정은 결재라인 조건 분기(후속 작업)에서 편집합니다. 여기서는 보존됩니다.",
+        "no_conditions": "조건 없음 (기본 결재선)",
+        "condition_count": "조건 {count}개",
+        "step_count": "결재 단계 {count}개",
+        "empty": "등록된 결재 라인이 없습니다. '라인 추가'로 시작하세요.",
+        "type": {
+          "leave": "휴가",
+          "attendance_mod": "근태 정정",
+          "certificate": "증명서",
+          "change_request": "정보 변경",
+          "document": "문서"
+        }
+      },
+      "readonly": {
+        "roles": "역할·권한 매트릭스는 최고관리자(super) 전용 후속 기능에서 관리됩니다.",
+        "notifications": "알림 채널·템플릿 설정 (조회 전용)",
+        "document_templates": "문서 양식 (조회 전용)",
+        "security": "보안 정책 (최고관리자 전용)",
+        "no_data": "표시할 데이터가 없습니다.",
+        "templates_table": {
+          "key": "키",
+          "label": "양식명",
+          "format": "형식"
+        }
+      },
+      "audit": {
+        "section": "감사 로그 (최근 20건)",
+        "time": "시각",
+        "actor": "처리자",
+        "action": "이벤트",
+        "target": "대상",
+        "result": "결과",
+        "empty": "감사 로그가 없습니다."
+      }
+    }
   }
 }
