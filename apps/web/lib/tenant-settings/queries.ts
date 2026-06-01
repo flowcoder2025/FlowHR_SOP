@@ -1,6 +1,14 @@
 import 'server-only';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getSessionProfile } from '@/lib/auth/session';
+import {
+  IMPLEMENTED_TABS,
+  SETTING_TABS,
+  type SettingPermission,
+  type SettingTab,
+  canRead,
+  permissionFor,
+} from './permissions';
 
 /**
  * TA-13 회사 설정 조회 (GET /api/v1/tenant/settings, WI-032).
@@ -9,33 +17,14 @@ import { getSessionProfile } from '@/lib/auth/session';
  * 9탭 envelope 를 반환한다 — 각 탭마다 권한(permission)/구현여부(implemented)/현재값(data)/예약대기(pending).
  * 데이터 조회는 사용자 세션 client(RLS 적용) — tenant_settings/work_policies/leave_types/approval_lines/
  * document_templates 의 read 정책(mig 27: tenant_id 일치)이 테넌트 격리를 강제한다.
+ * 권한 매트릭스(canEdit/canRead/permissionFor)는 순수 로직 `./permissions` 에 분리(단위 테스트).
  *
  * WI-032 는 P0 4탭(company/work_policy/leave_policy/approval_lines)만 PATCH 구현.
  * roles/notifications/document_templates/security 는 조회만(implemented=false), audit_logs 는 read-only.
  */
 
-export const SETTING_TABS = [
-  'company',
-  'work_policy',
-  'leave_policy',
-  'approval_lines',
-  'roles',
-  'notifications',
-  'document_templates',
-  'security',
-  'audit_logs',
-] as const;
-export type SettingTab = (typeof SETTING_TABS)[number];
-
-/** PATCH 가 구현된 탭(WI-032 P0). */
-const IMPLEMENTED_TABS: ReadonlySet<SettingTab> = new Set<SettingTab>([
-  'company',
-  'work_policy',
-  'leave_policy',
-  'approval_lines',
-]);
-
-export type SettingPermission = 'edit' | 'read' | 'none';
+export type { SettingTab, SettingPermission } from './permissions';
+export { SETTING_TABS, canEdit, canRead, permissionFor } from './permissions';
 
 export interface PendingChangeSummary {
   id: string;
@@ -63,25 +52,6 @@ export type TenantSettingsQueryResult =
   | { ok: false; error: 'unauthenticated' | 'forbidden' };
 
 const TENANT_ROLES = new Set(['tenant_super', 'tenant_hr_admin', 'tenant_manager']);
-
-/** 편집 권한: PATCH 구현된 탭 + 관리자(super/hr_admin). scheduled_setting_changes INSERT RLS 경계와 정합. */
-function canEdit(role: string, tab: SettingTab): boolean {
-  if (!IMPLEMENTED_TABS.has(tab)) return false;
-  return role === 'tenant_super' || role === 'tenant_hr_admin';
-}
-
-/** 조회 권한: super/hr_admin 전탭, manager 는 security/audit 제외, employee 는 공개 3탭(본 lib 진입은 tenant 역할만). */
-function canRead(role: string, tab: SettingTab): boolean {
-  if (role === 'tenant_super' || role === 'tenant_hr_admin') return true;
-  if (role === 'tenant_manager') return tab !== 'security' && tab !== 'audit_logs';
-  return false;
-}
-
-function permissionFor(role: string, tab: SettingTab): SettingPermission {
-  if (canEdit(role, tab)) return 'edit';
-  if (canRead(role, tab)) return 'read';
-  return 'none';
-}
 
 export async function getTenantSettings(): Promise<TenantSettingsQueryResult> {
   const profile = await getSessionProfile();
