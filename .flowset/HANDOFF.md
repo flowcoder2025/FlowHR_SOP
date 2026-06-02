@@ -29,7 +29,7 @@
 ### 다음 세션 첫 작업 — WI-038-feat OP-03 테넌트 상세 8탭 (ST-008)
 - 라우트 `(operator)/operator/tenants/[id]` — 헤더 카드(테넌트/구독/사용량) + 8탭(`?tab=` 동기화, WI-033 패턴) + feature-flag 토글(feature_flag_overrides, operator_super) + 본 테넌트 audit-logs(`tenant_id=:id OR (target_type='tenants' AND target_id=:id)` — WI-037 semantic audit 포함) + 티켓 + **비활성화 → 활성 세션 즉시 무효화(Realtime broadcast)**. OP-02 목록 회사명 상세 링크 연결.
 - change-plan/change-admin(operator.md OP-02/03)도 OP-03 또는 후속 소유.
-- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+- ⚠️ **배포 대기 KI (베타 진입 전 일괄 프로비저닝)**: **KI-135(P1 — `SUPABASE_SERVICE_ROLE_KEY` 미설정 → production 로그인 전면 500, 최우선)** + KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend). ※ KI-135 는 2026-06-02 사용자 Vercel 로그인 시도에서 발견 — service_role 부재 시 `checkLoginLock` throw 로 **모든 로그인 차단**. 로컬 dev 는 정상(OP-02 6상태 배지/검색/필터/CSV/상태변경 실증 완료, staging 합성데이터 검증 후 정리).
 
 ## -0q. 2026-06-02 batch Q 세션 진척
 
