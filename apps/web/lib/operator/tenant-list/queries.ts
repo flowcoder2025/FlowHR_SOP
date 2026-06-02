@@ -203,7 +203,11 @@ function queryTenantRows(
   from: number,
   to: number,
 ) {
-  let query = supabase.from('tenants').select(TENANT_COLUMNS, { count: 'exact' });
+  // soft-delete(deleted_at) tombstone 제외 — archived(status)와 별개(보관은 목록 표시 유지, codex P2).
+  let query = supabase
+    .from('tenants')
+    .select(TENANT_COLUMNS, { count: 'exact' })
+    .is('deleted_at', null);
   const term = sanitizeSearchTerm(params.q);
   if (term) {
     const orParts = [

@@ -56,11 +56,12 @@ export async function changeTenantStatus(input: unknown): Promise<ChangeStatusRe
 
   const supabase = await createSupabaseServerClient();
 
-  // 현재 status 조회(전이 검증 + optimistic old 값).
+  // 현재 status 조회(전이 검증 + optimistic old 값). soft-delete tombstone 은 변경 불가(codex P2).
   const { data: current, error: readErr } = await supabase
     .from('tenants')
     .select('status')
     .eq('id', tenantId)
+    .is('deleted_at', null)
     .maybeSingle();
   if (readErr) return { ok: false, error: 'update_failed' };
   if (!current) return { ok: false, error: 'not_found' };
@@ -76,6 +77,7 @@ export async function changeTenantStatus(input: unknown): Promise<ChangeStatusRe
     .update({ status: targetStatus, updated_at: new Date().toISOString() })
     .eq('id', tenantId)
     .eq('status', fromStatus)
+    .is('deleted_at', null)
     .select('id');
   if (updErr) return { ok: false, error: 'update_failed' };
   if (!updated || updated.length === 0) return { ok: false, error: 'conflict' };
