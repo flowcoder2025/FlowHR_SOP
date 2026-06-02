@@ -1,0 +1,10 @@
+WI-037-feat OP-02 테넌트 목록 (ST-007/009) — 듀얼검증 통합 판정
+
+VERDICT: PASS_BOTH
+
+- evaluator: PASS 8.38 (기능8.5 / 품질9.0 / 테스트7.5 / 계약8.5, 각 축 ≥7.5)
+- codex: PASS (1차 P1+P2×4+P3×4 → hotfix 526f0a0 → 2차 P2×1[soft-delete] → hotfix b35b890 → 3차 PASS, 잔여 P2+ 없음)
+
+검증: turbo lint/typecheck/test/build 21/21 + 단위 37(list 32/permissions 5) + E2E 비인증 가드 2.
+KI: KI-123 resolved(표시상태 파생 구현). 신규 KI-131(P2 RLS 비대칭 accepted-risk)/132/133/134(P3).
+DB 스키마 변경 없음. 2026-06-02.
