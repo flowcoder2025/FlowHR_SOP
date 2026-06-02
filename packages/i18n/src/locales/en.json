@@ -446,6 +446,105 @@
         "empty": "No audit logs."
       }
     },
+    "op-02": {
+      "title": "Tenants",
+      "subtitle": "Browse and manage registered customer companies.",
+      "search": {
+        "placeholder": "Search company / business no. / domain"
+      },
+      "action": {
+        "create": "Create Tenant",
+        "export": "Export to Excel",
+        "changeStatus": "Change Status"
+      },
+      "filter": {
+        "status": "Status",
+        "plan": "Plan",
+        "clear": "Clear filters"
+      },
+      "col": {
+        "company": "Company",
+        "domain": "Domain",
+        "status": "Status",
+        "plan": "Plan",
+        "usersOfTotal": "Active/Total",
+        "monthlyFee": "Monthly Fee",
+        "payment": "Payment",
+        "admin": "Admin",
+        "lastActive": "Last Active"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "overdue": "Overdue",
+        "expiring_soon": "Expiring Soon",
+        "expired": "Expired",
+        "archived": "Archived",
+        "pending_invite": "Pending Invite",
+        "scheduled": "Scheduled"
+      },
+      "payment": {
+        "draft": "Draft",
+        "issued": "Issued",
+        "paid": "Paid",
+        "overdue": "Overdue",
+        "failed": "Failed",
+        "refunded": "Refunded"
+      },
+      "admin": {
+        "active": "Activated",
+        "none": "Unassigned"
+      },
+      "summary": {
+        "total": "{total} total",
+        "filtered": "{shown} shown (of {total})"
+      },
+      "empty": {
+        "title": "No tenants match the current filters."
+      },
+      "pagination": {
+        "range": "{start}-{end} of {total}",
+        "page": "Page {page} / {total}",
+        "prev": "Prev",
+        "next": "Next"
+      },
+      "export": {
+        "exporting": "Exporting…",
+        "truncated": "Exported up to {limit} rows.",
+        "businessNumber": "Business No.",
+        "activeUsers": "Active Users",
+        "userLimit": "Seats",
+        "contractStart": "Contract Start",
+        "contractEnd": "Contract End",
+        "error": {
+          "unauthenticated": "Your session has expired.",
+          "forbidden": "You do not have export permission."
+        }
+      },
+      "status_change": {
+        "title": "Change Tenant Status",
+        "subtitle": "Change the status of {name}.",
+        "no_targets": "No status transitions are available from the current status.",
+        "target_label": "New status",
+        "reason_label": "Reason",
+        "reason_placeholder": "Enter a reason (recorded in audit log)",
+        "cancel": "Cancel",
+        "submit": "Change Status",
+        "submitting": "Changing…",
+        "error": {
+          "unauthenticated": "Your session has expired. Please log in again.",
+          "forbidden": "You do not have permission to change status.",
+          "invalid": "Please check your input.",
+          "not_found": "Tenant not found.",
+          "invalid_transition": "This status transition is not allowed.",
+          "conflict": "The status has already changed. Please refresh and try again.",
+          "update_failed": "Failed to change status."
+        }
+      },
+      "error": {
+        "fetchFailed": "Failed to fetch tenants."
+      }
+    },
     "op-04": {
       "title": "Register new tenant",
       "subtitle": "Create a customer and complete initial operating setup with a 7-step wizard.",

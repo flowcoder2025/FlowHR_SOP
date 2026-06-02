@@ -446,6 +446,105 @@
         "empty": "감사 로그가 없습니다."
       }
     },
+    "op-02": {
+      "title": "테넌트 관리",
+      "subtitle": "등록된 고객사를 조회하고 상태를 관리합니다.",
+      "search": {
+        "placeholder": "회사명 / 사업자번호 / 도메인 검색"
+      },
+      "action": {
+        "create": "신규 테넌트 등록",
+        "export": "Excel 내보내기",
+        "changeStatus": "상태 변경"
+      },
+      "filter": {
+        "status": "상태",
+        "plan": "요금제",
+        "clear": "필터 초기화"
+      },
+      "col": {
+        "company": "회사명",
+        "domain": "도메인",
+        "status": "상태",
+        "plan": "요금제",
+        "usersOfTotal": "활성/계약",
+        "monthlyFee": "월요금",
+        "payment": "결제",
+        "admin": "대표관리자",
+        "lastActive": "최근활동"
+      },
+      "status": {
+        "active": "활성",
+        "inactive": "비활성",
+        "overdue": "미납",
+        "expiring_soon": "만료예정",
+        "expired": "만료",
+        "archived": "보관",
+        "pending_invite": "초대대기",
+        "scheduled": "예정"
+      },
+      "payment": {
+        "draft": "작성중",
+        "issued": "청구됨",
+        "paid": "정상",
+        "overdue": "미납",
+        "failed": "결제실패",
+        "refunded": "환불"
+      },
+      "admin": {
+        "active": "활성화됨",
+        "none": "미지정"
+      },
+      "summary": {
+        "total": "전체 {total}개",
+        "filtered": "{shown}개 표시 (전체 {total}개)"
+      },
+      "empty": {
+        "title": "조건에 맞는 테넌트가 없습니다."
+      },
+      "pagination": {
+        "range": "{start}-{end} / 전체 {total}",
+        "page": "{page} / {total} 페이지",
+        "prev": "이전",
+        "next": "다음"
+      },
+      "export": {
+        "exporting": "내보내는 중…",
+        "truncated": "{limit}건까지만 내보냈습니다.",
+        "businessNumber": "사업자번호",
+        "activeUsers": "활성 사용자",
+        "userLimit": "계약 인원",
+        "contractStart": "계약 시작일",
+        "contractEnd": "계약 종료일",
+        "error": {
+          "unauthenticated": "세션이 만료되었습니다.",
+          "forbidden": "내보내기 권한이 없습니다."
+        }
+      },
+      "status_change": {
+        "title": "테넌트 상태 변경",
+        "subtitle": "{name} 테넌트의 상태를 변경합니다.",
+        "no_targets": "현재 상태에서는 변경할 수 있는 상태가 없습니다.",
+        "target_label": "변경할 상태",
+        "reason_label": "변경 사유",
+        "reason_placeholder": "변경 사유를 입력하세요 (감사 로그에 기록)",
+        "cancel": "취소",
+        "submit": "상태 변경",
+        "submitting": "변경 중…",
+        "error": {
+          "unauthenticated": "세션이 만료되었습니다. 다시 로그인하세요.",
+          "forbidden": "상태 변경 권한이 없습니다.",
+          "invalid": "입력값을 다시 확인하세요.",
+          "not_found": "테넌트를 찾을 수 없습니다.",
+          "invalid_transition": "허용되지 않는 상태 전이입니다.",
+          "conflict": "상태가 이미 변경되었습니다. 새로고침 후 다시 시도하세요.",
+          "update_failed": "상태 변경에 실패했습니다."
+        }
+      },
+      "error": {
+        "fetchFailed": "테넌트 목록 조회에 실패했습니다."
+      }
+    },
     "op-04": {
       "title": "신규 테넌트 등록",
       "subtitle": "7단계 마법사로 고객사 생성과 초기 운영 세팅을 완료합니다.",

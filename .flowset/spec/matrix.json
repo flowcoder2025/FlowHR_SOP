@@ -45,7 +45,7 @@
         "D": "DELETE /api/v1/operator/tenants/:id"
       },
       "type_ssot": "supabase/migrations/*.sql + packages/types/database.ts#Tenant",
-      "status": {"C": "missing", "R": "missing", "U": "missing", "D": "missing"}
+      "status": {"C": "done", "R": "done", "U": "done", "D": "missing", "_note": "C=WI-035 register_tenant, R=WI-037 OP-02 목록(검색/필터/정렬/페이지/CSV), U=WI-037 상태변경(ST-009). D(보관/삭제)=WI-038+ 이연"}
     },
     "Subscription": {
       "table": "subscriptions",
