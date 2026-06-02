@@ -1,10 +1,37 @@
 # FlowHR 핸드오프 — 신규 세션 진입 가이드
 
-> **갱신**: 2026-06-02 batch Q (WI-036-feat OP-04 7단계 테넌트 등록 마법사 UI 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #55. 라우트 `(operator)/operator/tenants/new` — 서버 page(세션/role 가드 + getOpenDraft/getRegistrationPlans 초기 fetch) → `'use client'` wizard(useReducer). WI-035 서버 계약 소비. ★ **듀얼검증 가치 재실증**: evaluator PASS 8.15 통과분에서 codex 가 P2×2[autosave 무한루프·plan_id 화이트리스트 우회] 검출 + evaluator 독립 P2[startNew 멱등키 미재생성] → hotfix. KI-127~130 등재).
-> **신규 세션 첫 작업**: 본 문서 **§-0q (2026-06-02 batch Q)** 정독 → **WI-037-feat OP-02 테넌트 목록** 착수(DataTable/FilterBar WI-030 + 검색/필터/sort/페이지/Excel + **KI-123 표시상태 파생**[scheduled=contract_start_date>today / pending_invite=admin_user_id IS NULL·invitation pending] + matrix.json OP-04 entity status 갱신 + 상태변경 audit [ST-007/009]). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
-> **이전 핸드오프**: 2026-06-01 batch P (WI-035 OP-04 등록 API, §-0p) / batch O (WI-034 결재라인 조건 분기, §-0o) / batch N (WI-033 TA-13 설정 UI, §-0n) / batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
+> **갱신**: 2026-06-02 batch R (WI-037-feat OP-02 테넌트 목록 완료 — codex 3라운드 협의 + 듀얼검증 PASS_BOTH PR #56. 라우트 `(operator)/operator/tenants` 서버 page(force-dynamic, searchParams 파싱) → client island. DataTable/FilterBar(WI-030) + 검색/필터/정렬/페이지/CSV + **KI-123 표시상태 read-side 파생**(DB status≠active > pending_invite > scheduled > active, enum 무변경) + 상태변경 audit(방식1 DB변경0: operator UPDATE 트리거 자동 + service_role semantic row tenant_id=NULL reason 비노출) + matrix Tenant C/R/U done. ★ **듀얼검증 가치 재실증**: evaluator PASS 8.38 통과분에서 codex 1차 P1[RLS 비대칭→KI-131]+P2×4→hotfix→2차 P2[soft-delete]→hotfix→3차 PASS. KI-123 resolved, KI-131(P2 accepted-risk)/132/133/134 등재). batch Q (WI-036-feat OP-04 7단계 테넌트 등록 마법사 UI 완료 — codex 2라운드 협의 + 듀얼검증 PASS_BOTH 머지 PR #55. 라우트 `(operator)/operator/tenants/new` — 서버 page(세션/role 가드 + getOpenDraft/getRegistrationPlans 초기 fetch) → `'use client'` wizard(useReducer). WI-035 서버 계약 소비. ★ **듀얼검증 가치 재실증**: evaluator PASS 8.15 통과분에서 codex 가 P2×2[autosave 무한루프·plan_id 화이트리스트 우회] 검출 + evaluator 독립 P2[startNew 멱등키 미재생성] → hotfix. KI-127~130 등재).
+> **신규 세션 첫 작업**: 본 문서 **§-0r (2026-06-02 batch R)** 정독 → **WI-038-feat OP-03 테넌트 상세 8탭** 착수(라우트 `(operator)/operator/tenants/[id]` — 헤더 카드 + 8탭 URL `?tab=` 동기화[WI-033 패턴] + feature-flag 토글 + 본 테넌트 audit-logs[`tenant_id=:id OR (target_type='tenants' AND target_id=:id)` — WI-037 semantic audit 포함] + **비활성화 → 활성 세션 즉시 무효화 Realtime broadcast** + OP-02 목록 회사명 상세 링크 연결 [ST-008]). ⚠️ **모든 코드 머지는 듀얼검증 게이트(evaluator+codex PASS_BOTH + `<WI>.pass` 마커) 통과 필수** — `project.md §1-1`.
+> **이전 핸드오프**: 2026-06-02 batch Q (WI-036 OP-04 마법사 UI, §-0q) / 2026-06-01 batch P (WI-035 OP-04 등록 API, §-0p) / batch O (WI-034 결재라인 조건 분기, §-0o) / batch N (WI-033 TA-13 설정 UI, §-0n) / batch M (WI-032 TA-13 설정 API + pg_cron 엔진, §-0m) / batch L (WI-030 packages/ui + WI-031 DB foundation, §-0l) / batch K (Vercel 모노레포 배포 수정, §-0k) / batch J (WI-020-6 ST-003 활성화 — WI-020 인증 전체 종료, §-0j) / 2026-05-29 batch I (WI-020-5 ST-004 2FA, §-0i) / batch H (WI-020-4 ST-002 + 2FA 설계, §-0h) / batch G (WI-020-3 ST-072 오류/점검, §-0g) / batch F (WI-020-2 ST-078 약관/동의, §-0) / batch E (WI-021 사이클, §-0e) / batch D (WI-019 Day8~10, §-0d) / batch C (WI-020 ST-001 로그인, §-0b) / batch B (듀얼검증 게이트 + WI-019 Day3~5, §-1) / batch A (모노레포+인프라, §-2)
 
-## -0q. 2026-06-02 batch Q 세션 진척 — **신규 세션 여기부터**
+## -0r. 2026-06-02 batch R 세션 진척 — **신규 세션 여기부터**
+
+### 완료 — WI-037-feat OP-02 테넌트 목록 (ST-007/009, PR #56)
+
+핸드오프 정독 → **codex 3라운드 협의**(렌더 아키텍처/displayStatus 파생/상태변경 audit 방식/CSV/범위경계) → 구현 → **듀얼검증 PASS_BOTH** → auto-merge. **DB 스키마 변경 없음**(§5 게이트 비대상).
+
+**codex 협의 확정 설계**:
+- **아키텍처**: 서버 page(`(operator)/operator/tenants`, force-dynamic, 세션/role 가드[canViewTenantList] + searchParams 파싱) → 작은 `'use client'` island. WI-036 wizard(useReducer)와 달리 목록은 URL state 매핑 자연 → RSC + island. DataTable/FilterBar(WI-030) 소비.
+- **lib/operator/tenant-list/**: `list.ts`(순수 — parseListParams/sanitizeSearchTerm/deriveDisplayStatus/전이검증/calcMonthlyFeeKrw/buildCsv·csvEscape/kstDateString, 단위 32) + `queries.ts`(server-only — 검색·필터·정렬·페이지 + 부가데이터 tenant_id IN 병합[N+1 회피] + `deleted_at IS NULL` + getPlanFilterOptions + listTenantsForExport) + `actions.ts`(changeTenantStatus/exportTenants) + `permissions.ts`(단위 5).
+- **KI-123 표시상태 read-side 파생**(enum 무변경): `deriveDisplayStatus` 우선순위 DB status≠active > `pending_invite`(admin_user_id NULL + 대표 미만료 pending 초대) > `scheduled`(계약시작일>오늘 KST) > `active`. matrix.json Tenant C/R/U done.
+- **상태변경(ST-009, operator_super, 방식1 DB변경0)**: operator 세션 `UPDATE tenants`(optimistic `.eq(status=old)` + `.is(deleted_at,null)`, 트리거 mig29 자동 audit) + **service_role audit_logs semantic row**(`tenant_id=NULL` → reason operator-only, tenant 비노출). best-effort. 전이 active↔inactive/→expired, archived 변경불가.
+- **Excel = UTF-8 BOM CSV**(의존성0). 검색 name/slug/business_number ILIKE(+사업자번호 normalize eq). 회사명 텍스트(상세 링크 WI-038). i18n screens.op-02 ko/en 대칭.
+
+**★ 듀얼검증 (codex 가 evaluator 통과분에서 P1+P2 검출)**: evaluator **PASS 8.38**(기능8.5/품질9.0/테스트7.5/계약8.5) → codex **1차 P1×1**(tenants_write RLS 비대칭 operator_staff Data API UPDATE, accepted-risk→KI-131)**+P2×4**(만료초대·사업자번호검색·dead link·page보정)**+P3×4** → **hotfix 526f0a0** → **2차 P2×1**(soft-delete 미제외) → **hotfix b35b890** → **3차 PASS**. turbo 21/21 + 단위 37(list 32/permissions 5) + E2E 비인증 가드 2.
+
+### ⚠️ 신규 KI (batch R)
+- **KI-131 (P2, accepted-risk)** — tenants_write RLS 비대칭(operator_staff Data API 직접 UPDATE, 앱은 operator_super 강제). KI-109/117 동반 보안 하드닝 sweep.
+- KI-132 (P3) — changeTenantStatus/assembleRows action·query 테스트 0건(server-only import 차단). KI-115/119/125 동반.
+- KI-133 (P3) — OP-02 관리자명 검색 미구현(public.users name/email 컬럼 부재).
+- KI-134 (P3) — status 정렬(DB) vs 파생 displayStatus 배지 라벨 불일치(UX).
+- **KI-123 resolved** (표시상태 파생 + matrix Tenant C/R/U done).
+
+### 다음 세션 첫 작업 — WI-038-feat OP-03 테넌트 상세 8탭 (ST-008)
+- 라우트 `(operator)/operator/tenants/[id]` — 헤더 카드(테넌트/구독/사용량) + 8탭(`?tab=` 동기화, WI-033 패턴) + feature-flag 토글(feature_flag_overrides, operator_super) + 본 테넌트 audit-logs(`tenant_id=:id OR (target_type='tenants' AND target_id=:id)` — WI-037 semantic audit 포함) + 티켓 + **비활성화 → 활성 세션 즉시 무효화(Realtime broadcast)**. OP-02 목록 회사명 상세 링크 연결.
+- change-plan/change-admin(operator.md OP-02/03)도 OP-03 또는 후속 소유.
+- 배포 대기 KI: KI-099(2FA env Vercel)/098(비번재설정 대시보드)/086(leaked-password)/103(Resend) — 베타 진입 전 일괄 프로비저닝.
+
+## -0q. 2026-06-02 batch Q 세션 진척
 
 ### 완료 — WI-036-feat OP-04 7단계 테넌트 등록 마법사 UI (ST-006/010, PR #55 머지)
 
