@@ -113,11 +113,11 @@ export function parseListParams(
 }
 
 /**
- * 검색어 sanitize — PostgREST `.or()`/`.ilike()` 메타문자(콤마/괄호/별표/퍼센트/역슬래시) 제거로
- * 필터 주입과 패턴 깨짐을 방지. 결과가 빈 문자열이면 호출측이 검색을 생략한다.
+ * 검색어 sanitize — PostgREST `.or()`/`.ilike()` 메타문자(콤마/괄호/별표/퍼센트/역슬래시)와
+ * SQL LIKE 와일드카드(`_`)를 제거해 필터 주입·패턴 과매칭을 방지. 빈 문자열이면 호출측이 검색을 생략.
  */
 export function sanitizeSearchTerm(raw: string): string {
-  return raw.replace(/[,()*%\\]/g, ' ').trim().slice(0, 100);
+  return raw.replace(/[,()*%\\_]/g, ' ').trim().slice(0, 100);
 }
 
 // ── 표시상태 파생(KI-123) ─────────────────────────────────────────────────────
@@ -207,8 +207,8 @@ const UTF8_BOM = '﻿';
 export function csvEscape(value: string | number | null | undefined): string {
   if (value == null) return '';
   let s = String(value);
-  // CSV injection 완화: 수식 트리거 문자로 시작하면 앞에 ' 붙임.
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  // CSV injection 완화: (선행 공백/제어문자 포함) 수식 트리거 문자로 시작하면 앞에 ' 붙임.
+  if (/^[\s]*[=+\-@]/.test(s)) s = `'${s}`;
   if (/[",\r\n]/.test(s)) s = `"${s.replace(/"/g, '""')}"`;
   return s;
 }

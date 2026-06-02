@@ -6,7 +6,6 @@ import {
   Button,
   DataTable,
   FilterChip,
-  RowLink,
   rowHighlight,
 } from '@flowhr/ui';
 import { useTranslations } from 'next-intl';
@@ -142,9 +141,8 @@ export function TenantsClient({
       header: t('col.company'),
       sortable: true,
       width: '17%',
-      render: (r) => (
-        <RowLink href={`/${locale}/operator/tenants/${r.id}`}>{r.name}</RowLink>
-      ),
+      // OP-03 상세 라우트는 WI-038 소유 — 현재는 미존재 라우트 dead link 회피 위해 텍스트로 표시(codex P2).
+      render: (r) => <span className="font-semibold text-text">{r.name}</span>,
     },
     {
       key: 'domain',

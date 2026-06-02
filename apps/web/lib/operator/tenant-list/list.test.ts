@@ -71,6 +71,10 @@ describe('sanitizeSearchTerm', () => {
     expect(sanitizeSearchTerm('카페 24')).toBe('카페 24');
   });
 
+  it('SQL LIKE 와일드카드 _ 제거(과매칭 방지)', () => {
+    expect(sanitizeSearchTerm('a_b_c')).toBe('a b c');
+  });
+
   it('길이 100 제한', () => {
     expect(sanitizeSearchTerm('x'.repeat(200)).length).toBe(100);
   });
@@ -231,6 +235,10 @@ describe('CSV', () => {
     expect(csvEscape('@cmd')).toBe("'@cmd");
     // 접두사 + 콤마가 함께면 래핑까지.
     expect(csvEscape('=A,B')).toBe('"\'=A,B"');
+    // 선행 공백 뒤 수식 문자도 완화(Excel 선행공백 무시 대응).
+    expect(csvEscape(' =cmd')).toBe("' =cmd");
+    // 수식 문자 없는 일반 셀은 접두사 없음.
+    expect(csvEscape('hello')).toBe('hello');
   });
 
   it('buildCsv BOM + CRLF + 헤더', () => {

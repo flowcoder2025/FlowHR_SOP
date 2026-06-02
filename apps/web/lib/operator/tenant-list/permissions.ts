@@ -9,7 +9,8 @@
  *
  * RLS `tenants_write`(mig 27)는 is_operator()(super+staff 공통)라 DB 레벨에서 staff UPDATE 를
  * 막지 못한다. 상태변경 server action 이 canChangeTenantStatus 로 operator_super 를 강제(권위)하고,
- * UI 는 버튼을 숨긴다. RLS 비대칭은 KI-109 보안 하드닝 sweep 동류로 등재.
+ * UI 는 버튼을 숨긴다. RLS 비대칭(staff Data API 직접 UPDATE 가능)은 전용 KI-131 로 등재
+ * (KI-109/117 동류 보안 하드닝 sweep — tenants_write 를 is_operator_super() 로 좁히는 정정).
  */
 export const OPERATOR_ROLES: ReadonlySet<string> = new Set(['operator_super', 'operator_staff']);
 

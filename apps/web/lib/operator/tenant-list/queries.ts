@@ -1,4 +1,5 @@
 import 'server-only';
+import { normalizeBusinessNumber } from '@flowhr/schemas';
 import { getSessionProfile } from '@/lib/auth/session';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { canViewTenantList } from './permissions';
@@ -93,7 +94,8 @@ async function assembleRows(
   const ids = tenants.map((t) => t.id);
   if (ids.length === 0) return [];
 
-  // 대표 관리자 pending 초대(operator_flag=false, tenant_super, pending).
+  // 대표 관리자 pending 초대(operator_flag=false, tenant_super, pending, 미만료).
+  // 만료 초대는 accept_invitation 이 거부하므로 pending_invite 표시 대상이 아니다(codex P2).
   const pendingAdminEmail = new Map<string, string>();
   const { data: invites } = await supabase
     .from('invitations')
@@ -101,7 +103,8 @@ async function assembleRows(
     .in('tenant_id', ids)
     .eq('operator_flag', false)
     .eq('target_role', 'tenant_super')
-    .eq('status', 'pending');
+    .eq('status', 'pending')
+    .gt('expires_at', new Date().toISOString());
   for (const inv of invites ?? []) {
     if (inv.tenant_id && !pendingAdminEmail.has(inv.tenant_id)) {
       pendingAdminEmail.set(inv.tenant_id, inv.email);
@@ -112,9 +115,10 @@ async function assembleRows(
   const latestSub = new Map<string, { base: number | null; perUser: number | null }>();
   const { data: subs } = await supabase
     .from('subscriptions')
-    .select('tenant_id, latched_base_price, latched_price_per_user, period_end')
+    .select('tenant_id, latched_base_price, latched_price_per_user, period_end, period_start')
     .in('tenant_id', ids)
-    .order('period_end', { ascending: false, nullsFirst: false });
+    .order('period_end', { ascending: false, nullsFirst: false })
+    .order('period_start', { ascending: false, nullsFirst: false });
   for (const s of subs ?? []) {
     if (!latestSub.has(s.tenant_id)) {
       latestSub.set(s.tenant_id, { base: s.latched_base_price, perUser: s.latched_price_per_user });
@@ -125,9 +129,10 @@ async function assembleRows(
   const latestInvoiceStatus = new Map<string, InvoiceStatus>();
   const { data: invoices } = await supabase
     .from('invoices')
-    .select('tenant_id, status, period_month')
+    .select('tenant_id, status, period_month, created_at')
     .in('tenant_id', ids)
-    .order('period_month', { ascending: false, nullsFirst: false });
+    .order('period_month', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false, nullsFirst: false });
   for (const inv of invoices ?? []) {
     if (!latestInvoiceStatus.has(inv.tenant_id)) {
       latestInvoiceStatus.set(inv.tenant_id, inv.status as InvoiceStatus);
@@ -201,7 +206,15 @@ function queryTenantRows(
   let query = supabase.from('tenants').select(TENANT_COLUMNS, { count: 'exact' });
   const term = sanitizeSearchTerm(params.q);
   if (term) {
-    query = query.or(`name.ilike.%${term}%,slug.ilike.%${term}%,business_number.ilike.%${term}%`);
+    const orParts = [
+      `name.ilike.%${term}%`,
+      `slug.ilike.%${term}%`,
+      `business_number.ilike.%${term}%`,
+    ];
+    // 숫자만 입력(예: 1234567890)도 저장형(###-##-#####)과 매칭되도록 정규화값 eq 추가(codex P2).
+    const bizNorm = normalizeBusinessNumber(term);
+    if (bizNorm && bizNorm !== term) orParts.push(`business_number.eq.${bizNorm}`);
+    query = query.or(orParts.join(','));
   }
   if (params.status.length > 0) query = query.in('status', params.status);
   if (params.planId.length > 0) query = query.in('plan_id', params.planId);
@@ -221,17 +234,27 @@ export async function listTenants(params: ListParams): Promise<ListTenantsResult
   const from = (params.page - 1) * params.pageSize;
   const to = from + params.pageSize - 1;
 
-  const { data, count, error } = await queryTenantRows(supabase, params, from, to);
-  if (error) {
+  const first = await queryTenantRows(supabase, params, from, to);
+  if (first.error) {
     // 조회 실패는 빈 목록으로 fail-soft(화면이 재시도 안내). total 0.
     return { ok: true, data: { rows: [], total: 0, page: params.page, pageSize: params.pageSize } };
   }
 
-  const rows = await assembleRows(supabase, (data ?? []) as SelectedTenant[]);
-  return {
-    ok: true,
-    data: { rows, total: count ?? rows.length, page: params.page, pageSize: params.pageSize },
-  };
+  const total = first.count ?? 0;
+  let pageRows = (first.data ?? []) as SelectedTenant[];
+  let page = params.page;
+
+  // out-of-range page(예: ?page=999) 보정 — 마지막 유효 페이지로 재조회(codex P2).
+  const totalPages = Math.max(1, Math.ceil(total / params.pageSize));
+  if (total > 0 && params.page > totalPages) {
+    page = totalPages;
+    const lastFrom = (page - 1) * params.pageSize;
+    const retry = await queryTenantRows(supabase, params, lastFrom, lastFrom + params.pageSize - 1);
+    if (!retry.error) pageRows = (retry.data ?? []) as SelectedTenant[];
+  }
+
+  const rows = await assembleRows(supabase, pageRows);
+  return { ok: true, data: { rows, total, page, pageSize: params.pageSize } };
 }
 
 export interface PlanFilterOption {
